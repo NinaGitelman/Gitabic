@@ -14,8 +14,11 @@ SRCDIR = src
 OBJDIR = obj
 
 ############## Do not change anything from here downwards! #############
-SRC = $(wildcard $(SRCDIR)/*$(EXT))
+# Recursively find all source files with the .cpp extension in SRCDIR.
+SRC = $(shell find $(SRCDIR) -type f -name *$(EXT))
+# Map each source file to its corresponding object file in the OBJDIR.
 OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
+# Map each object file to its dependency file.
 DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
 # UNIX-based OS variables & settings
 RM = rm
@@ -35,8 +38,9 @@ all: $(APPNAME)
 $(APPNAME): $(OBJ)
 	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-# Creates the dependecy rules
+# Creates the dependency rules
 %.d: $(SRCDIR)/%$(EXT)
+	@mkdir -p $(dir $@)
 	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
 
 # Includes all .h files
@@ -44,6 +48,7 @@ $(APPNAME): $(OBJ)
 
 # Building rule for .o files and its .c/.cpp in combination with all .h
 $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
+	@mkdir -p $(dir $@)
 	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 ################### Cleaning rules for Unix-based OS ###################
