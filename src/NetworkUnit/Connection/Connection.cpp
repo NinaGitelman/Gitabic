@@ -2,7 +2,7 @@
 
 Connection::Connection(Address peer) : peerAdress(peer) {}
 
-PacketData Connection::getPacketToSend()
+vector<uint8_t> Connection::getPacketToSend()
 {
     auto ret = PacketsToSend.front();
     PacketsToSend.pop();
