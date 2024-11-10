@@ -28,6 +28,12 @@ struct Address
     array<uint8_t, IP_LEN> ip;
     uint16_t port;
 
+    Address()
+    {
+        this->port = 0;
+        this->ip = ipStringToArray("0.0.0.0");
+    }
+
     Address(string ip, uint16_t port)
     {
         this->port = port;
@@ -67,7 +73,7 @@ struct Address
         return sockaddr;
     }
 
-    bool operator==(Address &other)
+    bool operator==(Address &other) const
     {
         return other.port == this->port &&
                other.ip == this->ip;
@@ -79,7 +85,7 @@ struct Address
         return os;
     }
 
-    std::array<uint8_t, IP_LEN> ipStringToArray(const std::string &ip)
+    std::array<uint8_t, IP_LEN> ipStringToArray(const std::string &ip) const
     {
         std::array<uint8_t, 4> ipArray;
         size_t start = 0;
@@ -126,6 +132,14 @@ struct Address
                std::to_string(ip[2]) + "." +
                std::to_string(ip[3]);
     }
+
+    uint32_t ipUint() const
+    {
+        return (ip[0] << 24) +
+               (ip[1] << 16) +
+               (ip[2] << 8) +
+               ip[3];
+    }
 };
 
 struct Message
@@ -155,7 +169,7 @@ protected:
     virtual vector<uint8_t> getPacketToSend();
 
 public:
-    bool getIsAlive();
+    bool getIsAlive() const;
     virtual bool close() = 0;
     virtual void send(Message msg) = 0;
 };
