@@ -1,6 +1,6 @@
 #include "Connection.h"
 
-Connection::Connection(Address peer) : peerAdress(peer) {}
+Connection::Connection(const Address &peer) : peerAdress(peer) {}
 
 vector<uint8_t> Connection::getPacketToSend()
 {
@@ -9,7 +9,7 @@ vector<uint8_t> Connection::getPacketToSend()
     return ret;
 }
 
-bool Connection::getIsAlive()
+bool Connection::getIsAlive() const
 {
     return isAlive;
 }

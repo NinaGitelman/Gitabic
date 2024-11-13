@@ -5,8 +5,9 @@ SocketHandler::SocketHandler(bool isTcp)
     this->isTcp = isTcp;
     this->isActive = true;
     this->setupSocket();
+    this->recievedData = std::unordered_map<Address, std::queue<vector<uint8_t>>>();
 
-    this->recvAndSendThread = thread(SocketHandler::handle, this);
+    this->recvAndSendThread = thread(&SocketHandler::handle, this);
     this->recvAndSendThread.detach();
 }
 
@@ -15,10 +16,94 @@ uint16_t SocketHandler::getPort() const
     return this->myAddress.port;
 }
 
+vector<uint8_t> SocketHandler::getPacket(const Address &address)
+{
+    std::lock_guard<mutex> lock(mut);
+    try
+    {
+        auto packet = recievedData[address].front();
+        recievedData[address].pop();
+        if (recievedData[address].empty())
+        {
+            recievedData.erase(address);
+        }
+        return packet;
+    }
+    catch (const std::exception &ex)
+    {
+        return vector<uint8_t>();
+    }
+}
+
+vector<PacketData> SocketHandler::getAllPackets()
+{
+    vector<PacketData> result;
+    for (auto &it : recievedData)
+    {
+        while (!it.second.empty())
+        {
+            result.push_back(PacketData(it.second.front(), it.first));
+            it.second.pop();
+        }
+    }
+    recievedData.erase(recievedData.begin(), recievedData.end());
+    return result;
+}
+
+PacketData SocketHandler::getSynned()
+{
+    if (synPackets.empty())
+    {
+        return PacketData();
+    }
+    auto packet = synPackets.front();
+    synPackets.pop();
+    return packet;
+}
+
+void SocketHandler::sendPacket(const PacketData &packet)
+{
+    std::lock_guard<mutex> lock(mut);
+    this->toSend.push(packet);
+}
+
 void SocketHandler::handle()
 {
     while (isActive)
     {
+        if (!toSend.empty())
+        {
+            PacketData packet;
+            {
+                std::lock_guard<mutex> lock(mut);
+                packet = toSend.front();
+                toSend.pop();
+            }
+            sendTo(packet.other, packet.data);
+        }
+        recv();
+    }
+}
+
+void SocketHandler::recv()
+{
+    vector<uint8_t> buffer(16 * 1024);
+    struct sockaddr_in clientaddr;
+    socklen_t addrLen = sizeof(clientaddr);
+    std::lock_guard<mutex> lock(mut);
+    int n = recvfrom(this->socketId, buffer.data(), MAX_BUFFER_SIZE, MSG_DONTWAIT,
+                     (struct sockaddr *)&clientaddr, &addrLen);
+    if (n > 0)
+    {
+        buffer.erase(buffer.begin(), buffer.begin() + sizeof(iphdr) + sizeof(udphdr));
+        buffer.shrink_to_fit(); // TODO - verify it known it got written.
+
+        Address from = Address(clientaddr);
+        if (recievedData.find(from) == recievedData.end())
+        {
+            recievedData[from] = queue<vector<uint8_t>>();
+        }
+        recievedData[from].push(buffer);
     }
 }
 
@@ -103,10 +188,10 @@ void SocketHandler::setupSocket()
         exit(EXIT_FAILURE);
     }
 
-    this->myAddress = getSocketAddress();
+    this->myAddress = Address(getNonLoopbackIP(), getSocketPort());
 }
 
-Address SocketHandler::getSocketAddress() const
+uint16_t SocketHandler::getSocketPort() const
 {
     sockaddr_in addr;
     socklen_t addrLen = sizeof(addr);
@@ -114,9 +199,48 @@ Address SocketHandler::getSocketAddress() const
     // Retrieve the socket address using getsockname
     if (getsockname(this->socketId, reinterpret_cast<sockaddr *>(&addr), &addrLen) == -1)
     {
-        return Address();
+        return 0;
     }
 
     // Use the Address constructor to initialize the Address object with sockaddr_in data
-    return Address(addr);
+    return ntohs(addr.sin_port);
+}
+
+string SocketHandler::getNonLoopbackIP() const
+{
+    struct ifaddrs *interfaces, *ifa;
+    char ip[INET_ADDRSTRLEN];
+
+    // Get list of network interfaces
+    if (getifaddrs(&interfaces) == -1)
+    {
+        perror("getifaddrs");
+        return "";
+    }
+
+    // Loop through each network interface
+    for (ifa = interfaces; ifa != nullptr; ifa = ifa->ifa_next)
+    {
+        if (ifa->ifa_addr == nullptr)
+            continue;
+
+        // Check if the interface is using IPv4 and is not a loopback address
+        if (ifa->ifa_addr->sa_family == AF_INET && !(ifa->ifa_flags & IFF_LOOPBACK))
+        {
+            struct sockaddr_in *addr = (struct sockaddr_in *)ifa->ifa_addr;
+            inet_ntop(AF_INET, &addr->sin_addr, ip, INET_ADDRSTRLEN);
+
+            // Free the interface list
+            freeifaddrs(interfaces);
+
+            // Return the first non-loopback IP found
+            return std::string(ip);
+        }
+    }
+
+    // Free the interface list
+    freeifaddrs(interfaces);
+
+    // Return an empty string if no non-loopback address is found
+    return "";
 }
