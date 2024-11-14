@@ -11,7 +11,7 @@ struct Message
     Address other;
 };
 
-class Connection
+class TCPConnection
 {
 protected:
     Address peerAdress;
@@ -25,7 +25,7 @@ protected:
     bool isAlive;
     friend class SocketHandler;
 
-    Connection(const Address &peer);
+    TCPConnection(const Address &peer);
     virtual void onReceive(vector<uint8_t> data) = 0;
     virtual vector<uint8_t> getPacketToSend();
 

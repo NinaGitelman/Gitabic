@@ -104,6 +104,10 @@ void SocketHandler::recv()
             recievedData[from] = queue<vector<uint8_t>>();
         }
         recievedData[from].push(buffer);
+        if (isTcp)
+        {
+            // TODO add to syn queue if syn after implementung tcp
+        }
     }
 }
 
