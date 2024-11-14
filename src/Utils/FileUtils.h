@@ -1,17 +1,15 @@
-#ifndef HEADERFILE_H
-#define HEADERFILE_H
-
-
+#pragma once
 #include <string>
 #include <fstream>
+#include <vector>
+#include <cstdint>
+#include <stdexcept>
 
 class FileUtils
 {
     public:
 
-    static std::string readFileToString(std::string filePath); // Function receives a filePath and returns a function with the file contents (also valid for non txt files)
+    static std::vector<uint8_t> readFileToVector(const std::string& filePath); // Function receives a filePath and returns a file contents (also valid for non txt files)
 
 
-}
-
-#endif
+};

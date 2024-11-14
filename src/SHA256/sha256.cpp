@@ -114,42 +114,47 @@ void SHA256::final(unsigned char *digest)
     }
 }
  
-std::string SHA256::toHashSha256(std::string input) 
-{
-    unsigned char digest[SHA256::DIGEST_SIZE];
-    memset(digest,0,SHA256::DIGEST_SIZE);
+// std::string SHA256::toHashSha256(std::string input) 
+// {
+//     unsigned char digest[SHA256::DIGEST_SIZE];
+//     memset(digest,0,SHA256::DIGEST_SIZE);
  
-    SHA256 ctx = SHA256();
-    ctx.init();
-    ctx.update( (unsigned char*)input.c_str(), input.length());
-    ctx.final(digest);
+//     SHA256 ctx = SHA256();
+//     ctx.init();
+//     ctx.update( (unsigned char*)input.c_str(), input.length());
+//     ctx.final(digest);
  
-    char buf[2*SHA256::DIGEST_SIZE+1];
-    buf[2*SHA256::DIGEST_SIZE] = 0;
-    for (unsigned int i = 0; i < SHA256::DIGEST_SIZE; i++)
-        sprintf(buf+i*2, "%02x", digest[i]);
+//     char buf[2*SHA256::DIGEST_SIZE+1];
+//     buf[2*SHA256::DIGEST_SIZE] = 0;
+//     for (unsigned int i = 0; i < SHA256::DIGEST_SIZE; i++)
+//         sprintf(buf+i*2, "%02x", digest[i]);
 
-    return std::string(buf);
-}
+//     return std::string(buf);
+// }
 
 
 
-void SHA256::toHashSha256(const std::string& input, unsigned char output[32]) 
+
+std::array<uint8_t, SHA256_SIZE> SHA256::toHashSha256(const std::vector<uint8_t>& input) 
 {
     unsigned char digest[SHA256::DIGEST_SIZE];
     memset(digest, 0, SHA256::DIGEST_SIZE);
- 
+
     SHA256 ctx = SHA256();
     ctx.init();
-    ctx.update((unsigned char*)input.c_str(), input.length());
+    ctx.update(input.data(), input.size());
     ctx.final(digest);
 
-    // Copy the raw bytes into the output array
-    memcpy(output, digest, SHA256::DIGEST_SIZE);
+    // Copy the digest into an std::array<uint8_t, 32> to return
+    std::array<uint8_t, SHA256_SIZE> output;
+    std::memcpy(output.data(), digest, SHA256::DIGEST_SIZE);
+
+    return output;
 }
 
-void SHA256::printHashAsString(const unsigned char hash[32]) {
-    for (int i = 0; i < 32; i++) {
+
+void SHA256::printHashAsString(const std::array<unsigned char, 32>& hash) {
+    for (size_t i = 0; i < SHA256::DIGEST_SIZE; i++) {  // Use size_t for index
         // Print each byte as a 2-digit hex value
         std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
     }

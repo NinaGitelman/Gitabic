@@ -1,10 +1,32 @@
-#ifndef SHA256_H
-#define SHA256_H
-#include <string>
+#pragma once
 
-// only for helper fucniton of print
+#include <string>
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#include <array>
+#include <cstring>
+
+/*
+Example of use:
+int main() {
+
+    std::vector<uint8_t> fileBytes = FileUtils::readFileToVector("/media/user/OS/LinuxExtraSpace/gitabic/myFile2.mp4");
+ 
+   // Generate the SHA-256 hash
+   
+    std::array<uint8_t, 32> hash = SHA256::toHashSha256(fileBytes);
+
+    // Print the hash as a string
+    SHA256::printHashAsString(hash);
+
+    return 0;
+}
+
+
+*/
+
+#define SHA256_SIZE 32
 
 class SHA256
 {
@@ -22,10 +44,13 @@ public:
     static const unsigned int DIGEST_SIZE = ( 256 / 8);
 
     // FUNCTION FOR HASHING
-    static std::string toHashSha256(std::string input); // function takes a string and outputs sha256 of the string in string format
-    static void toHashSha256(const std::string& input, unsigned char output[32]); // function takes a string and outputs the sha256 of the string in given char[32] format
+
+    static std::array<uint8_t, SHA256_SIZE> toHashSha256(const std::vector<uint8_t>& input);  // function takes a string and outputs sha256 of the string in string format
+  
+  //  static void toHashSha256(const std::string& input, unsigned char output[32]); // function takes a string and outputs the sha256 of the string in given char[32] format
+ 
     // HELPER Function for debugging
-    static void printHashAsString(const unsigned char hash[32]);
+    static void printHashAsString(const std::array<uint8_t, SHA256::DIGEST_SIZE>& hash);
 
 protected:
     void transform(const unsigned char *message, unsigned int block_nb);
@@ -58,4 +83,3 @@ protected:
            | ((uint32) *((str) + 1) << 16)    \
            | ((uint32) *((str) + 0) << 24);   \
 }
-#endif
