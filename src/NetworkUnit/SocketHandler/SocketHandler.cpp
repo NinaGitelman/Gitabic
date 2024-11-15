@@ -124,7 +124,7 @@ void SocketHandler::sendTo(const Address &to, vector<uint8_t> data)
     std::memcpy(udpHeaderVec.data(), &udpHeader, sizeof(udphdr));
 
     // Prepend the UDP header to the data vector
-    data.insert(data.begin(), udpHeaderVec.begin(), udpHeaderVec.end());
+    data.insert(data.end(), udpHeaderVec.begin(), udpHeaderVec.end());
 
     ((udphdr *)data.data())->check = calculateUDPChecksum(data, this->myAddress.ipUint(), to.ipUint());
 
