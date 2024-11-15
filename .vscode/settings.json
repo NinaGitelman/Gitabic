@@ -1,4 +1,5 @@
 {
+    "C_mantic.alwaysMoveComments": true,
     "files.associations": {
         "array": "cpp",
         "type_traits": "cpp",

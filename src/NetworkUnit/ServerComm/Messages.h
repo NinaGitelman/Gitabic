@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <vector>
-#include "Encryptions/SHA256/sha256.h"
+#include "../../Encryptions/SHA256/sha256.h"
 
 using std::vector;
 using ID = HashResult;
@@ -11,13 +11,13 @@ using EncryptedID = std::array<uint8_t, 48>;
 enum RequestCodes
 {
     Store = 21,
-    UserList = 23
+    UserListReq = 23
 };
 enum ResponseCodes
 {
     StoreSuccess = 221,
     StoreFailure,
-    UserList
+    UserListRes
 };
 
 struct RequestMessageBase
@@ -28,7 +28,7 @@ struct RequestMessageBase
 
     RequestMessageBase(uint8_t code) : code(code) {}
 
-    virtual vector<uint8_t> serialize(uint32_t PreviousSize)
+    virtual vector<uint8_t> serialize(uint32_t PreviousSize) const
     {
         vector<uint8_t> result;
         result.push_back(code);
@@ -36,16 +36,17 @@ struct RequestMessageBase
         {
             result.push_back(((uint8_t *)&PreviousSize)[i]);
         }
+        return result;
     }
 };
 
 struct UserListRequest : RequestMessageBase
 {
-    UserListRequest(ID fileId) : fileId(fileId), RequestMessageBase(RequestCodes::UserList) {}
+    UserListRequest(ID fileId) : fileId(fileId), RequestMessageBase(RequestCodes::UserListReq) {}
     UserListRequest(ID fileId, uint8_t code) : fileId(fileId), RequestMessageBase(code) {}
     ID fileId;
 
-    virtual vector<uint8_t> serialize(uint32_t PreviousSize) override
+    virtual vector<uint8_t> serialize(uint32_t PreviousSize) const override
     {
         vector<uint8_t> thisSerialized(fileId.begin(), fileId.end());
         vector<uint8_t> serialized = RequestMessageBase::serialize(PreviousSize + thisSerialized.size());
@@ -54,59 +55,68 @@ struct UserListRequest : RequestMessageBase
     }
 };
 
-struct StoreRequest : UserListRequest
+struct StoreRequest : RequestMessageBase
 {
-    StoreRequest(ID fileId, EncryptedID myId) : UserListRequest(fileId, RequestCodes::Store), myId(myId) {}
-    StoreRequest(ID fileId, EncryptedID myId, uint8_t code) : UserListRequest(fileId, code), myId(myId) {}
+    StoreRequest(ID fileId, EncryptedID myId) : RequestMessageBase(RequestCodes::Store), myId(myId), fileId(fileId) {}
+    StoreRequest(ID fileId, EncryptedID myId, uint8_t code) : RequestMessageBase(code), myId(myId), fileId(fileId) {}
+
     EncryptedID myId;
-    virtual vector<uint8_t> serialize(uint32_t) override
+    ID fileId;
+
+    virtual vector<uint8_t> serialize(uint32_t previousSize) const override
     {
-        vector<uint8_t> serialized = UserListRequest::serialize(sizeof(myId));
-        vector<uint8_t> thisSerialized(fileId.begin(), fileId.end());
+        vector<uint8_t> serialized = RequestMessageBase::serialize(previousSize + sizeof(myId));
+        vector<uint8_t> thisSerialized(myId.begin(), myId.end());
+        vector<uint8_t> thisSerialized2(fileId.begin(), fileId.end());
         serialized.insert(serialized.end(), thisSerialized.begin(), thisSerialized.end());
+        serialized.insert(serialized.end(), thisSerialized2.begin(), thisSerialized2.end());
         return serialized;
     }
 };
 
 struct ResponseMessageBase
 {
-    uint32_t size;
     uint8_t code;
-
+    vector<uint8_t> data;
     ResponseMessageBase() {}
 
-    ResponseMessageBase(vector<uint8_t> data)
+    ResponseMessageBase(uint8_t code, vector<uint8_t> data)
     {
-        this->deserialize(data);
-    }
-
-    virtual uint16_t deserialize(vector<uint8_t> data)
-    {
-        uint8_t dataSize = sizeof(code) + sizeof(size);
-        if (data.size() < dataSize)
-        {
-            throw std::runtime_error("Not enough data to deserialize");
-        }
-        code = data[0];
-        for (size_t i = sizeof(code); i < dataSize; i++)
-        {
-            ((uint8_t *)&size)[i] = data[sizeof(code) + i];
-        }
-        return dataSize;
+        this->code = code;
+        this->data = data;
     }
 };
 
-struct UserListResponse : ResponseMessageBase
+struct UserListResponse
 {
     vector<EncryptedID> data;
 
-    virtual uint16_t deserialize(vector<uint8_t> data) override
+    UserListResponse(ResponseMessageBase msg)
     {
-        auto previousSize = ResponseMessageBase::deserialize(data);
-        for (size_t i = previousSize; i < this->size; i += sizeof(EncryptedID))
+        deserialize(msg.data);
+    }
+
+    void deserialize(vector<uint8_t> data)
+    {
+        for (size_t i = 0; i < data.size(); i += sizeof(EncryptedID))
         {
-            EncryptedID *currID = (EncryptedID *)(data.data() + i);
-            this->data.push_back(*currID);
+            EncryptedID currID = *(EncryptedID *)(data.data() + i);
+            this->data.push_back(currID);
         }
+    }
+};
+
+struct NewIdResponse
+{
+    ID id;
+
+    NewIdResponse(ResponseMessageBase msg)
+    {
+        deserialize(msg.data);
+    }
+
+    void deserialize(vector<uint8_t> data)
+    {
+        this->id = *((ID *)data.data());
     }
 };

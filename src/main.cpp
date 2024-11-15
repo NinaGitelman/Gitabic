@@ -11,7 +11,7 @@ int main()
         '5',
         '6',
         '7',
-        'e'};
+        '1'};
     HashResult res = SHA256::toHashSha256(data);
     SHA256::printHashAsString(res);
 }
