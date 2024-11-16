@@ -21,7 +21,7 @@ public:
     ResponseMessageBase recieve(std::function<bool(uint8_t)> isRelevant);
 
 private:
-    void connectToServer(const Address &serverAddress);
+    void connectToServer(const sockaddr_in &serverAddress);
     vector<ResponseMessageBase> messages;
     mutex socketMut;
     int sockfd;

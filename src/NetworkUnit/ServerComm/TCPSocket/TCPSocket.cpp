@@ -7,6 +7,7 @@ TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1)
     {
         throw std::runtime_error("Failed to create socket");
     }
+    connectToServer(serverAddress.toSockAddr());
 }
 
 TCPSocket::~TCPSocket()
@@ -44,8 +45,8 @@ ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
         }
         {
             std::lock_guard<mutex> guard(socketMut);
-            auto msg = std::find(messages.begin(), messages.end(), [&isRelevant](const ResponseMessageBase &msg)
-                                 { return isRelevant(msg.code); });
+            auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const ResponseMessageBase &msg)
+                                    { return isRelevant(msg.code); });
             if (msg != messages.end())
             {
                 auto res = *msg;
@@ -83,10 +84,10 @@ ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
     throw std::runtime_error("No relevant packets");
 }
 
-void TCPSocket::connectToServer(const Address &serverAddress)
+void TCPSocket::connectToServer(const sockaddr_in &serverAddress)
 {
     std::lock_guard<mutex> guard(socketMut);
-    if (connect(sockfd, (struct sockaddr *)&serverAddress.toSockAddr(), sizeof(serverAddress.toSockAddr())) == -1)
+    if (connect(sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress) == -1))
     {
         throw std::runtime_error("Failed to connect to server");
     }

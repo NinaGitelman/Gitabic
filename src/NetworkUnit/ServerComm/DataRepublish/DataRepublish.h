@@ -12,6 +12,7 @@ using std::time_t;
 using std::unique_lock;
 
 #define TEN_MINUTES 60 * 10
+#define TIME_RETRY 10
 
 class DataRepublish
 {

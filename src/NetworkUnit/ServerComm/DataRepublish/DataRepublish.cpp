@@ -15,11 +15,14 @@ DataRepublish::~DataRepublish()
 
 void DataRepublish::saveData(ID fileId, EncryptedID myId)
 {
+    std::lock_guard<mutex> guard(mut);
     savedData[fileId] = pair<EncryptedID, std::time_t>(myId, time(nullptr) + TEN_MINUTES);
+    publish(fileId, myId);
 }
 
 void DataRepublish::stopRepublish(const ID &fileId)
 {
+    std::lock_guard<mutex> guard(mut);
     savedData.erase(fileId);
 }
 
@@ -27,16 +30,22 @@ void DataRepublish::republishOldData()
 {
     while (isActive)
     {
-        time_t current = time_t(nullptr);
+        time_t current = time(nullptr);
         for (auto &it : savedData)
         {
             if (it.second.second < current)
             {
-                publish(it.first, it.second.first);
+                if (publish(it.first, it.second.first))
+                {
+                    it.second.second = current + TEN_MINUTES;
+                }
+                else
+                {
+                    it.second.second = current + TIME_RETRY;
+                }
             }
         }
         std::unique_lock<mutex> lock(mut);
-        lock.lock();
         if (this->savedData.size() < 1)
         {
             lock.unlock();
