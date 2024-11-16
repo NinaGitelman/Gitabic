@@ -8,6 +8,7 @@
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
+#include <functional>
 #include "../Messages.h"
 #include "../../SocketHandler/SocketHandler.h"
 class TCPSocket
@@ -17,10 +18,12 @@ public:
     ~TCPSocket();
 
     void sendRequest(const RequestMessageBase &msg);
-    ResponseMessageBase recieve();
+    ResponseMessageBase recieve(std::function<bool(uint8_t)> isRelevant);
 
 private:
     void connectToServer(const Address &serverAddress);
+    vector<ResponseMessageBase> messages;
+    mutex socketMut;
     int sockfd;
 };
 

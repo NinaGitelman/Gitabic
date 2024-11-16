@@ -13,27 +13,10 @@ using std::unique_lock;
 
 #define TEN_MINUTES 60 * 10
 
-namespace std
-{
-    template <>
-    struct hash<ID>
-    {
-        size_t operator()(const ID &id) const
-        {
-            size_t res = 0;
-            for (size_t i = 0; i < id.size(); i++)
-            {
-                res ^= hash<uint8_t>()(id[i]) << i;
-            }
-            return res;
-        }
-    };
-}
-
 class DataRepublish
 {
 public:
-    DataRepublish(const TCPSocket &socket);
+    DataRepublish(TCPSocket *tcpSocket);
     ~DataRepublish();
     void saveData(ID fileId, EncryptedID myId);
     void stopRepublish(const ID &fileId);
@@ -46,7 +29,7 @@ private:
     mutex mut;
     condition_variable cv;
     thread republishOldDataThread;
-    TCPSocket socket;
+    TCPSocket *tcpSocket;
     bool isActive;
 };
 

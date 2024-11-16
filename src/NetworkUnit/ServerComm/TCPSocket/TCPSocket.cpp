@@ -19,6 +19,8 @@ TCPSocket::~TCPSocket()
 
 void TCPSocket::sendRequest(const RequestMessageBase &msg)
 {
+    std::lock_guard<mutex> guard(socketMut);
+
     vector<uint8_t> serialized = msg.serialize(0); // Previous size = 0 for now
     uint32_t size = serialized.size();
 
@@ -29,31 +31,61 @@ void TCPSocket::sendRequest(const RequestMessageBase &msg)
     send(sockfd, serialized.data(), size, 0); // Send the serialized data
 }
 
-ResponseMessageBase TCPSocket::recieve()
+ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
 {
-    uint8_t code;
-    uint32_t size;
-    if (recv(sockfd, &code, sizeof(code), 0) != sizeof(code)) // Read the code (1 byte)
+    auto start_time = std::chrono::high_resolution_clock::now();
+    while (true)
     {
-        throw std::runtime_error("Failed to read response code");
-    }
+        auto now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = now - start_time;
+        if (elapsed >= std::chrono::seconds(5))
+        {
+            break;
+        }
+        {
+            std::lock_guard<mutex> guard(socketMut);
+            auto msg = std::find(messages.begin(), messages.end(), [&isRelevant](const ResponseMessageBase &msg)
+                                 { return isRelevant(msg.code); });
+            if (msg != messages.end())
+            {
+                auto res = *msg;
+                messages.erase(msg);
+                return res;
+            }
+        }
+        uint8_t code;
+        uint32_t size;
+        std::lock_guard<mutex> guard(socketMut);
+        if (recv(sockfd, &code, sizeof(code), 0) != sizeof(code)) // Read the code (1 byte)
+        {
+            throw std::runtime_error("Failed to read response code");
+        }
 
-    if (recv(sockfd, &size, sizeof(size), 0) != sizeof(size)) // Read the size (4 bytes)
-    {
-        throw std::runtime_error("Failed to read response size");
-    }
+        if (recv(sockfd, &size, sizeof(size), 0) != sizeof(size)) // Read the size (4 bytes)
+        {
+            throw std::runtime_error("Failed to read response size");
+        }
 
-    vector<uint8_t> data(size);
-    if (recv(sockfd, data.data(), size, 0) != size)
-    {
-        throw std::runtime_error("Failed to read response data");
+        vector<uint8_t> data(size);
+        if (recv(sockfd, data.data(), size, 0) != size)
+        {
+            throw std::runtime_error("Failed to read response data");
+        }
+        if (isRelevant(code))
+        {
+            return ResponseMessageBase(code, data);
+        }
+        else
+        {
+            messages.push_back(ResponseMessageBase(code, data));
+        }
     }
-
-    return ResponseMessageBase(code, data);
+    throw std::runtime_error("No relevant packets");
 }
 
 void TCPSocket::connectToServer(const Address &serverAddress)
 {
+    std::lock_guard<mutex> guard(socketMut);
     if (connect(sockfd, (struct sockaddr *)&serverAddress.toSockAddr(), sizeof(serverAddress.toSockAddr())) == -1)
     {
         throw std::runtime_error("Failed to connect to server");

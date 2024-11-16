@@ -8,6 +8,23 @@ using std::vector;
 using ID = HashResult;
 using EncryptedID = std::array<uint8_t, 48>;
 
+namespace std
+{
+    template <>
+    struct hash<ID>
+    {
+        size_t operator()(const ID &id) const
+        {
+            size_t res = 0;
+            for (size_t i = 0; i < id.size(); i++)
+            {
+                res ^= hash<uint8_t>()(id[i]) << i;
+            }
+            return res;
+        }
+    };
+}
+
 enum RequestCodes
 {
     Store = 21,

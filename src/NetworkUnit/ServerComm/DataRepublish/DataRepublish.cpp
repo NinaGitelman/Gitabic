@@ -1,6 +1,6 @@
 #include "DataRepublish.h"
 
-DataRepublish::DataRepublish(const TCPSocket &socket) : socket(socket)
+DataRepublish::DataRepublish(TCPSocket *tcpSocket) : tcpSocket(tcpSocket)
 {
     isActive = true;
     republishOldDataThread = thread(&DataRepublish::republishOldData, this);
@@ -15,7 +15,7 @@ DataRepublish::~DataRepublish()
 
 void DataRepublish::saveData(ID fileId, EncryptedID myId)
 {
-    savedData[fileId] = pair<EncryptedID, std::time_t>(myId, time(nullptr));
+    savedData[fileId] = pair<EncryptedID, std::time_t>(myId, time(nullptr) + TEN_MINUTES);
 }
 
 void DataRepublish::stopRepublish(const ID &fileId)
@@ -27,6 +27,14 @@ void DataRepublish::republishOldData()
 {
     while (isActive)
     {
+        time_t current = time_t(nullptr);
+        for (auto &it : savedData)
+        {
+            if (it.second.second < current)
+            {
+                publish(it.first, it.second.first);
+            }
+        }
         std::unique_lock<mutex> lock(mut);
         lock.lock();
         if (this->savedData.size() < 1)
@@ -35,12 +43,31 @@ void DataRepublish::republishOldData()
             std::this_thread::sleep_for(std::chrono::seconds(TEN_MINUTES - 1));
             continue;
         }
+        time_t closest = current + TEN_MINUTES;
+        for (auto &it : savedData)
+        {
+            if (it.second.second < closest)
+            {
+                closest = it.second.second;
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(closest - current));
     }
 }
 
 bool DataRepublish::publish(ID fileId, EncryptedID myId)
 {
     StoreRequest request(fileId, myId);
-    socket.sendRequest(request);
-    return socket.recieve().code == ResponseCodes::StoreSuccess;
+    tcpSocket->sendRequest(request);
+    auto isRelevant = [](uint8_t code)
+    {
+        switch (code)
+        {
+        case ResponseCodes::StoreFailure:
+        case ResponseCodes::StoreSuccess:
+            return true;
+        }
+        return false;
+    };
+    return tcpSocket->recieve(isRelevant).code == ResponseCodes::StoreSuccess;
 }
