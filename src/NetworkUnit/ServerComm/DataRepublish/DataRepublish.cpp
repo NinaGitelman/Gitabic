@@ -42,6 +42,7 @@ void DataRepublish::republishOldData()
                 }
                 else
                 {
+                    // If unseccessful try again in 10 seconds
                     it.second.second = current + TIME_RETRY;
                 }
             }

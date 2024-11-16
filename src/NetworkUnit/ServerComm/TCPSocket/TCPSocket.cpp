@@ -15,14 +15,15 @@ TCPSocket::~TCPSocket()
     if (sockfd != -1)
     {
         close(sockfd);
+        sockfd = -1;
     }
 }
 
 void TCPSocket::sendRequest(const RequestMessageBase &msg)
 {
-    std::lock_guard<mutex> guard(socketMut);
+    std::lock_guard<mutex> guard(socketMut); // Lock the resource
 
-    vector<uint8_t> serialized = msg.serialize(0); // Previous size = 0 for now
+    vector<uint8_t> serialized = msg.serialize();
     uint32_t size = serialized.size();
 
     uint8_t code = msg.code;
@@ -39,11 +40,11 @@ ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
     {
         auto now = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = now - start_time;
-        if (elapsed >= std::chrono::seconds(5))
+        if (elapsed >= std::chrono::seconds(5)) // If no relevant packet for 5 seconds - stop trying
         {
             break;
         }
-        {
+        { // If there is a relevant message already recieved - return it.
             std::lock_guard<mutex> guard(socketMut);
             auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const ResponseMessageBase &msg)
                                     { return isRelevant(msg.code); });
@@ -54,6 +55,7 @@ ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
                 return res;
             }
         }
+        // Recieve a message
         uint8_t code;
         uint32_t size;
         std::lock_guard<mutex> guard(socketMut);
