@@ -31,6 +31,7 @@ void DataRepublish::republishOldData()
     while (isActive)
     {
         time_t current = time(nullptr);
+        // Republish if needed
         for (auto &it : savedData)
         {
             if (it.second.second < current)
@@ -45,6 +46,7 @@ void DataRepublish::republishOldData()
                 }
             }
         }
+        // Find the next time needs to publish
         std::unique_lock<mutex> lock(mut);
         if (this->savedData.size() < 1)
         {
@@ -52,6 +54,7 @@ void DataRepublish::republishOldData()
             std::this_thread::sleep_for(std::chrono::seconds(TEN_MINUTES - 1));
             continue;
         }
+        lock.unlock();
         time_t closest = current + TEN_MINUTES;
         for (auto &it : savedData)
         {
@@ -68,6 +71,7 @@ bool DataRepublish::publish(ID fileId, EncryptedID myId)
 {
     StoreRequest request(fileId, myId);
     tcpSocket->sendRequest(request);
+    // Verifies that the recieved packet is relevant
     auto isRelevant = [](uint8_t code)
     {
         switch (code)
