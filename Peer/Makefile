@@ -8,7 +8,7 @@ CXXFLAGS = -std=c++20 -Wall -g
 LDFLAGS = -lrt -pthread
 
 # Makefile settings - Can be customized.
-APPNAME = gitabic.out
+APPNAME = peer.out
 EXT = .cpp
 SRCDIR = src
 OBJDIR = obj

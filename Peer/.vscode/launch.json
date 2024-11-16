@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/gitabic.out",
+            "program": "${workspaceFolder}/peer.out",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
