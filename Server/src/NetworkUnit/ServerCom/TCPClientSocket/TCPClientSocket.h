@@ -9,16 +9,19 @@
 #include <iostream>
 #include <stdexcept>
 #include <functional>
+#include <mutex>
+#include <memory>
+#include <chrono>
 #include "../Messages.h"
-#include "../../SocketHandler/SocketHandler.h"
+
+using std::mutex;
+
 class TCPClientSocket
 {
 public:
     
    /// @brief Constructor an alread exisitng socket that sent message to server
-    TCPClientSocket(int existingSocket, const sockaddr_in &address) 
-    : sockfd(existingSocket), clientAddress(address) {}
-
+    TCPClientSocket(int existingSocket, const sockaddr_in &address);
     int getSocketFd() const;
 
     /// @brief closes the socket
@@ -26,19 +29,21 @@ public:
 
     /// @brief Sends a request
     /// @param msg the request
-    void sendRequest(const RequestMessageBase &msg);
+    void send(const BaseMessage &msg);
    
     /// @brief Recieves a message
     /// @param isRelevant a callback function to verify the packet is relevant
     /// @return The message
-    ResponseMessageBase receive(std::function<bool(uint8_t)> isRelevant);
+     std::shared_ptr<BaseMessage> receive(std::function<bool(uint8_t)> isRelevant);
+
 
 private:
  
-    vector<ResponseMessageBase> messages;
+    vector<std::unique_ptr<BaseMessage>> messages;
     mutex socketMut;
     sockaddr_in clientAddress;
     int sockfd;
 };
+
 
 #endif

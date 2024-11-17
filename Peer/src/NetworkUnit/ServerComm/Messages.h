@@ -2,11 +2,13 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 #include "../../Encryptions/SHA256/sha256.h"
 
 using std::vector;
 using ID = HashResult;
 using EncryptedID = std::array<uint8_t, 48>;
+using std::string;
 
 namespace std // Hash method for ID to allow hash map key usage
 {
@@ -60,6 +62,25 @@ struct RequestMessageBase
         }
         return result;
     }
+};
+
+// just for start debugging, pretify later
+struct DataMessage : RequestMessageBase
+{
+
+
+    std::string message;
+
+    DataMessage(string message) : message(message), RequestMessageBase(0x01) {}
+    
+    virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override 
+    {
+        vector<uint8_t> thisSerialized(this->message.begin(), this->message.end());
+        vector<uint8_t> serialized = RequestMessageBase::serialize(PreviousSize + thisSerialized.size());
+        serialized.insert(serialized.end(), thisSerialized.begin(), thisSerialized.end()); // Put the base struct serialization in the start of the vector
+        return serialized;
+    }
+
 };
 
 /// @brief A request for user list

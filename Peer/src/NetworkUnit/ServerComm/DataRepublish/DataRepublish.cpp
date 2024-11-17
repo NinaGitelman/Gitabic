@@ -1,6 +1,6 @@
 #include "DataRepublish.h"
 
-DataRepublish::DataRepublish(TCPClientSocket *tcpSocket) : tcpSocket(tcpSocket)
+DataRepublish::DataRepublish(TCPSocket *tcpSocket) : tcpSocket(tcpSocket)
 {
     isActive = true;
     republishOldDataThread = thread(&DataRepublish::republishOldData, this);

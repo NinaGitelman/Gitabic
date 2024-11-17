@@ -11,14 +11,14 @@
 #include <functional>
 #include "../Messages.h"
 #include "../../SocketHandler/SocketHandler.h"
-class TCPClientSocket
+class TCPSocket
 {
 public:
     /// @brief Construct and connect to the given address
     /// @param serverAddress The address to connect
-    TCPClientSocket(const Address &serverAddress);
+    TCPSocket(const Address &serverAddress);
     /// @brief closes the socket
-    ~TCPClientSocket();
+    ~TCPSocket();
 
     /// @brief Sends a request
     /// @param msg the request
