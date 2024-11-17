@@ -108,17 +108,18 @@ void MultiThreadedServer::handleNewClient(std::shared_ptr<TCPClientSocket> clien
 
             // create id for client and add it to the map...
             auto msg = clientSocket->receive();
-            if(!msg)
+            // TODO check this tommorw - not compiling rn
+            // if(msg != nullptr)
+            // {
+            //     break; // client disconnected
+            // }
+           if(msg.code == (uint8_t)ClientRequestCodes::DebuggingStringMessageToSend)
             {
-                break; // client disconnected
-            }
-           if(msg->code == 0x01)
-            {
-                if (auto dataMsg = std::dynamic_pointer_cast<DataMessage>(msg)) 
-                {
-                    std::cout << "id: " << clientId << " - ";
-                    dataMsg->printDataAsASCII();
-                }
+                DebuggingStringMessageReceived dataMsg = DebuggingStringMessageReceived(msg);
+                
+                std::cout << "id: " << clientId << " - ";
+                dataMsg.printDataAsASCII();
+                
               }
           
             

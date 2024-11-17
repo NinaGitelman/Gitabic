@@ -2,11 +2,13 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 #include "../../Encryptions/SHA256/sha256.h"
 
 using std::vector;
 using ID = HashResult;
 using EncryptedID = std::array<uint8_t, 48>;
+using std::string;
 
 namespace std // Hash method for ID to allow hash map key usage
 {
@@ -25,90 +27,95 @@ namespace std // Hash method for ID to allow hash map key usage
     };
 }
 
-// Codes from protocol
-enum RequestCodes
+// Codes fro protocol
+enum ClientRequestCodes
 {
     Store = 21,
-    UserListReq = 23
+    UserListReq = 23,
+
+    DebuggingStringMessageToSend = 255 
 };
-enum ResponseCodes
+enum ServerResponseCodes
 {
     StoreSuccess = 221,
     StoreFailure,
     UserListRes
 };
 
-struct BaseMessage
+/// @brief A base struct to send over the internet. Good for status messages, can be inherited for more data
+struct MessageBaseToSend
 {
     uint8_t code;
 
-    BaseMessage(uint8_t code) : code(code) {}
-    virtual ~BaseMessage() = default;
+    MessageBaseToSend() {}
 
-    // Serialize the message into a byte vector
-    virtual std::vector<uint8_t> serialize() const = 0;
+    MessageBaseToSend(uint8_t code) : code(code) {}
 
-    // Deserialize the message from a byte vector
-    virtual void deserialize(const std::vector<uint8_t>& buffer) = 0;
-
-    // Factory method to create a specific message based on code
-    static std::unique_ptr<BaseMessage> create(uint8_t code);
-};
-
-
-struct CodeMessage : BaseMessage
-{
-    CodeMessage(uint8_t code) : BaseMessage(code) {}
-
-    std::vector<uint8_t> serialize() const override 
+    /// @brief Serializes the data to a vector of bytes
+    /// @param PreviousSize the previous size already serialized
+    /// @return A byte vector
+    virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const
     {
-        return { code }; // Just serialize the code
-    }
-
-    void deserialize(const std::vector<uint8_t>& buffer) override 
-    {
-        
-        if (buffer.size() != 1) {
-            throw std::runtime_error("Invalid buffer size for CodeMessage");
+        vector<uint8_t> result;
+        result.push_back(code);
+        for (size_t i = 0; i < sizeof(PreviousSize); i++)
+        {
+            result.push_back(((uint8_t *)&PreviousSize)[i]);
         }
-        code = buffer[0];
-    }
-};
-
-struct DataMessage : BaseMessage 
-{
-    std::vector<uint8_t> data;
-
-    DataMessage(uint8_t code, const std::vector<uint8_t>& data = {})
-        : BaseMessage(code), data(data) {}
-
-    std::vector<uint8_t> serialize() const override 
-    {
-        std::vector<uint8_t> result = { code };
-        
-        uint32_t size = static_cast<uint32_t>(data.size());
-       
-        result.insert(result.end(), reinterpret_cast<const uint8_t*>(&size),
-                      reinterpret_cast<const uint8_t*>(&size) + sizeof(size));
-       
-        result.insert(result.end(), data.begin(), data.end());
-       
         return result;
     }
+};
+
+// just for start debugging, pretify later
+struct DebuggingStringMessageToSend : MessageBaseToSend
+{
+
+
+    std::string message;
+
+    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(RequestCodes::DebuggingStringMessageToSend) {}
+    
+    virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override 
+    {
+        vector<uint8_t> thisSerialized(this->message.begin(), this->message.end());
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + thisSerialized.size());
+        serialized.insert(serialized.end(), thisSerialized.begin(), thisSerialized.end()); // Put the base struct serialization in the start of the vector
+        return serialized;
+    }
+
+};
+
+
+/// @brief A base struct to store a response Packet. good for status response
+struct MessageBaseReceived
+{
+    uint8_t code;
+    vector<uint8_t> data;
+    MessageBaseReceived() {}
+
+    MessageBaseReceived(uint8_t code, vector<uint8_t> data)
+    {
+        this->code = code;
+        this->data = data;
+    }
+};
+
+
+
+struct DebuggingStringMessageReceived 
+{
+    std::vector<uint8_t> data;
+    DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived)
+    {
+
+        deserialize(messageBaseReceived.data);
+
+    }
 
     void deserialize(const std::vector<uint8_t>& buffer) override 
     {
-        if (buffer.size() < 1 + sizeof(uint32_t)) {
-            throw std::runtime_error("Buffer too small for DataMessage");
-        }
 
-        code = buffer[0];
-        uint32_t size = *reinterpret_cast<const uint32_t*>(&buffer[1]);
-        if (buffer.size() != 1 + sizeof(uint32_t) + size) {
-            throw std::runtime_error("Invalid buffer size for DataMessage");
-        }
-
-        data = std::vector<uint8_t>(buffer.begin() + 1 + sizeof(uint32_t), buffer.end());
+        data = std::vector<uint8_t>(buffer.begin() + sizeof(uint32_t), buffer.end());
     }
 
     /// @brief  Helper function to pritn the DATA
@@ -127,18 +134,3 @@ struct DataMessage : BaseMessage
         std::cout << std::endl;
     }
 };
-
-/// @brief Helper Function that receives a code and returns message according to the code 
-/// @param code 
-/// @return 
-inline std::unique_ptr<BaseMessage> create(uint8_t code, const std::vector<uint8_t>& data)
-{
-   
-    switch (code)
-    {   
-    case 0x01: // Example code for DataMessage
-        return std::make_unique<DataMessage>(code, data);
-    default:
-        throw std::runtime_error("Unknown message code");
-    }
-}

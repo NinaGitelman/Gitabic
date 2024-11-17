@@ -11,7 +11,7 @@ TCPClientSocket::~TCPClientSocket()
     }
 }
 
-void TCPClientSocket::send(const BaseMessage& msg)
+void TCPClientSocket::send(const MessageBaseToSend& msg)
 {
 
     std::vector<uint8_t> serialized = msg.serialize();
@@ -30,8 +30,7 @@ void TCPClientSocket::send(const BaseMessage& msg)
     }
 }
 
-
-std::shared_ptr<BaseMessage> TCPClientSocket::receive() 
+MessageBaseReceived TCPClientSocket::receive() 
 {
    std::lock_guard<mutex> guard(socketMut);
 
@@ -78,9 +77,8 @@ std::shared_ptr<BaseMessage> TCPClientSocket::receive()
         total_received += received;
     }
 
-    auto message = create(code, data);
-    message->deserialize(data);
-    return message;
+    
+    return MessageBaseReceived(code, data);
    
 }
 

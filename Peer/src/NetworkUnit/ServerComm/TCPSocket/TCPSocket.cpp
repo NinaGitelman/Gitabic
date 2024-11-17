@@ -19,7 +19,7 @@ TCPSocket::~TCPSocket()
     }
 }
 
-void TCPSocket::sendRequest(const RequestMessageBase &msg)
+void TCPSocket::sendRequest(const MessageBaseToSend &msg)
 {
     std::lock_guard<mutex> guard(socketMut); // Lock the resource
 
@@ -33,7 +33,7 @@ void TCPSocket::sendRequest(const RequestMessageBase &msg)
     send(sockfd, serialized.data(), size, 0); // Send the serialized data
 }
 
-ResponseMessageBase TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
+MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
 {
     auto start_time = std::chrono::high_resolution_clock::now();
     while (true)
@@ -46,7 +46,7 @@ ResponseMessageBase TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
         }
         { // If there is a relevant message already recieved - return it.
             std::lock_guard<mutex> guard(socketMut);
-            auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const ResponseMessageBase &msg)
+            auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const MessageBaseReceived &msg)
                                     { return isRelevant(msg.code); });
             if (msg != messages.end())
             {
@@ -76,11 +76,11 @@ ResponseMessageBase TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
         }
         if (isRelevant(code))
         {
-            return ResponseMessageBase(code, data);
+            return MessageBaseReceived(code, data);
         }
         else
         {
-            messages.push_back(ResponseMessageBase(code, data));
+            messages.push_back(MessageBaseReceived(code, data));
         }
     }
     throw std::runtime_error("No relevant packets");

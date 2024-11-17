@@ -31,7 +31,9 @@ namespace std // Hash method for ID to allow hash map key usage
 enum RequestCodes
 {
     Store = 21,
-    UserListReq = 23
+    UserListReq = 23,
+
+    DebuggingStringMessageToSend = 255 
 };
 enum ResponseCodes
 {
@@ -41,13 +43,13 @@ enum ResponseCodes
 };
 
 /// @brief A base struct to send over the internet. Good for status messages, can be inherited for more data
-struct RequestMessageBase
+struct MessageBaseToSend
 {
     uint8_t code;
 
-    RequestMessageBase() {}
+    MessageBaseToSend() {}
 
-    RequestMessageBase(uint8_t code) : code(code) {}
+    MessageBaseToSend(uint8_t code) : code(code) {}
 
     /// @brief Serializes the data to a vector of bytes
     /// @param PreviousSize the previous size already serialized
@@ -65,18 +67,18 @@ struct RequestMessageBase
 };
 
 // just for start debugging, pretify later
-struct DataMessage : RequestMessageBase
+struct DebuggingStringMessageToSend : MessageBaseToSend
 {
 
 
     std::string message;
 
-    DataMessage(string message) : message(message), RequestMessageBase(0x01) {}
+    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(RequestCodes::DebuggingStringMessageToSend) {}
     
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override 
     {
         vector<uint8_t> thisSerialized(this->message.begin(), this->message.end());
-        vector<uint8_t> serialized = RequestMessageBase::serialize(PreviousSize + thisSerialized.size());
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + thisSerialized.size());
         serialized.insert(serialized.end(), thisSerialized.begin(), thisSerialized.end()); // Put the base struct serialization in the start of the vector
         return serialized;
     }
@@ -84,27 +86,27 @@ struct DataMessage : RequestMessageBase
 };
 
 /// @brief A request for user list
-struct UserListRequest : RequestMessageBase
+struct UserListRequest : MessageBaseToSend
 {
-    UserListRequest(ID fileId) : fileId(fileId), RequestMessageBase(RequestCodes::UserListReq) {}
-    UserListRequest(ID fileId, uint8_t code) : fileId(fileId), RequestMessageBase(code) {}
+    UserListRequest(ID fileId) : fileId(fileId), MessageBaseToSend(RequestCodes::UserListReq) {}
+    UserListRequest(ID fileId, uint8_t code) : fileId(fileId), MessageBaseToSend(code) {}
     /// @brief The file we want to download
     ID fileId;
 
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
         vector<uint8_t> thisSerialized(fileId.begin(), fileId.end());
-        vector<uint8_t> serialized = RequestMessageBase::serialize(PreviousSize + thisSerialized.size());
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + thisSerialized.size());
         serialized.insert(serialized.end(), thisSerialized.begin(), thisSerialized.end()); // Put the base struct serialization in the start of the vector
         return serialized;
     }
 };
 
 /// @brief A request to anounce you have a file
-struct StoreRequest : RequestMessageBase
+struct StoreRequest : MessageBaseToSend
 {
-    StoreRequest(ID fileId, EncryptedID myId) : RequestMessageBase(RequestCodes::Store), myId(myId), fileId(fileId) {}
-    StoreRequest(ID fileId, EncryptedID myId, uint8_t code) : RequestMessageBase(code), myId(myId), fileId(fileId) {}
+    StoreRequest(ID fileId, EncryptedID myId) : MessageBaseToSend(RequestCodes::Store), myId(myId), fileId(fileId) {}
+    StoreRequest(ID fileId, EncryptedID myId, uint8_t code) : MessageBaseToSend(code), myId(myId), fileId(fileId) {}
 
     /// @brief Your encrypted ID
     EncryptedID myId;
@@ -113,7 +115,7 @@ struct StoreRequest : RequestMessageBase
 
     virtual vector<uint8_t> serialize(uint32_t previousSize = 0) const override
     {
-        vector<uint8_t> serialized = RequestMessageBase::serialize(previousSize + sizeof(myId));
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(previousSize + sizeof(myId));
         vector<uint8_t> thisSerialized(myId.begin(), myId.end());
         vector<uint8_t> thisSerialized2(fileId.begin(), fileId.end());
         // Concatenate all the data int a vector
@@ -124,26 +126,27 @@ struct StoreRequest : RequestMessageBase
 };
 
 /// @brief A base struct to store a response Packet. good for status response
-struct ResponseMessageBase
+struct MessageBaseReceived
 {
     uint8_t code;
     vector<uint8_t> data;
-    ResponseMessageBase() {}
+    MessageBaseReceived() {}
 
-    ResponseMessageBase(uint8_t code, vector<uint8_t> data)
+    MessageBaseReceived(uint8_t code, vector<uint8_t> data)
     {
         this->code = code;
         this->data = data;
     }
 };
 
+
 /// @brief A list of users that has a file
 struct UserListResponse
 {
     vector<EncryptedID> data;
-    /// @brief Construct from a ResponseMessageBase data
+    /// @brief Construct from a MessageBaseReceived data
     /// @param msg the recieved message
-    UserListResponse(ResponseMessageBase msg)
+    UserListResponse(MessageBaseReceived msg)
     {
         deserialize(msg.data);
     }
@@ -165,7 +168,7 @@ struct NewIdResponse
 {
     ID id;
 
-    NewIdResponse(ResponseMessageBase msg)
+    NewIdResponse(MessageBaseReceived msg)
     {
         deserialize(msg.data);
     }

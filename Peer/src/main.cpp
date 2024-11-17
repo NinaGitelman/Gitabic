@@ -13,7 +13,7 @@ int main()
     Address serverAdd = Address("0.0.0.0", 4789);
     TCPSocket socket = TCPSocket(serverAdd);
 
-    DataMessage msg = DataMessage("Hello world!");
+    DebuggingStringMessageToSend msg = DebuggingStringMessageToSend("Hello world!");
     
     socket.sendRequest(msg);
     socket.sendRequest(msg);

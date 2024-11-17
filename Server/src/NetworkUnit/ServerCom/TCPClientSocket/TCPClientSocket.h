@@ -29,12 +29,12 @@ public:
 
     /// @brief Sends a request
     /// @param msg the request
-    void send(const BaseMessage &msg);
+    void send(const MessageBaseToSend &msg);
    
     /// @brief Recieves a message
     /// @param isRelevant a callback function to verify the packet is relevant
     /// @return The message
-     std::shared_ptr<BaseMessage> receive();
+    MessageBaseReceived receive();
 
 
 private:
