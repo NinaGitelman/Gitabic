@@ -11,14 +11,14 @@
 #include <functional>
 #include "../Messages.h"
 #include "../../SocketHandler/SocketHandler.h"
-class TCPSocket
+class TCPClientSocket
 {
 public:
     /// @brief Construct and connect to the given address
     /// @param serverAddress The address to connect
-    TCPSocket(const Address &serverAddress);
+    TCPClientSocket(const Address &serverAddress);
     /// @brief closes the socket
-    ~TCPSocket();
+    ~TCPClientSocket();
 
     /// @brief Sends a request
     /// @param msg the request
@@ -26,7 +26,7 @@ public:
     /// @brief Recieves a message
     /// @param isRelevant a callback function to verify the packet is relevant
     /// @return The message
-    ResponseMessageBase recieve(std::function<bool(uint8_t)> isRelevant);
+    ResponseMessageBase receive(std::function<bool(uint8_t)> isRelevant);
 
 private:
     /// @brief Connects to the server

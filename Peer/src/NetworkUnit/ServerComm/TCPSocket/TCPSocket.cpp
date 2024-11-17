@@ -1,6 +1,6 @@
 #include "TCPSocket.h"
 
-TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1)
+TCPClientSocket::TCPClientSocket(const Address &serverAddress) : sockfd(-1)
 {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1)
@@ -10,7 +10,7 @@ TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1)
     connectToServer(serverAddress.toSockAddr());
 }
 
-TCPSocket::~TCPSocket()
+TCPClientSocket::~TCPClientSocket()
 {
     if (sockfd != -1)
     {
@@ -19,7 +19,7 @@ TCPSocket::~TCPSocket()
     }
 }
 
-void TCPSocket::sendRequest(const RequestMessageBase &msg)
+void TCPClientSocket::sendRequest(const RequestMessageBase &msg)
 {
     std::lock_guard<mutex> guard(socketMut); // Lock the resource
 
@@ -33,7 +33,7 @@ void TCPSocket::sendRequest(const RequestMessageBase &msg)
     send(sockfd, serialized.data(), size, 0); // Send the serialized data
 }
 
-ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
+ResponseMessageBase TCPClientSocket::receive(std::function<bool(uint8_t)> isRelevant)
 {
     auto start_time = std::chrono::high_resolution_clock::now();
     while (true)
@@ -86,7 +86,7 @@ ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
     throw std::runtime_error("No relevant packets");
 }
 
-void TCPSocket::connectToServer(const sockaddr_in &serverAddress)
+void TCPClientSocket::connectToServer(const sockaddr_in &serverAddress)
 {
     std::lock_guard<mutex> guard(socketMut);
     if (connect(sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress) == -1))

@@ -1,6 +1,6 @@
 #include "DataRepublish.h"
 
-DataRepublish::DataRepublish(TCPSocket *tcpSocket) : tcpSocket(tcpSocket)
+DataRepublish::DataRepublish(TCPClientSocket *tcpSocket) : tcpSocket(tcpSocket)
 {
     isActive = true;
     republishOldDataThread = thread(&DataRepublish::republishOldData, this);
@@ -83,5 +83,5 @@ bool DataRepublish::publish(ID fileId, EncryptedID myId)
         }
         return false;
     };
-    return tcpSocket->recieve(isRelevant).code == ResponseCodes::StoreSuccess;
+    return tcpSocket->receive(isRelevant).code == ResponseCodes::StoreSuccess;
 }

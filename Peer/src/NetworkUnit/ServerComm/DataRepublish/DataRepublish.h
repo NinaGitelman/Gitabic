@@ -19,7 +19,7 @@ class DataRepublish
 public:
     /// @brief constructs and starts a thread for republishing
     /// @param tcpSocket the socket to publish in
-    DataRepublish(TCPSocket *tcpSocket);
+    DataRepublish(TCPClientSocket *tcpSocket);
     /// @brief Stops the thread
     ~DataRepublish();
     /// @brief Start publishing the data
@@ -45,7 +45,7 @@ private:
     /// @brief Thread that runs republishOldData method
     thread republishOldDataThread;
     /// @brief The socket to the server
-    TCPSocket *tcpSocket;
+    TCPClientSocket *tcpSocket;
     bool isActive;
 };
 

@@ -11,30 +11,33 @@
 #include <functional>
 #include "../Messages.h"
 #include "../../SocketHandler/SocketHandler.h"
-class TCPSocket
+class TCPClientSocket
 {
 public:
-    /// @brief Construct and connect to the given address
-    /// @param serverAddress The address to connect
-    TCPSocket(const Address &serverAddress);
+    
+   /// @brief Constructor an alread exisitng socket that sent message to server
+    TCPClientSocket(int existingSocket, const sockaddr_in &address) 
+    : sockfd(existingSocket), clientAddress(address) {}
+
+    int getSocketFd() const;
+
     /// @brief closes the socket
-    ~TCPSocket();
+    ~TCPClientSocket();
 
     /// @brief Sends a request
     /// @param msg the request
     void sendRequest(const RequestMessageBase &msg);
+   
     /// @brief Recieves a message
     /// @param isRelevant a callback function to verify the packet is relevant
     /// @return The message
-    ResponseMessageBase recieve(std::function<bool(uint8_t)> isRelevant);
+    ResponseMessageBase receive(std::function<bool(uint8_t)> isRelevant);
 
 private:
-    /// @brief Connects to the server
-    /// @param serverAddress Its address
-    void connectToServer(const sockaddr_in &serverAddress);
-    /// @brief Messages recieved but irelevant for requester
+ 
     vector<ResponseMessageBase> messages;
     mutex socketMut;
+    sockaddr_in clientAddress;
     int sockfd;
 };
 
