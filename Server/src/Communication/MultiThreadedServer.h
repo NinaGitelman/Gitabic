@@ -19,16 +19,23 @@ class MultiThreadedServer
 
 public:
     //friend class PacketHandler;
-    MultiThreadedServer() = default;
+    MultiThreadedServer(): _serverSocket(-1), _running(true){};
 
     ~MultiThreadedServer();
 
     void startHandleRequests();
 
+    void stop() {_running = false;}
+
 private:
 
+    static int id;
+
+    volatile bool _running;
+
     int _serverSocket;
-    std::map<ID, std::shared_ptr<TCPClientSocket>> _clients;
+   // std::map<ID, std::shared_ptr<TCPClientSocket>> _clients;
+    std::map<int, std::shared_ptr<TCPClientSocket>> _clients;
     mutex _clientsMutex;
     
     void bindAndListen();

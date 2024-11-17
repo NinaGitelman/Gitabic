@@ -13,11 +13,11 @@ TCPClientSocket::~TCPClientSocket()
 
 void TCPClientSocket::send(const BaseMessage& msg)
 {
-    std::lock_guard<mutex> guard(socketMut); // Lock the resource
 
     std::vector<uint8_t> serialized = msg.serialize();
     uint32_t size = static_cast<uint32_t>(serialized.size());
 
+    std::lock_guard<mutex> guard(socketMut); // Lock the resource
     // Send the message size and serialized data
     if (::send(sockfd, &size, sizeof(size), 0) != sizeof(size)) 
     {
@@ -31,79 +31,56 @@ void TCPClientSocket::send(const BaseMessage& msg)
 }
 
 
-std::shared_ptr<BaseMessage> TCPClientSocket::receive(std::function<bool(uint8_t)> isRelevant) 
+std::shared_ptr<BaseMessage> TCPClientSocket::receive() 
 {
-    auto start_time = std::chrono::high_resolution_clock::now();
+   std::lock_guard<mutex> guard(socketMut);
 
-    while (true)
+    uint8_t code;
+    uint32_t size;
+
+    // Use MSG_PEEK to check if there's data available
+    ssize_t peek_result = recv(sockfd, &code, sizeof(code), MSG_PEEK);
+    
+    if (peek_result <= 0)
     {
-        // what is the point from here
-        auto now = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = now - start_time;
-        
-        if (elapsed >= std::chrono::seconds(5)) // If no relevant packet for 5 seconds - stop trying
+        if (peek_result == 0) 
         {
-            break;
+            // Client disconnected
+            return nullptr;
         }
-        { // If there is a relevant message already received - return it.
-            std::lock_guard<mutex> guard(socketMut);
-           
-           
-            auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](std::unique_ptr<BaseMessage> &msg)
-                                    { return isRelevant(msg->code); });
-           
-            if (msg != messages.end())
-            {
-                auto res = std::move(*msg); // Take the message
-                messages.erase(msg);
-                return res;
-            }
-        }
-
-
-        // Recieve a message
-        uint8_t code;
-        uint32_t size;
-
-        std::lock_guard<mutex> guard(socketMut);
-        if (recv(sockfd, &code, sizeof(code), 0) == sizeof(code)) // Read the code (1 byte)
+        if (errno == EAGAIN || errno == EWOULDBLOCK) 
         {
-           
-            if (recv(sockfd, &size, sizeof(size), 0) != sizeof(size)) // Read the size (4 bytes) // if cant throw error
-            {
-                 throw std::runtime_error("Failed to read response size");
-            
-            }
-
-            vector<uint8_t> data(size);
-            if (recv(sockfd, data.data(), size, 0) != size)
-            {
-                    throw std::runtime_error("Failed to read response data");
-            }
-
-            // Create and deserialize the message based on the received code
-            auto message = create(code, data);
-            message->deserialize(data);
-
-            if (isRelevant(message->code))
-            {
-                return message;
-            }
-            else
-            {
-                messages.push_back(std::move(message));
-            }
-
+            // No data available
+            return nullptr;
         }
-        else
-        {
-            continue; // no message received - no code
-        }
-
-        
+        throw std::runtime_error("Failed to peek message");
     }
 
-    return NULL;
+    // Actually read the code
+    if (recv(sockfd, &code, sizeof(code), 0) != sizeof(code)) 
+    {
+        throw std::runtime_error("Failed to read message code");
+    }
+
+    if (recv(sockfd, &size, sizeof(size), 0) != sizeof(size)) {
+        throw std::runtime_error("Failed to read response size");
+    }
+
+    vector<uint8_t> data(size);
+    size_t total_received = 0;
+    while (total_received < size) 
+    {
+        ssize_t received = recv(sockfd, data.data() + total_received,size - total_received,0);
+        if (received <= 0) 
+        {
+            throw std::runtime_error("Failed to read response data");
+        }
+        total_received += received;
+    }
+
+    auto message = create(code, data);
+    message->deserialize(data);
+    return message;
    
 }
 

@@ -34,14 +34,13 @@ public:
     /// @brief Recieves a message
     /// @param isRelevant a callback function to verify the packet is relevant
     /// @return The message
-     std::shared_ptr<BaseMessage> receive(std::function<bool(uint8_t)> isRelevant);
+     std::shared_ptr<BaseMessage> receive();
 
 
 private:
  
-    vector<std::unique_ptr<BaseMessage>> messages;
-    mutex socketMut;
     sockaddr_in clientAddress;
+    mutex socketMut;
     int sockfd;
 };
 

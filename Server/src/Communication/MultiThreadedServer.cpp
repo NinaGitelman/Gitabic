@@ -1,9 +1,11 @@
 #include "MultiThreadedServer.h"
+int MultiThreadedServer::id = 0;
 
 MultiThreadedServer::~MultiThreadedServer()
 {
     try
     {
+        stop();
         close(_serverSocket);
 
         _clients.clear();
@@ -52,7 +54,7 @@ void MultiThreadedServer::bindAndListen()
 
     std::cout << "Listening on port " << SERVER_PORT << std::endl;
 
-    while (true) 
+    while (_running) 
     {
         try 
         {
@@ -68,7 +70,7 @@ void MultiThreadedServer::bindAndListen()
 
 void MultiThreadedServer::acceptClient() 
 {
-
+    
     struct sockaddr_in clientAddr;
     socklen_t clientAddrLen = sizeof(clientAddr);
 
@@ -92,48 +94,47 @@ void MultiThreadedServer::acceptClient()
 
 void MultiThreadedServer::handleNewClient(std::shared_ptr<TCPClientSocket> clientSocket)
 {
+    int clientId = ++MultiThreadedServer::id;
+    
+    {
+        std::lock_guard<std::mutex> lock(_clientsMutex);
+        _clients[clientId] = clientSocket;
+    }
 
     try 
     {
-        while(true)
+        while(_running)
         {
 
             // create id for client and add it to the map...
-        
-            auto isRelevant = [](uint8_t code)
+            auto msg = clientSocket->receive();
+            if(!msg)
             {
-                return true;
-                
-            };
-            auto msg = clientSocket->receive(isRelevant);
-            
-            try
-            {   
-                if(msg && msg->code == 0x01)
+                break; // client disconnected
+            }
+           if(msg->code == 0x01)
+            {
+                if (auto dataMsg = std::dynamic_pointer_cast<DataMessage>(msg)) 
                 {
-
-                    shared_ptr<DataMessage> dataMsg = std::dynamic_pointer_cast<DataMessage> (msg);
+                    std::cout << "id: " << clientId << " - ";
                     dataMsg->printDataAsASCII();
                 }
-            }
-            catch(const std::exception& e)
-            {
-                std::cerr  << e.what() << '\n';
-            }
+              }
+          
             
         }
     }
     catch (const std::exception& e) 
     {
-        std::cerr << "handleNewClient exception: " << e.what() << std::endl;
+        std::cout << "handleNewClient exception: " << e.what() << std::endl;
 
     }
-    // later also take out from map....
-    // {
-    //     std::lock_guard<std::mutex> l(_clients);
-    //     _clients.erase(clientSocket); // this already closes the socket (through the TCPsocket)
-    // }
-  //  delete clientSocket;
+
+   // Clean up client
+    {
+        std::lock_guard<std::mutex> lock(_clientsMutex);
+        _clients.erase(clientId);
+    }
 
 }
 
