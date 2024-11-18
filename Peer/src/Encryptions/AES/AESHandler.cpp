@@ -164,7 +164,7 @@ Matrix4x4 AESHandler::encrypt(vector<uint8_t> &data, bool toPad, bool cbc)
         padData(data);
     }
     Matrix4x4 iv = generateRandomMat();
-    Matrix4x4 &lastMat = iv;
+    Matrix4x4 lastMat = iv;
     for (size_t i = 0; i < data.size(); i += BLOCK)
     {
         Matrix4x4 &mat = convertToMat(data.data() + i);
@@ -314,12 +314,15 @@ uint8_t AESHandler::sBoxInv(uint8_t input)
 
 void AESHandler::rotate(Word &word, int8_t by)
 {
-    auto temp = word[(by + word.size() - 1) % word.size()];
-    for (size_t i = 0; i < word.size() - 1; i++)
+    Word temp;
+    for (size_t i = 0; i < word.size(); i++)
     {
-        word[i] = word[(i + by + 4) % 4];
+        temp[i] = word[(i + by + 4) % 4];
     }
-    word[word.size() - 1] = temp;
+    for (size_t i = 0; i < word.size(); i++)
+    {
+        word[i] = temp[i];
+    }
 }
 
 void AESHandler::subWord(Word &word)
@@ -393,7 +396,7 @@ void AESHandler::addRoundKey(Matrix4x4 &mat, uint8_t round)
 
 void AESHandler::xorEqual(Matrix4x4 &to, Matrix4x4 &with)
 {
-    for (size_t i = 0; i < BLOCK; i++)
+    for (size_t i = 0; i < BLOCK; i++) // something doesnt work!!!
     {
         ((uint8_t *)to.data())[i] ^= ((uint8_t *)with.data())[i];
     }
