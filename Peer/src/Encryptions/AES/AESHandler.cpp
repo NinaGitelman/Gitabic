@@ -131,26 +131,26 @@ const array<uint8_t, 256> AESHandler::mul14 =
 
 AESHandler::AESHandler()
 {
+    // Init the random seed one time
     if (!randInit)
     {
         randInit = true;
         srand(time(0));
     }
+    // Generate random key and expands it
     keyExpansion(generateRandomKey());
 }
 
 AESHandler::AESHandler(array<uint8_t, BLOCK> key)
 {
+    // Init the random seed one time
     if (!randInit)
     {
         randInit = true;
         srand(time(0));
     }
+    // Expands the key
     keyExpansion(key);
-}
-
-AESHandler::~AESHandler()
-{
 }
 
 Matrix4x4 AESHandler::encrypt(vector<uint8_t> &data, bool toPad, bool cbc)
@@ -164,11 +164,11 @@ Matrix4x4 AESHandler::encrypt(vector<uint8_t> &data, bool toPad, bool cbc)
         padData(data);
     }
     Matrix4x4 iv = generateRandomMat();
-    Matrix4x4 lastMat = iv;
-    for (size_t i = 0; i < data.size(); i += BLOCK)
+    Matrix4x4 lastMat = iv;                         // Keep track of the former block for cbc mode
+    for (size_t i = 0; i < data.size(); i += BLOCK) // Encrypt each block
     {
         Matrix4x4 &mat = convertToMat(data.data() + i);
-        if (cbc)
+        if (cbc) // Xor with previous / iv for avoiding patterns
         {
             xorEqual(mat, lastMat);
         }
@@ -188,7 +188,7 @@ void AESHandler::decrypt(vector<uint8_t> &data, Matrix4x4 *iv, bool isPadded)
     {
         Matrix4x4 &mat = convertToMat(data.data() + i);
         decryptMat(mat);
-        if (iv != nullptr)
+        if (iv != nullptr) // Reverse cbc if needed
         {
             xorEqual(mat, i >= BLOCK ? convertToMat(data.data() + i - BLOCK) : *iv);
         }
@@ -259,7 +259,7 @@ uint8_t AESHandler::rcon(uint8_t round)
         0x10, 0x20, 0x40, 0x80,
         0x1B, 0x36};
 
-    if (round < 1 || round > 10)
+    if (round < 1 || round > R)
     {
         throw std::out_of_range("Invalid round for Rcon");
     }
@@ -319,10 +319,7 @@ void AESHandler::rotate(Word &word, int8_t by)
     {
         temp[i] = word[(i + by + 4) % 4];
     }
-    for (size_t i = 0; i < word.size(); i++)
-    {
-        word[i] = temp[i];
-    }
+    memcpy(word.data(), temp.data(), word.size());
 }
 
 void AESHandler::subWord(Word &word)
@@ -404,17 +401,15 @@ void AESHandler::xorEqual(Matrix4x4 &to, Matrix4x4 &with)
 
 void AESHandler::padData(vector<uint8_t> &data)
 {
-    uint8_t padding = 16 - (data.size() % 16);
-    for (size_t i = 0; i < padding; i++)
-    {
-        data.push_back(padding);
-    }
+    // Write the number of byte remained for multiplication of 16
+    uint8_t padding = BLOCK - (data.size() % BLOCK);
+    data.insert(data.end(), padding, padding);
 }
 
 void AESHandler::dePadData(vector<uint8_t> &data)
 {
     uint8_t padding = data[data.size() - 1];
-    data.erase(data.end() - padding, data.end());
+    data.resize(data.size() - padding);
 }
 
 void AESHandler::keyExpansion(array<uint8_t, BLOCK> key)
