@@ -178,7 +178,7 @@ Matrix4x4 AESHandler::encrypt(vector<uint8_t> &data, bool toPad, bool cbc)
     return iv;
 }
 
-void AESHandler::decrypt(vector<uint8_t> &data, bool isPadded, Matrix4x4 *iv)
+void AESHandler::decrypt(vector<uint8_t> &data, Matrix4x4 *iv, bool isPadded)
 {
     if (data.size() % BLOCK != 0)
     {
@@ -190,7 +190,7 @@ void AESHandler::decrypt(vector<uint8_t> &data, bool isPadded, Matrix4x4 *iv)
         decryptMat(mat);
         if (iv != nullptr)
         {
-            xorEqual(mat, i > BLOCK ? convertToMat(data.data() + i - BLOCK) : *iv);
+            xorEqual(mat, i >= BLOCK ? convertToMat(data.data() + i - BLOCK) : *iv);
         }
     }
     if (isPadded)
@@ -396,7 +396,7 @@ void AESHandler::addRoundKey(Matrix4x4 &mat, uint8_t round)
 
 void AESHandler::xorEqual(Matrix4x4 &to, Matrix4x4 &with)
 {
-    for (size_t i = 0; i < BLOCK; i++) // something doesnt work!!!
+    for (size_t i = 0; i < BLOCK; i++)
     {
         ((uint8_t *)to.data())[i] ^= ((uint8_t *)with.data())[i];
     }
