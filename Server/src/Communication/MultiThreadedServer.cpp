@@ -87,12 +87,12 @@ void MultiThreadedServer::acceptClient()
     std::cout << "Client accepted. Server and client can speak" << std::endl;
    
     std::thread([this, tcpClientSocket]() {
-            handleNewClient(tcpClientSocket);
+            handleClient(tcpClientSocket);
         }).detach();
     
 }
 
-void MultiThreadedServer::handleNewClient(std::shared_ptr<TCPClientSocket> clientSocket)
+void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSocket)
 {
     int clientId = ++MultiThreadedServer::id;
     
@@ -127,7 +127,7 @@ void MultiThreadedServer::handleNewClient(std::shared_ptr<TCPClientSocket> clien
     }
     catch (const std::exception& e) 
     {
-        std::cout << "handleNewClient exception: " << e.what() << std::endl;
+        std::cout << "handleClient exception: " << e.what() << std::endl;
 
     }
 

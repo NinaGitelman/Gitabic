@@ -20,8 +20,8 @@ class TCPClientSocket
 {
 public:
     
-   /// @brief Constructor an alread exisitng socket that sent message to server
-    TCPClientSocket(int existingSocket, const sockaddr_in &address);
+   /// @brief Constructor that accepts an existing socket and uses it as the tcp socket - also its address
+    TCPClientSocket(int existingSocket, const sockaddr_in& address);
     int getSocketFd() const;
 
     /// @brief closes the socket
@@ -32,13 +32,12 @@ public:
     void send(const MessageBaseToSend &msg);
    
     /// @brief Recieves a message
-    /// @param isRelevant a callback function to verify the packet is relevant
     /// @return The message
     MessageBaseReceived receive();
 
 
 private:
- 
+    
     sockaddr_in clientAddress;
     mutex socketMut;
     int sockfd;
