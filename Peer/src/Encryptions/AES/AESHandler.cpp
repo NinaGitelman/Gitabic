@@ -136,17 +136,28 @@ AESHandler::AESHandler()
         randInit = true;
         srand(time(0));
     }
+    keyExpansion(generateRandomKey());
+}
+
+AESHandler::AESHandler(array<uint8_t, BLOCK> key)
+{
+    if (!randInit)
+    {
+        randInit = true;
+        srand(time(0));
+    }
+    keyExpansion(key);
 }
 
 AESHandler::~AESHandler()
 {
 }
 
-Matrix4x4 AESHandler::encrypt(vector<uint8_t> &data, bool toPad)
+Matrix4x4 AESHandler::encrypt(vector<uint8_t> &data, bool toPad, bool cbc)
 {
     if (!toPad && data.size() % BLOCK != 0)
     {
-        throw std::runtime_error("Vector must be padded or 16 bytes multiplication");
+        throw std::runtime_error("Vector size must be padded or 16 bytes multiplication");
     }
     if (toPad)
     {
@@ -157,15 +168,35 @@ Matrix4x4 AESHandler::encrypt(vector<uint8_t> &data, bool toPad)
     for (size_t i = 0; i < data.size(); i += BLOCK)
     {
         Matrix4x4 &mat = convertToMat(data.data() + i);
-        xorEqual(mat, lastMat);
+        if (cbc)
+        {
+            xorEqual(mat, lastMat);
+        }
         encryptMat(mat);
         lastMat = mat;
     }
     return iv;
 }
 
-void AESHandler::decrypt(vector<uint8_t> &data, Matrix4x4 iv, bool isPadded)
+void AESHandler::decrypt(vector<uint8_t> &data, bool isPadded, Matrix4x4 *iv)
 {
+    if (data.size() % BLOCK != 0)
+    {
+        throw std::runtime_error("Vector size must be 16 bytes multiplication");
+    }
+    for (int i = data.size() - BLOCK; i >= 0; i -= BLOCK)
+    {
+        Matrix4x4 &mat = convertToMat(data.data() + i);
+        decryptMat(mat);
+        if (iv != nullptr)
+        {
+            xorEqual(mat, i > BLOCK ? convertToMat(data.data() + i - BLOCK) : *iv);
+        }
+    }
+    if (isPadded)
+    {
+        dePadData(data);
+    }
 }
 
 Matrix4x4 AESHandler::generateRandomMat()
@@ -179,6 +210,45 @@ Matrix4x4 AESHandler::generateRandomMat()
         }
     }
     return random;
+}
+
+array<uint8_t, BLOCK> AESHandler::generateRandomKey()
+{
+    array<uint8_t, BLOCK> random;
+    for (auto &it : random)
+    {
+        it = rand() % 256;
+    }
+    return random;
+}
+
+array<uint8_t, BLOCK> AESHandler::getKey()
+{
+    return keys[0];
+}
+
+void AESHandler::printHexDump(const Matrix4x4 &matrix)
+{
+    for (const auto &row : matrix)
+    {
+        for (uint8_t byte : row)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0')
+                      << static_cast<int>(byte) << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void AESHandler::printHexDump(const array<uint8_t, BLOCK> &key)
+{
+    for (const auto &byte : key)
+    {
+
+        std::cout << std::hex << std::setw(2) << std::setfill('0')
+                  << static_cast<int>(byte);
+    }
+    std::cout << std::endl;
 }
 
 uint8_t AESHandler::rcon(uint8_t round)
@@ -242,9 +312,9 @@ uint8_t AESHandler::sBoxInv(uint8_t input)
     return SBoxInvTable[input];
 }
 
-void AESHandler::rotate(Word &word, uint8_t by)
+void AESHandler::rotate(Word &word, int8_t by)
 {
-    auto temp = word[(by + word.size()) % word.size()];
+    auto temp = word[(by + word.size() - 1) % word.size()];
     for (size_t i = 0; i < word.size() - 1; i++)
     {
         word[i] = word[(i + by + 4) % 4];
@@ -275,7 +345,7 @@ void AESHandler::shiftRows(Matrix4x4 &mat, bool isEnc)
 {
     for (size_t i = 0; i < mat.size(); i++)
     {
-        rotate(mat[i], isEnc ? 1 : -1); // if encrypting rotating left, if decrypting rotate right.
+        rotate(mat[i], isEnc ? i : -i); // if encrypting rotating left, if decrypting rotate right.
     }
 }
 
@@ -399,8 +469,8 @@ void AESHandler::encryptMat(Matrix4x4 &mat)
 void AESHandler::decryptMat(Matrix4x4 &mat)
 {
     addRoundKey(mat, R);
-    shiftRows(mat, true);
-    subBytes(mat, true);
+    shiftRows(mat, false);
+    subBytes(mat, false);
     for (size_t i = R - 1; i > 0; i--)
     {
         addRoundKey(mat, i);

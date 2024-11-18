@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 #include <span>
+#include <iomanip>
 
 #define BLOCK 16
 #define N 4
@@ -22,18 +23,24 @@ class AESHandler
 {
 public:
     AESHandler();
+    AESHandler(array<uint8_t, BLOCK> key);
     ~AESHandler();
 
-    Matrix4x4 encrypt(vector<uint8_t> &data, bool toPad);
-    void decrypt(vector<uint8_t> &data, Matrix4x4 iv, bool isPadded);
+    Matrix4x4 encrypt(vector<uint8_t> &data, bool toPad, bool cbc);
+    void decrypt(vector<uint8_t> &data, bool isPadded, Matrix4x4 *iv);
 
     Matrix4x4 generateRandomMat();
+    array<uint8_t, BLOCK> generateRandomKey();
+    array<uint8_t, BLOCK> getKey();
+
+    void printHexDump(const Matrix4x4 &matrix);
+    void printHexDump(const array<uint8_t, BLOCK> &key);
 
 private:
     uint8_t rcon(uint8_t round);
     uint8_t sBox(uint8_t input);
     uint8_t sBoxInv(uint8_t input);
-    void rotate(Word &word, uint8_t by);
+    void rotate(Word &word, int8_t by);
     void subWord(Word &word);
     void subBytes(Matrix4x4 &mat, bool isEnc);
     void shiftRows(Matrix4x4 &mat, bool isEnc);
