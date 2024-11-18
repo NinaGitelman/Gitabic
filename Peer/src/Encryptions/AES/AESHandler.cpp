@@ -68,13 +68,29 @@ Word AESHandler::subWord(Word word)
 
 void AESHandler::keyExpansion(array<uint8_t, BLOCK> key)
 {
-    keys[0] = key;
-    auto data = (uint32_t *)keys.data();
-    for (size_t i = N; i < key.size() * R; i++)
+    // First key is directly the input key
+    for (size_t i = 0; i < BLOCK; ++i)
     {
+        keys[0][i] = key[i];
+    }
+
+    for (size_t i = N; i < (R + 1) * N; ++i)
+    {
+        Word temp;
+        for (size_t j = 0; j < 4; ++j)
+        {
+            temp[j] = keys[(i - 1) / N][(i - 1) % N * 4 + j];
+        }
+
         if (i % N == 0)
         {
-            data[i] = data[i - N] ^ (uint32_t *)subWord(rotate(Word(data[i - 1]), 1)).data();
+            temp = subWord(rotate(temp, 1));
+            temp[0] ^= rcon(i / N);
+        }
+
+        for (size_t j = 0; j < 4; ++j)
+        {
+            keys[i / N][i % N * 4 + j] = keys[(i - N) / N][(i - N) % N * 4 + j] ^ temp[j];
         }
     }
 }
