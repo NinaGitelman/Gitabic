@@ -26,8 +26,8 @@ public:
     AESHandler(array<uint8_t, BLOCK> key);
     ~AESHandler();
 
-    Matrix4x4 encrypt(vector<uint8_t> &data, bool toPad, bool cbc);
-    void decrypt(vector<uint8_t> &data, bool isPadded, Matrix4x4 *iv);
+    Matrix4x4 encrypt(vector<uint8_t> &data, bool toPad = true, bool cbc = true);
+    void decrypt(vector<uint8_t> &data, Matrix4x4 *iv = nullptr, bool isPadded = true);
 
     Matrix4x4 generateRandomMat();
     array<uint8_t, BLOCK> generateRandomKey();
