@@ -9,10 +9,10 @@ int main()
     auto iv = aes.encrypt(d);
     AESHandler decrypter(aes.getKey());
 
-    // decrypter.decrypt(d, true, &iv);
     decrypter.decrypt(d, &iv);
 
     for (auto &&i : d)
+
     {
         std::cout << i;
     }
