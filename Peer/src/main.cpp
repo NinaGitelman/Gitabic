@@ -4,11 +4,12 @@
 int main()
 {
     AESHandler aes(array<uint8_t, BLOCK>{0xb2, 0x93, 0x76, 0x3a, 0xd7, 0x27, 0x76, 0xa8, 0x68, 0x70, 0xf9, 0xa1, 0x19, 0xa0, 0x61, 0x99});
-    vector<uint8_t> d{'1'};
-    auto iv = aes.encrypt(d, true, false);
+    vector<uint8_t> d{'1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '3'};
+    // Matrix4x4 mat = Matrix4x4{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+    auto iv = aes.encrypt(d, true, true);
     aes.printHexDump(aes.getKey());
 
-    aes.decrypt(d, true, nullptr);
+    aes.decrypt(d, true, &iv);
 
     aes.printHexDump(*reinterpret_cast<array<uint8_t, BLOCK> *>(d.data()));
 }
