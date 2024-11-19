@@ -1,28 +1,20 @@
 #include <iostream>
-#include "NetworkUnit/ServerComm/DataRepublish/DataRepublish.h"
-#include "Encryptions/SHA256/sha256.h"
+#include "Encryptions/AES/AESHandler.h"
 
 int main()
 {
-    DataRepublish dr(nullptr);
-    HashResult res = SHA256::toHashSha256(vector<uint8_t>{1});
-    HashResult res2 = SHA256::toHashSha256(vector<uint8_t>{2});
+    AESHandler aes(array<uint8_t, BLOCK>{0xb2, 0x93, 0x76, 0x3a, 0xd7, 0x27, 0x76, 0xa8, 0x68, 0x70, 0xf9, 0xa1, 0x19, 0xa0, 0x61, 0x99});
+    vector<uint8_t> d{'1', '2', '3', '4', '5', '6'};
+    // Matrix4x4 mat = Matrix4x4{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+    auto iv = aes.encrypt(d);
+    AESHandler decrypter(aes.getKey());
 
-    dr.saveData(res, EncryptedID());
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    dr.saveData(res2, EncryptedID());
-    std::string input;
+    decrypter.decrypt(d, &iv);
 
-    while (true)
+    for (auto &&i : d)
+
     {
-        std::getline(std::cin, input);
-        if (input == "exit")
-        {
-            break;
-        }
-        if (input == "stop")
-        {
-            dr.stopRepublish(res);
-        }
+        std::cout << i;
     }
+    std::cout << std::endl;
 }
