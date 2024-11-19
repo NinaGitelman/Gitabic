@@ -7,6 +7,7 @@
 #include <vector>
 #include <Encryptions/SHA256/sha256.h>
 #include <NetworkUnit/SocketHandler/SocketHandler.h>
+#include <../FileUtils/FileUtils.h>
 
 using std::string;
 using std::vector;
@@ -21,7 +22,8 @@ struct Sizes
 class MetaDataFile
 {
 public:
-    MetaDataFile();
+    MetaDataFile(vector<uint8_t> &data);
+    MetaDataFile(const string &path);
     ~MetaDataFile();
 
     vector<uint8_t> serialize();

@@ -1,7 +1,13 @@
 #include "MetaDataFile.h"
 
-MetaDataFile::MetaDataFile()
+MetaDataFile::MetaDataFile(vector<uint8_t> &data)
 {
+    deserialize(data);
+}
+
+MetaDataFile::MetaDataFile(const string &path)
+{
+    deserialize(FileUtils::readFileToVector(path));
 }
 
 MetaDataFile::~MetaDataFile()
