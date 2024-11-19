@@ -11,11 +11,21 @@
 using std::string;
 using std::vector;
 
+struct Sizes
+{
+    uint64_t fileSize : 47;
+    uint64_t partsCount : 16;
+    uint64_t hasPassword : 1;
+};
+
 class MetaDataFile
 {
 public:
     MetaDataFile();
     ~MetaDataFile();
+
+    vector<uint8_t> serialize();
+    void deserialize(vector<uint8_t> data);
 
     string getFileName() const { return fileName; }
     void setFileName(const string &fileName_) { fileName = fileName_; }
@@ -32,8 +42,8 @@ public:
     Address getSignalingAddress() const { return signalingAddress; }
     void setSignalingAddress(const Address &signalingAddress_) { signalingAddress = signalingAddress_; }
 
-    bool getHasPassword() const { return hasPassword; }
-    void setHasPassword(bool hasPassword_) { hasPassword = hasPassword_; }
+    bool getHasPassword() const { return sizes.hasPassword; }
+    void setHasPassword(bool hasPassword_) { sizes.hasPassword = hasPassword_; }
 
     array<uint8_t, 16> getEncryptedAesKey() const { return encryptedAesKey; }
     void setEncryptedAesKey(const array<uint8_t, 16> &encryptedAesKey_) { encryptedAesKey = encryptedAesKey_; }
@@ -42,12 +52,15 @@ public:
     void setSalt(const array<uint8_t, 16> &salt_) { salt = salt_; }
 
 private:
+    void serializeString(vector<uint8_t> &data, string &str);
+    void serializeHash(vector<uint8_t> &data, HashResult &hash);
+    void serializeBlock(vector<uint8_t> &data, array<uint8_t, 16> &block);
     string fileName;
     string creator;
     HashResult fileHash;
     vector<HashResult> partsHashes;
     Address signalingAddress;
-    bool hasPassword;
+    Sizes sizes;
     array<uint8_t, 16> encryptedAesKey;
     array<uint8_t, 16> salt;
 };
