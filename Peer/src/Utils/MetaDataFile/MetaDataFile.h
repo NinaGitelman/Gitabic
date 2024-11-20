@@ -5,9 +5,9 @@
 
 #include <string>
 #include <vector>
-#include <Encryptions/SHA256/sha256.h>
+#include <Utils/FileUtils/FileUtils.h>
 #include <NetworkUnit/SocketHandler/SocketHandler.h>
-#include <../FileUtils/FileUtils.h>
+#include <Encryptions/SHA256/sha256.h>
 
 using std::string;
 using std::vector;
@@ -24,7 +24,10 @@ class MetaDataFile
 public:
     MetaDataFile(vector<uint8_t> &data);
     MetaDataFile(const string &path);
+    MetaDataFile() = default;
     ~MetaDataFile();
+
+    static MetaDataFile createMetaData(const std::string &filePath, const std::string password, const Address &signalingAddress, const string &creator);
 
     vector<uint8_t> serialize();
     void deserialize(vector<uint8_t> data);
@@ -52,6 +55,9 @@ public:
 
     array<uint8_t, 16> getSalt() const { return salt; }
     void setSalt(const array<uint8_t, 16> &salt_) { salt = salt_; }
+
+    uint64_t getFileSize() const { return sizes.fileSize; }
+    void setFileSize(uint64_t size) { sizes.fileSize = size; }
 
 private:
     void serializeString(vector<uint8_t> &data, string &str);

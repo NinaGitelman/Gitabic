@@ -59,6 +59,8 @@
         "fstream": "cpp",
         "iomanip": "cpp",
         "sstream": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "codecvt": "cpp",
+        "filesystem": "cpp"
     }
 }

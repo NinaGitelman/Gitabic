@@ -53,7 +53,7 @@ public:
 
     /// @brief Generates a random 128-bit AES key.
     /// @return A random 128-bit key.
-    array<uint8_t, BLOCK> generateRandomKey();
+    static array<uint8_t, BLOCK> generateRandomKey();
 
     /// @brief Gets the currently active AES key.
     /// @return The current AES key.
