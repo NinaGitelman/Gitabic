@@ -5,7 +5,7 @@
 #include <string>
 #include "../../Encryptions/SHA256/sha256.h"
 #include <climits>
-#include "SerializeDeserializeUtils.h"
+#include "../../Utils/SerializeDeserializeUtils.h"
 
 using std::vector;
 using ID = HashResult;
@@ -99,7 +99,8 @@ struct MessageBaseToSend
 
 /// Message to send
 /// TODO - Client request: get user ICE info
-/// Message: 4 bytes user id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo 
+/// Message: 32 bytes user id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo 
+// works!!!!
 struct ClientRequestGetUserICEInfo : MessageBaseToSend
 {
     const int CONST_SIZE = 6; 
@@ -118,7 +119,7 @@ struct ClientRequestGetUserICEInfo : MessageBaseToSend
         uint16_t len = iceCandidateInfo.size();
 
         // Serialize `len` into two bytes
-        vector<uint8_t> lenSerialized;
+        vector<uint8_t> lenSerialized(2);
         SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
         
 
@@ -128,7 +129,7 @@ struct ClientRequestGetUserICEInfo : MessageBaseToSend
         serialized.insert(serialized.end(), userId.begin(), userId.end());
         serialized.insert(serialized.end(), lenSerialized.begin(), lenSerialized.end());
         serialized.insert(serialized.end(), iceCandidateInfo.begin(), iceCandidateInfo.end());
-
+        
         return serialized;
     
     }
@@ -155,7 +156,7 @@ struct ClientResponseAuthorizedICEConnection : MessageBaseToSend
         uint16_t len = iceCandidateInfo.size();
 
         // Serialize `len` into two bytes vector
-        vector<uint8_t> lenSerialized;
+        vector<uint8_t> lenSerialized(2);
         SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
 
         // Serialize `requestId` into two bytes vector

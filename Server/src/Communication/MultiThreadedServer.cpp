@@ -113,14 +113,20 @@ void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSo
             // {
             //     break; // client disconnected
             // }
-           if(msg.code == (uint8_t)ClientRequestCodes::DebuggingStringMessageToSend)
+           if(msg.code == (uint8_t)ClientRequestCodes::GetUserICEInfo)
             {
-                DebuggingStringMessageReceived dataMsg = DebuggingStringMessageReceived(msg);
+                std::cout << "here!";
+                ClientRequestGetUserICEInfo dataMsg = ClientRequestGetUserICEInfo(msg);
                 
                 std::cout << "id: " << clientId << " - ";
-                dataMsg.printDataAsASCII();
+                printDataAsASCII(dataMsg.iceCandidateInfo);
                 
-              }
+                std::string message = "Hello world!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+                    vector<uint8_t> iceTestData(message.begin(), message.end());
+                
+                ServerResponseUserAuthorizedICEData serverResponse = ServerResponseUserAuthorizedICEData(iceTestData);
+                clientSocket->send(serverResponse);
+            }
           
             
         }
@@ -139,3 +145,17 @@ void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSo
 
 }
 
+ /// @brief  Heper function to pritn the DATA
+void MultiThreadedServer::printDataAsASCII(vector<uint8_t> data)  
+{
+        for (const auto &byte : data) 
+        {
+            if (std::isprint(byte)) 
+            {
+                std::cout << static_cast<char>(byte); // Printable characters
+            } else {
+                std::cout << '.'; // Replace non-printable characters with '.'
+            }
+        }
+        std::cout << std::endl;
+}

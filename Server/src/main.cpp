@@ -4,7 +4,6 @@
 
 int main()
 {
-
     MultiThreadedServer server = MultiThreadedServer();
     
     server.startHandleRequests();

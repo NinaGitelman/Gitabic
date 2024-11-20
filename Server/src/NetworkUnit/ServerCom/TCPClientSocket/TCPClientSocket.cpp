@@ -38,19 +38,21 @@ MessageBaseReceived TCPClientSocket::receive()
     uint32_t size;
 
     // Use MSG_PEEK to check if there's data available
-    ssize_t peek_result = recv(sockfd, &code, sizeof(code), MSG_PEEK);
+    ssize_t peekResult = recv(sockfd, &code, sizeof(code), MSG_PEEK);
     
-    if (peek_result <= 0)
+    if (peekResult <= 0)
     {
-        if (peek_result == 0) 
+        if (peekResult == 0) 
         {
-            // Client disconnected
-            return nullptr;
+           
+        throw std::runtime_error("Client disconnected");
+
         }
         if (errno == EAGAIN || errno == EWOULDBLOCK) 
         {
             // No data available
-            return nullptr;
+            vector<uint8_t> emptyVector;
+            return MessageBaseReceived(0, emptyVector);
         }
         throw std::runtime_error("Failed to peek message");
     }

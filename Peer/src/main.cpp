@@ -8,19 +8,45 @@
 #include "Encryptions/SHA256/sha256.h"
 
 
+
+
+ /// @brief  Heper function to pritn the DATA
+void printDataAsASCII(vector<uint8_t> data)  
+{
+        for (const auto &byte : data) 
+        {
+            if (std::isprint(byte)) 
+            {
+                std::cout << static_cast<char>(byte); // Printable characters
+            } else {
+                std::cout << '.'; // Replace non-printable characters with '.'
+            }
+        }
+        std::cout << std::endl;
+}
+
 int main()
 {
     Address serverAdd = Address("0.0.0.0", 4789);
     TCPSocket socket = TCPSocket(serverAdd);
 
-    DebuggingStringMessageToSend msg = DebuggingStringMessageToSend("Hello world!");
-    
-    socket.sendRequest(msg);
-    socket.sendRequest(msg);
-    socket.sendRequest(msg);
-    sleep(10);
-    socket.sendRequest(msg);
-    socket.sendRequest(msg);
+    ID id = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
+              17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32 };
+
+
+    std::function<bool(uint8_t)> isRelevant = [](uint8_t code) {
+        return code == ServerResponseCodes::UserAuthorizedICEData;
+    };
+   
+    std::string message = "Hello world!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    vector<uint8_t> iceTestData(message.begin(), message.end());
+      
+    ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(id, iceTestData);    
+    socket.sendRequest(requestIce);
+
+
+    ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
+    printDataAsASCII(response.iceCandidateInfo);
 
 
 

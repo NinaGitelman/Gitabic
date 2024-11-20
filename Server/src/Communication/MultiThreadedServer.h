@@ -52,6 +52,7 @@ private:
     /// @param clientSocket socket of the client to handle
     void handleClient(std::shared_ptr<TCPClientSocket> clientSocket);
    
-
+    // helper only for debugging...
+    void printDataAsASCII(vector<uint8_t> data);
 
 };

@@ -6,16 +6,15 @@
 #include "../../Encryptions/SHA256/sha256.h"
 #include <cstring> // for memcpy
 #include <iterator>
-#include "../Utils/SerializerDeserializerUtils.h"
+#include <climits>
+#include "../../Utils/SerializeDeserializeUtils.h"
+
 
 
 using std::vector;
 using ID = HashResult;
 using EncryptedID = std::array<uint8_t, 48>;
 using std::string;
-
-
-
 
 
 namespace std // Hash method for ID to allow hash map key usage
@@ -38,6 +37,9 @@ namespace std // Hash method for ID to allow hash map key usage
 // Codes fro protocol
 enum ClientRequestCodes
 {
+    // no message received
+    NoMessageReceived = 0,
+
     // Signaling
     GetUserICEInfo = 1,
 
@@ -124,7 +126,7 @@ struct ServerResponseUserAuthorizedICEData : MessageBaseToSend
         uint16_t len = iceCandidateInfo.size();
 
         // Serialize `len` into two bytes
-        vector<uint8_t> lenSerialized;
+        vector<uint8_t> lenSerialized(2);
         SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
         
         // Serialize base struct
@@ -214,9 +216,10 @@ struct MessageBaseReceived
 //////////////////
 
 /// @brief struct from client to request for another user's ice info (user is defiend by the id) and receive the client's ice info
-/// Message: 4 bytes id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo 
+/// Message: 32 bytes id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo 
 
-struct ClientRequestGetUserICEInfo {
+struct ClientRequestGetUserICEInfo
+{
     ID userId;
     std::vector<uint8_t> iceCandidateInfo;
 
@@ -225,44 +228,50 @@ struct ClientRequestGetUserICEInfo {
         deserialize(receivedMessage.data);
     }
 
-    void deserialize(const std::vector<uint8_t>& buffer) {
-        
-        std::cout << "Starting deserialization of ClientRequestGetUserICEInfo..." << std::endl;
-
-        // Validate buffer size for at least ID and length field
-        if (buffer.size() < SHA256_SIZE + sizeof(uint16_t)) {
-            throw std::invalid_argument("Buffer too small for deserialization");
-        }
-
-        // Extract the user ID
-        std::memcpy(userId.data(), buffer.data(), SHA256_SIZE);
-        std::cout << "Extracted User ID: ";
-        for (auto byte : userId) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
-        }
-        std::cout << std::endl;
-
-        // Extract the length of iceCandidateInfo
-        uint16_t length = 0;
-        std::memcpy(&length, buffer.data() + SHA256_SIZE, sizeof(uint16_t));
-        std::cout << "Extracted iceCandidateInfo length: " << length << std::endl;
-
-        // Validate buffer size for remaining data
-        size_t valueStart = SHA256_SIZE + sizeof(uint16_t);
-        if (buffer.size() < valueStart + length) {
-            throw std::invalid_argument("Buffer does not contain enough data for iceCandidateInfo");
-        }
-
-        // Extract iceCandidateInfo
-        iceCandidateInfo.assign(buffer.begin() + valueStart, buffer.begin() + valueStart + length);
-        std::cout << "Extracted iceCandidateInfo: ";
-        for (auto byte : iceCandidateInfo) {
-            std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
-        }
-        std::cout << std::endl;
-
-        std::cout << "Deserialization complete." << std::endl;
+ void deserialize(const std::vector<uint8_t>& buffer) 
+ {
+   
+    // Validate minimum buffer size
+    if (buffer.size() < 1 + 4 + SHA256_SIZE + 2) {
+        throw std::runtime_error("Buffer too small");
     }
+
+    // First byte is message code (you're checking this in your message handling already)
+    size_t offset = 0;
+
+    // Skip message code
+    offset++;
+
+    // Extract previous size (4 bytes)
+    uint32_t previousSize;
+    std::memcpy(&previousSize, buffer.data() + offset, sizeof(previousSize));
+    offset += 4;
+
+    // Extract user ID
+    std::memcpy(userId.data(), buffer.data() + offset, SHA256_SIZE);
+    offset += SHA256_SIZE;
+
+    for (auto byte : userId) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";  
+    }   
+    std::cout << std::endl;
+
+    // Extract length (2 bytes, little endian)
+    uint16_t length = buffer[offset] | (buffer[offset + 1] << 8);
+    offset += 2;
+
+
+    // Extract candidate info
+    iceCandidateInfo.assign(
+        buffer.begin() + offset, 
+        buffer.begin() + offset + length
+    );
+
+    for (auto byte : iceCandidateInfo) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";  
+    }   
+    std::cout << std::endl;
+}
 };
 
 /// @brief client response to request of another user to authorize ice connections
