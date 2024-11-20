@@ -28,15 +28,36 @@ namespace std // Hash method for ID to allow hash map key usage
 }
 
 // Codes fro protocol
-enum RequestCodes
+enum ClientRequestCodes
 {
+     // Signaling
+    GetUserICEInfo = 1,
+
+    // Bit torrent
     Store = 21,
     UserListReq = 23,
 
+    // debugging
     DebuggingStringMessageToSend = 255 
 };
-enum ResponseCodes
+
+enum ClientResponseCodes
 {
+ // signaling
+    ClientResponseAuthorizedICEConnection = 30
+};
+
+enum ServerRequestCodes
+{
+
+};
+
+enum ServerResponseCodes
+{
+    // signaling
+    UserAuthorizedICEData = 11,
+
+    // bit torrent 
     StoreSuccess = 221,
     StoreFailure,
     UserListRes
@@ -66,6 +87,15 @@ struct MessageBaseToSend
     }
 };
 
+
+/// Message to send
+/// TODO - Client request: get user ICE info
+/// Message: 4 bytes id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo 
+
+
+/// TODO - Client Response - ClientResponseAuthorizedICEConnection
+/// lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes)
+
 // just for start debugging, pretify later
 struct DebuggingStringMessageToSend : MessageBaseToSend
 {
@@ -73,7 +103,7 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
 
     std::string message;
 
-    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(RequestCodes::DebuggingStringMessageToSend) {}
+    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessageToSend) {}
     
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override 
     {
@@ -88,7 +118,7 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
 /// @brief A request for user list
 struct UserListRequest : MessageBaseToSend
 {
-    UserListRequest(ID fileId) : fileId(fileId), MessageBaseToSend(RequestCodes::UserListReq) {}
+    UserListRequest(ID fileId) : fileId(fileId), MessageBaseToSend(ClientRequestCodes::UserListReq) {}
     UserListRequest(ID fileId, uint8_t code) : fileId(fileId), MessageBaseToSend(code) {}
     /// @brief The file we want to download
     ID fileId;
@@ -105,7 +135,7 @@ struct UserListRequest : MessageBaseToSend
 /// @brief A request to anounce you have a file
 struct StoreRequest : MessageBaseToSend
 {
-    StoreRequest(ID fileId, EncryptedID myId) : MessageBaseToSend(RequestCodes::Store), myId(myId), fileId(fileId) {}
+    StoreRequest(ID fileId, EncryptedID myId) : MessageBaseToSend(ClientRequestCodes::Store), myId(myId), fileId(fileId) {}
     StoreRequest(ID fileId, EncryptedID myId, uint8_t code) : MessageBaseToSend(code), myId(myId), fileId(fileId) {}
 
     /// @brief Your encrypted ID
@@ -140,6 +170,7 @@ struct MessageBaseReceived
 };
 
 
+
 /// @brief A list of users that has a file
 struct UserListResponse
 {
@@ -165,6 +196,7 @@ struct UserListResponse
 
 /// @brief Your assigned id
 struct NewIdResponse
+
 {
     ID id;
 
@@ -178,3 +210,15 @@ struct NewIdResponse
         this->id = *((ID *)data.data());
     }
 };
+
+
+
+
+/// MEssage received:
+/// TODO Server Response:  UserAuthorizedICEData = 11,
+/// Message data:  lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), 
+
+
+/// TODO - Server Request
+/// Message data:   lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes) 
+

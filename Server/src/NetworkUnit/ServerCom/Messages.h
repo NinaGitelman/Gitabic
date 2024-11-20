@@ -6,10 +6,17 @@
 #include "../../Encryptions/SHA256/sha256.h"
 #include <cstring> // for memcpy
 #include <iterator>
+#include "../Utils/SerializerDeserializerUtils.h"
+
+
 using std::vector;
 using ID = HashResult;
 using EncryptedID = std::array<uint8_t, 48>;
 using std::string;
+
+
+
+
 
 namespace std // Hash method for ID to allow hash map key usage
 {
@@ -111,10 +118,9 @@ struct ServerResponseUserAuthorizedICEData : MessageBaseToSend
         uint16_t len = iceCandidateInfo.size();
 
         // Serialize `len` into two bytes
-        vector<uint8_t> lenSerialized(2);
-        lenSerialized[0] = static_cast<uint8_t>(len & 0xFF);       // Lower byte
-        lenSerialized[1] = static_cast<uint8_t>((len >> 8) & 0xFF); // Upper byte
-
+        vector<uint8_t> lenSerialized;
+        SerializerDeserializerUtils::serializeUint16IntoVector(lenSerialized, len);
+        
         // Serialize base struct
         vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + 2 + len);
 
@@ -143,13 +149,11 @@ struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
 
         // Serialize `len` into two bytes
         vector<uint8_t> lenSerialized(2);
-        lenSerialized[0] = static_cast<uint8_t>(len & 0xFF);       // Lower byte
-        lenSerialized[1] = static_cast<uint8_t>((len >> 8) & 0xFF); // Upper byte
+        SerializerDeserializerUtils::serializeUint16IntoVector(lenSerialized, len);
 
         // serialize requestId
         vector<uint8_t> requestIdSerialized(2);
-        requestIdSerialized[0] = static_cast<uint8_t>(len & 0xFF);       // Lower byte
-        requestIdSerialized[1] = static_cast<uint8_t>((len >> 8) & 0xFF); // Upper byte
+        SerializerDeserializerUtils::serializeUint16IntoVector(requestIdSerialized, requestId);
 
         // Serialize base struct
         vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + 2 + len);
@@ -162,6 +166,7 @@ struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
         return serialized;
     }
 };
+
 
 // just for start debugging, pretify later
 struct DebuggingStringMessageToSend : MessageBaseToSend

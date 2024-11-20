@@ -77,11 +77,11 @@ bool DataRepublish::publish(ID fileId, EncryptedID myId)
     {
         switch (code)
         {
-        case ResponseCodes::StoreFailure:
-        case ResponseCodes::StoreSuccess:
+        case ServerResponseCodes::StoreFailure:
+        case ServerResponseCodes::StoreSuccess:
             return true;
         }
         return false;
     };
-    return tcpSocket->receive(isRelevant).code == ResponseCodes::StoreSuccess;
+    return tcpSocket->receive(isRelevant).code == ServerResponseCodes::StoreSuccess;
 }
