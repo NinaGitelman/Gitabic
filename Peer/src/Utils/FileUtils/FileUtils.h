@@ -9,22 +9,23 @@
 #include <Encryptions/AES/AESHandler.h>
 #include <random>
 
+#define KB 1024UL
+
 namespace Utils
 {
     class FileUtils
     {
     public:
         static std::vector<uint8_t> readFileToVector(const std::string &filePath);
+        static std::vector<uint8_t> readFileChunk(const std::string &filePath, size_t offset, size_t size);
         static void writeVectorToFile(const std::vector<uint8_t> &data, const std::string &filePath);
     };
-
-#define KB 1024
-#define MIN_PIECE_SIZE 256 * KB
-#define MAX_PIECE_SIZE 4 * KB *KB
 
     class FileSplitter
     {
     public:
+        static constexpr uint64_t MIN_PIECE_SIZE = 256 * KB;
+        static constexpr uint64_t MAX_PIECE_SIZE = 4 * KB * KB;
         static uint pieceSize(const uint64_t fileSize);
     };
 

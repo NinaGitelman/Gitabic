@@ -7,7 +7,8 @@ MetaDataFile::MetaDataFile(vector<uint8_t> &data)
 
 MetaDataFile::MetaDataFile(const string &path)
 {
-    deserialize(FileUtils::readFileToVector(path));
+    auto vec = std::move(FileUtils::readFileToVector(path));
+    deserialize(vec);
 }
 
 MetaDataFile::~MetaDataFile()
@@ -79,6 +80,7 @@ MetaDataFile MetaDataFile::createMetaData(const std::string &filePath, const std
 vector<uint8_t> MetaDataFile::serialize()
 {
     vector<uint8_t> data;
+    sizes.partsCount = partsHashes.size();
     data.insert(data.end(), (uint8_t *)&sizes, (uint8_t *)&sizes + sizeof(sizes));
     serializeString(data, fileName);
     serializeString(data, creator);
@@ -94,9 +96,10 @@ vector<uint8_t> MetaDataFile::serialize()
     {
         serializeBlock(data, salt);
     }
+    return data;
 }
 
-void MetaDataFile::deserialize(vector<uint8_t> data)
+void MetaDataFile::deserialize(vector<uint8_t> &data)
 {
     uint i = 0;
     memcpy(&sizes, data.data(), sizeof(sizes));

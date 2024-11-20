@@ -28,6 +28,21 @@ std::vector<uint8_t> FileUtils::readFileToVector(const std::string &filePath)
     }
 }
 
+std::vector<uint8_t> Utils::FileUtils::readFileChunk(const std::string &filePath, size_t offset, size_t size)
+{
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file)
+    {
+        throw std::runtime_error("Failed to open file: " + filePath);
+    }
+
+    file.seekg(offset);
+    std::vector<uint8_t> buffer(size);
+    file.read(reinterpret_cast<char *>(buffer.data()), size);
+    buffer.resize(file.gcount()); // Trim if we couldn't read the full requested size
+    return buffer;
+}
+
 void FileUtils::writeVectorToFile(const std::vector<uint8_t> &data, const std::string &filePath)
 {
     std::ofstream outFile(filePath, std::ios::out | std::ios::binary | std::ios::trunc);

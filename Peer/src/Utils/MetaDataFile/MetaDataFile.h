@@ -30,7 +30,7 @@ public:
     static MetaDataFile createMetaData(const std::string &filePath, const std::string password, const Address &signalingAddress, const string &creator);
 
     vector<uint8_t> serialize();
-    void deserialize(vector<uint8_t> data);
+    void deserialize(vector<uint8_t> &data);
 
     string getFileName() const { return fileName; }
     void setFileName(const string &fileName_) { fileName = fileName_; }
