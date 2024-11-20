@@ -107,7 +107,8 @@ struct MessageBaseToSend
 /// Message data:  lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), 
 struct ServerResponseUserAuthorizedICEData : MessageBaseToSend 
 {
-    
+    const int CONST_SIZE = 2;
+
     vector<uint8_t> iceCandidateInfo;
 
     ServerResponseUserAuthorizedICEData(vector<uint8_t> iceCandidateInfo)
@@ -127,7 +128,7 @@ struct ServerResponseUserAuthorizedICEData : MessageBaseToSend
         SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
         
         // Serialize base struct
-        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + 2 + len);
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize+CONST_SIZE+len);
 
         // Append `lenSerialized` and `iceCandidateInfo`
         serialized.insert(serialized.end(), lenSerialized.begin(), lenSerialized.end());
@@ -142,6 +143,7 @@ struct ServerResponseUserAuthorizedICEData : MessageBaseToSend
 /// Message data:   lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes) 
 struct ServerRequestAuthorizeICEConnection : MessageBaseToSend 
 {
+    const int CONST_SIZE = 4;
     uint16_t requestId;
     vector<uint8_t> iceCandidateInfo;
 
@@ -161,7 +163,7 @@ struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
         SerializeDeserializeUtils::serializeUint16IntoVector(requestIdSerialized, requestId);
 
         // Serialize base struct
-        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + 2 + len);
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + CONST_SIZE + len);
 
         // Append to serialized ken, ice candidaate info and request id
         serialized.insert(serialized.end(), lenSerialized.begin(), lenSerialized.end());
@@ -219,7 +221,7 @@ struct ClientRequestGetUserICEInfo {
     std::vector<uint8_t> iceCandidateInfo;
 
     // Constructor to deserialize from received message
-    explicit ClientRequestGetUserICEInfo(const MessageBaseReceived& receivedMessage) {
+    ClientRequestGetUserICEInfo(const MessageBaseReceived& receivedMessage) {
         deserialize(receivedMessage.data);
     }
 

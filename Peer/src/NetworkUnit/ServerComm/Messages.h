@@ -51,7 +51,7 @@ enum ClientResponseCodes
 
 enum ServerRequestCodes
 {
-
+    AuthorizeICEConnection = 20
 };
 
 enum ServerResponseCodes
@@ -92,8 +92,7 @@ struct MessageBaseToSend
 
 
 
-/// TODO - Client Response - ClientResponseAuthorizedICEConnection
-/// lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes)
+
 ////////////////////
 //// Signaling  ////
 ///////////////////
@@ -103,6 +102,7 @@ struct MessageBaseToSend
 /// Message: 4 bytes user id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo 
 struct ClientRequestGetUserICEInfo : MessageBaseToSend
 {
+    const int CONST_SIZE = 6; 
     ID userId;
     vector<uint8_t> iceCandidateInfo;
 
@@ -121,18 +121,59 @@ struct ClientRequestGetUserICEInfo : MessageBaseToSend
         vector<uint8_t> lenSerialized;
         SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
         
-         // Serialize base struct
-        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + 2 + len);
 
-        vector<uint8_t> thisSerialized(userId.begin(),userId.end());
-        
+
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + CONST_SIZE + len);
+
         serialized.insert(serialized.end(), userId.begin(), userId.end());
         serialized.insert(serialized.end(), lenSerialized.begin(), lenSerialized.end());
         serialized.insert(serialized.end(), iceCandidateInfo.begin(), iceCandidateInfo.end());
 
+        return serialized;
     
     }
 }; 
+
+
+/// Client Response - ClientResponseAuthorizedICEConnection
+/// lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes)
+struct ClientResponseAuthorizedICEConnection : MessageBaseToSend
+{
+    const int CONST_SIZE = 4;
+    vector<uint8_t> iceCandidateInfo;
+    uint16_t requestId;
+
+    ClientResponseAuthorizedICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId) : MessageBaseToSend(ClientResponseCodes::ClientResponseAuthorizedICEConnection), iceCandidateInfo(move(iceCandidateInfo)), requestId(requestId){}
+    
+    vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
+    {
+
+        if(iceCandidateInfo.size() > USHRT_MAX)
+        {
+            throw std::runtime_error("Ice candidate is too long (max size - 2 bytes)");
+        }
+        uint16_t len = iceCandidateInfo.size();
+
+        // Serialize `len` into two bytes vector
+        vector<uint8_t> lenSerialized;
+        SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
+
+        // Serialize `requestId` into two bytes vector
+        vector<uint8_t> requestIdSerialized;
+        SerializeDeserializeUtils::serializeUint16IntoVector(requestIdSerialized, requestId);
+
+        // serialize base struct
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize+CONST_SIZE+len);
+
+        serialized.insert(serialized.end(), lenSerialized.begin(), lenSerialized.end());
+        serialized.insert(serialized.end(), iceCandidateInfo.begin(), iceCandidateInfo.end());
+        serialized.insert(serialized.end(), requestIdSerialized.begin(), requestIdSerialized.end());
+
+        return serialized;
+    }
+};
+
+
 
 ////////////////////
 //// Bit torrent //
@@ -259,8 +300,81 @@ struct NewIdResponse
 /// MEssage received:
 /// TODO Server Response:  UserAuthorizedICEData = 11,
 /// Message data:  lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), 
+struct ServerResponseUserAuthorizedICEData
+{
+    vector<uint8_t> iceCandidateInfo;
 
+    ServerResponseUserAuthorizedICEData(const MessageBaseReceived& receivedMessage)
+    {
+        deserailize(receivedMessage.data);
+    }
+
+    void deserailize(const std::vector<uint8_t>& buffer)
+    {
+
+        std::cout << "Starting deserialization of ServerResponseUserAuthorizedICEData..." << std::endl;
+
+         // Extract the length of iceCandidateInfo
+        uint16_t length = 0;
+        std::memcpy(&length, buffer.data() + SHA256_SIZE, sizeof(uint16_t));
+        std::cout << "Extracted iceCandidateInfo length: " << length << std::endl;
+        
+        // Extract iceCandidateInfo
+          // Validate buffer size for remaining data
+        size_t valueStart = sizeof(uint16_t);
+        iceCandidateInfo.assign(buffer.begin() + valueStart, buffer.begin() + valueStart + length);
+        std::cout << "Extracted iceCandidateInfo: ";
+        for (auto byte : iceCandidateInfo) {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
+        }
+        std::cout << std::endl;
+
+    }
+
+
+};
 
 /// TODO - Server Request
 /// Message data:   lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes) 
+struct ServerRequestAuthorizeICEConnection
+{
+    vector<uint8_t> iceCandidateInfo;
+    uint16_t requestId;
 
+    ServerRequestAuthorizeICEConnection(const MessageBaseReceived& receivedMessage)
+    {
+        deserailize(receivedMessage.data);
+    }
+
+    void deserailize(const std::vector<uint8_t>& buffer)
+    {
+
+        std::cout << "Starting deserialization of ServerResponseUserAuthorizedICEData..." << std::endl;
+
+         // Extract the length of iceCandidateInfo
+        uint16_t length = 0;
+        std::memcpy(&length, buffer.data(), sizeof(uint16_t));
+        std::cout << "Extracted iceCandidateInfo length: " << length << std::endl;
+        
+        // Extract iceCandidateInfo
+          // Validate buffer size for remaining data
+        size_t valueStart = sizeof(uint16_t);
+        iceCandidateInfo.assign(buffer.begin() + valueStart, buffer.begin() + valueStart + length);
+       
+        std::cout << "Extracted iceCandidateInfo: ";
+        for (auto byte : iceCandidateInfo) {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
+        }
+
+            // Extract the requestId (2 bytes), after iceCandidateInfo
+        valueStart+= length;
+        std::memcpy(&requestId, buffer.data() + valueStart, sizeof(uint16_t));
+        std::cout << "\nExtracted requestId: " << requestId << std::endl;
+
+    
+        std::cout << std::endl;
+
+    }
+
+
+};
