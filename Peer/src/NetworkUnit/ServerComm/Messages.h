@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include "../../Encryptions/SHA256/sha256.h"
+#include <climits>
+#include "SerializeDeserializeUtils.h"
 
 using std::vector;
 using ID = HashResult;
@@ -88,13 +90,53 @@ struct MessageBaseToSend
 };
 
 
-/// Message to send
-/// TODO - Client request: get user ICE info
-/// Message: 4 bytes id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo 
 
 
 /// TODO - Client Response - ClientResponseAuthorizedICEConnection
 /// lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes)
+////////////////////
+//// Signaling  ////
+///////////////////
+
+/// Message to send
+/// TODO - Client request: get user ICE info
+/// Message: 4 bytes user id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo 
+struct ClientRequestGetUserICEInfo : MessageBaseToSend
+{
+    ID userId;
+    vector<uint8_t> iceCandidateInfo;
+
+    ClientRequestGetUserICEInfo(ID userId, vector<uint8_t> iceCandidateInfo) : MessageBaseToSend(ClientRequestCodes::GetUserICEInfo), userId(userId), iceCandidateInfo(move(iceCandidateInfo)){}
+
+    vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
+    {
+
+        if(iceCandidateInfo.size() > USHRT_MAX)
+        {
+            throw std::runtime_error("Ice candidate is too long (max size - 2 bytes)");
+        }
+        uint16_t len = iceCandidateInfo.size();
+
+        // Serialize `len` into two bytes
+        vector<uint8_t> lenSerialized;
+        SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
+        
+         // Serialize base struct
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + 2 + len);
+
+        vector<uint8_t> thisSerialized(userId.begin(),userId.end());
+        
+        serialized.insert(serialized.end(), userId.begin(), userId.end());
+        serialized.insert(serialized.end(), lenSerialized.begin(), lenSerialized.end());
+        serialized.insert(serialized.end(), iceCandidateInfo.begin(), iceCandidateInfo.end());
+
+    
+    }
+}; 
+
+////////////////////
+//// Bit torrent //
+/////////////////
 
 // just for start debugging, pretify later
 struct DebuggingStringMessageToSend : MessageBaseToSend

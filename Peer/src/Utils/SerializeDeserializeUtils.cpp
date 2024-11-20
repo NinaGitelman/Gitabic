@@ -1,10 +1,8 @@
-//
-// Created by user on 20.11.2024 
-//
-#include "SerializerDeserializerUtils.h"
+
+#include "SerializeDeserializeUtils.h"
 
 
-void SerializerDeserializerUtils::serializeUint16IntoVector(vector<uint8_t>& buffer, uint16_t num)
+void SerializeDeserializeUtils::serializeUint16IntoVector(vector<uint8_t>& buffer, uint16_t num)
 {
     if(buffer.size() < 2)
     {

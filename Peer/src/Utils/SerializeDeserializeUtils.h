@@ -7,7 +7,7 @@
 
 using std::vector;
 
-class SerializerDeserializerUtils
+class SerializeDeserializeUtils
 {
    public:
    /// @brief Function to serailize a short (uint16_t) into a vector to then copy into the serialized vector

@@ -115,11 +115,16 @@ struct ServerResponseUserAuthorizedICEData : MessageBaseToSend
 
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override 
     {
+        if(iceCandidateInfo.size() > USHRT_MAX)
+        {
+            throw std::runtime_error("Ice candidate is too long (max size - 2 bytes)");
+        }
+
         uint16_t len = iceCandidateInfo.size();
 
         // Serialize `len` into two bytes
         vector<uint8_t> lenSerialized;
-        SerializerDeserializerUtils::serializeUint16IntoVector(lenSerialized, len);
+        SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
         
         // Serialize base struct
         vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + 2 + len);
@@ -149,11 +154,11 @@ struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
 
         // Serialize `len` into two bytes
         vector<uint8_t> lenSerialized(2);
-        SerializerDeserializerUtils::serializeUint16IntoVector(lenSerialized, len);
+        SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
 
         // serialize requestId
         vector<uint8_t> requestIdSerialized(2);
-        SerializerDeserializerUtils::serializeUint16IntoVector(requestIdSerialized, requestId);
+        SerializeDeserializeUtils::serializeUint16IntoVector(requestIdSerialized, requestId);
 
         // Serialize base struct
         vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + 2 + len);
