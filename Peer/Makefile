@@ -2,73 +2,76 @@
 ####################### Makefile Template ##############################
 ########################################################################
 
-# Compiler settings - Can be customized.
-CC = g++-10
+# Compiler settings
+CXX = g++-10
+CC = gcc
 CXXFLAGS = -std=c++20 -Wall -g
-LDFLAGS = -lrt -pthread
+CFLAGS = -Wall -g -std=c99
+LDFLAGS = -lrt -pthread 
 
-# Makefile settings - Can be customized.
+# libnice flags
+NICE_CFLAGS = $(shell pkg-config --cflags nice)
+NICE_LDFLAGS = $(shell pkg-config --libs nice)
+NICE_LIBS = -lnice -lgio-2.0 -lgobject-2.0 -lglib-2.0
+
+# Project structure
 APPNAME = peer.out
-EXT = .cpp
-SRCDIR = src
+CPP_EXT = .cpp
+C_EXT = .c
+CPP_SRCDIR = src/cpp
+C_SRCDIR = src/c
 OBJDIR = obj
 
-############## Do not change anything from here downwards! #############
-# Recursively find all source files with the .cpp extension in SRCDIR.
-SRC = $(shell find $(SRCDIR) -type f -name *$(EXT))
-# Map each source file to its corresponding object file in the OBJDIR.
-OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
-# Map each object file to its dependency file.
-DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
-# UNIX-based OS variables & settings
-RM = rm
-DELOBJ = $(OBJ)
-# Windows OS variables & settings
-DEL = del
-EXE = .exe
-WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
+# Source files
+CPP_SRC = $(shell find $(CPP_SRCDIR) -type f -name *$(CPP_EXT))
+C_SRC = $(shell find $(C_SRCDIR) -type f -name *$(C_EXT))
+
+# Object files
+CPP_OBJ = $(CPP_SRC:$(CPP_SRCDIR)/%$(CPP_EXT)=$(OBJDIR)/cpp/%.o)
+C_OBJ = $(C_SRC:$(C_SRCDIR)/%$(C_EXT)=$(OBJDIR)/c/%.o)
+OBJ = $(CPP_OBJ) $(C_OBJ)
+
+# Dependencies
+DEP = $(CPP_OBJ:%.o=%.d) $(C_OBJ:%.o=%.d)
+
+# Clean-up settings
+RM = rm -f
 
 ########################################################################
 ####################### Targets beginning here #########################
 ########################################################################
 
+# Default target
 all: $(APPNAME)
 
-# Builds the app
+# Link object files into the final executable
 $(APPNAME): $(OBJ)
-	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(NICE_LDFLAGS)
 
-# Creates the dependency rules
-%.d: $(SRCDIR)/%$(EXT)
+# Compile .cpp files with libnice include paths
+$(OBJDIR)/cpp/%.o: $(CPP_SRCDIR)/%$(CPP_EXT)
 	@mkdir -p $(dir $@)
-	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+	$(CXX) $(CXXFLAGS) $(NICE_CFLAGS) -c $< -o $@
 
-# Includes all .h files
+# Compile .c files with libnice include paths
+$(OBJDIR)/c/%.o: $(C_SRCDIR)/%$(C_EXT)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(NICE_CFLAGS) -c $< -o $@
+
+# Create dependency files for .cpp
+$(OBJDIR)/cpp/%.d: $(CPP_SRCDIR)/%$(CPP_EXT)
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) $(NICE_CFLAGS) -MM $< -MT $(@:%.d=%.o) > $@
+
+# Create dependency files for .c
+$(OBJDIR)/c/%.d: $(C_SRCDIR)/%$(C_EXT)
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) $(NICE_CFLAGS) -MM $< -MT $(@:%.d=%.o) > $@
+
+# Include dependencies
 -include $(DEP)
 
-# Building rule for .o files and its .c/.cpp in combination with all .h
-$(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
-	@mkdir -p $(dir $@)
-	$(CC) $(CXXFLAGS) -o $@ -c $<
-
-################### Cleaning rules for Unix-based OS ###################
-# Cleans complete project
+# Clean build artifacts
 .PHONY: clean
 clean:
-	$(RM) $(DELOBJ) $(DEP) $(APPNAME)
-
-# Cleans only all files with the extension .d
-.PHONY: cleandep
-cleandep:
-	$(RM) $(DEP)
-
-#################### Cleaning rules for Windows OS #####################
-# Cleans complete project
-.PHONY: cleanw
-cleanw:
-	$(DEL) $(WDELOBJ) $(DEP) $(APPNAME)$(EXE)
-
-# Cleans only all files with the extension .d
-.PHONY: cleandepw
-cleandepw:
-	$(DEL) $(DEP)
+	$(RM) $(OBJ) $(DEP) $(APPNAME)
