@@ -54,6 +54,69 @@ void FileUtils::writeVectorToFile(const std::vector<uint8_t> &data, const std::s
     outFile.close();
 }
 
+void Utils::FileUtils::writeChunkToFile(const std::vector<uint8_t> &data, const std::string &filePath, uint64_t offset)
+{
+    // Open the file in binary mode for both reading and writing, without truncating
+    std::ofstream outFile(filePath, std::ios::in | std::ios::out | std::ios::binary);
+    if (!outFile)
+    {
+        throw std::ios_base::failure("Failed to open file for writing");
+    }
+
+    // Move the write pointer to the specified offset
+    outFile.seekp(static_cast<std::streampos>(offset));
+    if (!outFile)
+    {
+        throw std::ios_base::failure("Failed to seek to the specified offset");
+    }
+
+    // Write the data at the offset
+    outFile.write(reinterpret_cast<const char *>(data.data()), data.size());
+    if (!outFile)
+    {
+        throw std::ios_base::failure("Failed to write data to the file");
+    }
+
+    // Close the file
+    outFile.close();
+}
+
+void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_t size)
+{
+    // Open the file in binary mode for writing
+    std::ofstream file(filePath, std::ios::binary | std::ios::trunc);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Failed to create file: " + filePath);
+    }
+
+    // Allocate a buffer to write in chunks
+    const size_t bufferSize = 4 * 1024;      // 4 KB buffer
+    std::vector<char> buffer(bufferSize, 0); // Fill buffer with zeros
+
+    uint64_t bytesWritten = 0;
+    while (bytesWritten < size)
+    {
+        size_t bytesToWrite = std::min<uint64_t>(bufferSize, size - bytesWritten);
+        file.write(buffer.data(), bytesToWrite);
+        bytesWritten += bytesToWrite;
+
+        if (!file)
+        {
+            throw std::runtime_error("Error while writing to file: " + filePath);
+        }
+    }
+
+    // Close the file
+    file.close();
+}
+
+bool FileUtils::verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size, HashResult hash)
+{
+    auto data = readFileChunk(filePath, offset, size);
+    return hash == SHA256::toHashSha256(data);
+}
+
 std::array<uint8_t, 16> Conversions::cutArray(HashResult &from)
 {
     std::array<uint8_t, 16> result;

@@ -8,6 +8,7 @@ int main()
     // Utils::FileUtils::writeVectorToFile(b, "/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.gitabic");
     auto a = Utils::FileUtils::readFileToVector("/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.gitabic"); // Need to create 300000001 'a' in test.txt : python3 -c 'print("a" * (99999999 + 1)*3)' > test.txt
     MetaDataFile metaDataFile(a);
-    SHA256::printHashAsString(metaDataFile.getPartsHashes()[0]);
-    SHA256::printHashAsString(SHA256::toHashSha256(Utils::FileUtils::readFileChunk("/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.txt", 0, Utils::FileSplitter::pieceSize(metaDataFile.getFileSize()))));
+    std::cout << Utils::FileUtils::verifyPiece("/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.txt", 0, Utils::FileSplitter::pieceSize(metaDataFile.getFileSize()), metaDataFile.getPartsHashes()[0]);
+    // SHA256::printHashAsString(metaDataFile.getPartsHashes()[0]);
+    // SHA256::printHashAsString(SHA256::toHashSha256(Utils::FileUtils::readFileChunk("/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.txt", 0, Utils::FileSplitter::pieceSize(metaDataFile.getFileSize()))));
 }

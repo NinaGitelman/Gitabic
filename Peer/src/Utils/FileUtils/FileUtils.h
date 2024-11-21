@@ -19,6 +19,9 @@ namespace Utils
         static std::vector<uint8_t> readFileToVector(const std::string &filePath);
         static std::vector<uint8_t> readFileChunk(const std::string &filePath, size_t offset, size_t size);
         static void writeVectorToFile(const std::vector<uint8_t> &data, const std::string &filePath);
+        static void writeChunkToFile(const std::vector<uint8_t> &data, const std::string &filePath, uint64_t offset);
+        static void createFilePlaceHolder(const std::string &filePath, const uint64_t size);
+        static bool verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size, HashResult hash);
     };
 
     class FileSplitter
