@@ -29,7 +29,12 @@ struct PieceProgress
         this->bytesDownloaded = 0;
         lastAccess = time(nullptr);
         status = PieceStatus::Empty;
-        blocksCompleted
+        blocksCompleted = vector<bitset<8>>((size / Utils::FileSplitter::BLOCK_SIZE / 8) + 1);
+        blocksCompleted.shrink_to_fit();
+        for (auto &&i : blocksCompleted)
+        {
+            i.reset();
+        }
     }
 };
 

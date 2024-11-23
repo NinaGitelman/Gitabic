@@ -1,14 +1,18 @@
 #include <iostream>
-#include "Utils/MetaDataFile/MetaDataFile.h"
+#include "Utils/FileUtils/FileUtils.h"
 
 int main()
 {
-    // auto a = MetaDataFile::createMetaData("/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.txt", "12345678", Address(), "Uri");
-    // auto b = a.serialize();
-    // Utils::FileUtils::writeVectorToFile(b, "/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.gitabic");
-    auto a = Utils::FileUtils::readFileToVector("/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.gitabic"); // Need to create 300000001 'a' in test.txt : python3 -c 'print("a" * (99999999 + 1)*3)' > test.txt
-    MetaDataFile metaDataFile(a);
-    std::cout << Utils::FileUtils::verifyPiece("/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.txt", 0, Utils::FileSplitter::pieceSize(metaDataFile.getFileSize()), metaDataFile.getPartsHashes()[0]);
-    // SHA256::printHashAsString(metaDataFile.getPartsHashes()[0]);
-    // SHA256::printHashAsString(SHA256::toHashSha256(Utils::FileUtils::readFileChunk("/home/user/Desktop/Maghshimim/Bit Torrent Uri + Nina/Gitabic/Peer/test.txt", 0, Utils::FileSplitter::pieceSize(metaDataFile.getFileSize()))));
+    using namespace Utils;
+    auto path = "./blah.txt";
+    FileUtils::createFilePlaceHolder(path, 301);
+    vector<uint8_t> v(30, 'a');
+    vector<uint8_t> v1(30, 'b');
+    FileUtils::writeChunkToFile(v, path, 10);
+    FileUtils::writeChunkToFile(v1, path, 50);
+    v = FileUtils::readFileToVector(path);
+    for (auto &&i : v)
+    {
+        std::cout << i;
+    }
 }

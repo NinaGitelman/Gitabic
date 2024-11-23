@@ -91,8 +91,8 @@ void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_
     }
 
     // Allocate a buffer to write in chunks
-    const size_t bufferSize = 4 * 1024;      // 4 KB buffer
-    std::vector<char> buffer(bufferSize, 0); // Fill buffer with zeros
+    const size_t bufferSize = 4 * 1024;        // 4 KB buffer
+    std::vector<char> buffer(bufferSize, '0'); // Fill buffer with zeros
 
     uint64_t bytesWritten = 0;
     while (bytesWritten < size)
