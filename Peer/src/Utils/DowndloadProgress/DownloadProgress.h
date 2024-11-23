@@ -2,58 +2,61 @@
 #define DOWNLOADPROGRESS_H
 
 #pragma once
-#include <bitset>
 #include <Utils/MetaDataFile/MetaDataFile.h>
-using std::bitset;
+enum class DownloadStatus
+{
+    Empty,
+    Downloading,
+    Downloaded,
+    Verified,
+    Invalid
+};
+struct BlockInfo
+{
+    uint32_t offset;
+    uint16_t size;
+    bool isLastBlock;
+    DownloadStatus status;
+
+    vector<uint8_t> serialize() const;
+    static BlockInfo deserialize(const vector<uint8_t> &data, size_t &offset);
+};
 
 struct PieceProgress
 {
-    enum class PieceStatus
-    {
-        Empty,
-        Downloading,
-        Downloaded,
-        Verified,
-        Invalid
-    } status;
-    uint16_t index;
-    std::vector<bitset<8>> blocksCompleted;
+    DownloadStatus status;
+    uint64_t offset;
+    std::vector<BlockInfo> blocks;
     uint32_t size;
     uint32_t bytesDownloaded;
     time_t lastAccess;
+    HashResult hash;
 
-    PieceProgress(uint16_t index, uint32_t size)
-    {
-        this->index = index;
-        this->size = size;
-        this->bytesDownloaded = 0;
-        lastAccess = time(nullptr);
-        status = PieceStatus::Empty;
-        blocksCompleted = vector<bitset<8>>((size / Utils::FileSplitter::BLOCK_SIZE / 8) + 1);
-        blocksCompleted.shrink_to_fit();
-        for (auto &&i : blocksCompleted)
-        {
-            i.reset();
-        }
-    }
+    PieceProgress(uint64_t offset, uint32_t size, HashResult hash);
+
+    vector<uint8_t> serialize() const;
+    static PieceProgress deserialize(const vector<uint8_t> &data, size_t &offset);
 };
 
 class DownloadProgress
 {
 public:
-    DownloadProgress(MetaDataFile *metaData);
-    DownloadProgress(vector<uint8_t> data);
+    DownloadProgress(MetaDataFile &metaData);
+    DownloadProgress(vector<uint8_t> &data);
     ~DownloadProgress();
     vector<uint8_t> serialize();
     void deserialize(vector<uint8_t> data);
     void init(MetaDataFile &metaData);
 
 private:
+    string fileName;
     HashResult fileHash;
     bool completed;
     uint64_t totalDownloadBytes;
+    uint64_t fileSize;
     time_t startTime;
     time_t lastTime;
+    vector<PieceProgress> pieces;
 };
 
 #endif

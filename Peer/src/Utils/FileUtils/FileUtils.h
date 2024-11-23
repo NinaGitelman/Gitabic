@@ -29,7 +29,7 @@ namespace Utils
     public:
         static constexpr uint64_t MIN_PIECE_SIZE = 256 * KB;
         static constexpr uint64_t MAX_PIECE_SIZE = 4 * KB * KB;
-        static constexpr uint64_t BLOCK_SIZE = 16 * KB;
+        static constexpr uint16_t BLOCK_SIZE = 16 * KB;
         static uint pieceSize(const uint64_t fileSize);
     };
 
