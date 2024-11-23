@@ -25,6 +25,9 @@ vector<uint8_t> DownloadProgress::serialize()
     data.insert(data.end(), (uint8_t *)&startTime, (uint8_t *)&startTime + sizeof(startTime));
     data.insert(data.end(), (uint8_t *)&lastTime, (uint8_t *)&lastTime + sizeof(lastTime));
     data.insert(data.end(), fileHash.data(), fileHash.data() + fileHash.size());
+    uint8_t nameSize = fileName.size();
+    data.insert(data.end(), (uint8_t *)&nameSize, (uint8_t *)&nameSize + sizeof(nameSize));
+    data.insert(data.end(), fileName.c_str(), fileName.c_str() + fileName.size());
 
     // Serialize pieces
     uint32_t piecesCount = pieces.size();
@@ -62,6 +65,12 @@ void DownloadProgress::deserialize(vector<uint8_t> data)
     memcpy(fileHash.data(), data.data() + offset, fileHash.size());
     offset += fileHash.size();
 
+    uint8_t fileNameSize;
+    memcpy(&fileNameSize, data.data() + offset, sizeof(fileNameSize));
+    offset += sizeof(fileNameSize);
+    fileName = string(data.data() + offset, data.data() + offset + fileNameSize);
+    offset += fileNameSize;
+
     // Deserialize pieces
     uint32_t piecesCount;
     memcpy(&piecesCount, data.data() + offset, sizeof(piecesCount));
@@ -74,9 +83,22 @@ void DownloadProgress::deserialize(vector<uint8_t> data)
     }
 }
 
+double DownloadProgress::proggres()
+{
+    return totalDownloadBytes / fileSize;
+}
+
+void DownloadProgress::downloadedBlock(uint32_t piece, uint16_t block)
+{
+    if (piece > pieces.size())
+        throw std::out_of_range("No piece #" + piece);
+    totalDownloadBytes += pieces[piece].downloadedBlock(block);
+}
+
 void DownloadProgress::init(MetaDataFile &metaData)
 {
     using namespace Utils;
+    fileName = metaData.getFileName();
     startTime = time(nullptr);
     lastTime = startTime;
     fileSize = metaData.getFileSize();
@@ -143,6 +165,34 @@ BlockInfo BlockInfo::deserialize(const vector<uint8_t> &data, size_t &offset)
     offset += sizeof(block.status);
 
     return block;
+}
+
+uint16_t PieceProgress::downloadedBlock(uint16_t block)
+{
+    if (block > blocks.size())
+    {
+        throw std::out_of_range("No block # " + block);
+    }
+    blocks[block]
+        .status = DownloadStatus::Downloaded;
+    if (allBlocksDownloaded())
+    {
+        status = DownloadStatus::Downloaded;
+    }
+    return blocks[block].size;
+}
+
+bool PieceProgress::allBlocksDownloaded()
+{
+    for (auto &&i : blocks)
+    {
+        if (i.status != DownloadStatus::Downloaded)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 vector<uint8_t> PieceProgress::serialize() const
