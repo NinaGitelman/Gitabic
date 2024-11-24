@@ -141,8 +141,7 @@ Function to output/print the local candidate data and input remote candidate dat
 */
 void cb_candidate_gathering_done(NiceAgent *agent, guint streamId, gpointer data)
 {
-
-  g_debug("SIGNAL candidate gathering done\n");
+   g_debug("SIGNAL candidate gathering done\n");
 
   // Candidate gathering is done. Send our local candidates on stdout
   printf("Copy this line to remote client:\n");
@@ -156,10 +155,12 @@ void cb_candidate_gathering_done(NiceAgent *agent, guint streamId, gpointer data
   // Listen on stdin for the remote candidate list
   printf("Enter remote data (single line, no wrapping):\n");
 
+  // in here, instead of waiting for remote data there has to be a fucntion that will be called to change th enice agent
+  
   // Adds the GIOChannel into the default main loop context with the default priority.
   // g_io_add_watch (GIOChannel* channel, GIOCondition condition, GIOFunc func, gpointer user_data)
   // this adds a watcher to the stdin and sends the stdin to stdin_remote_info_cb
-  g_io_add_watch(io_stdin, G_IO_IN, stdin_remote_info_cb, agent);
+  //g_io_add_watch(io_stdin, G_IO_IN, stdin_remote_info_cb, agent);
   printf("> ");
   fflush(stdout);
 }

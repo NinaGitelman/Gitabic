@@ -8,10 +8,13 @@
 extern "C"
 {
 #include "../c/LibNice/LibNice.h"
-
+ void cb_try(NiceAgent *agent, gpointer data);
 }
 
-
+ void cb_try(NiceAgent *agent, gpointer data)
+ {
+  printf("try");
+ }
 int main(int argc, char *argv[])
 {
   NiceAgent *agent;
@@ -76,13 +79,19 @@ To create a new GIOChannel on UNIX systems use g_io_channel_unix_new()
     g_object_set(agent, "stun-server", stun_addr, NULL);
     g_object_set(agent, "stun-server-port", stun_port, NULL);
   }
+
   g_object_set(agent, "controlling-mode", isControlling, NULL);
 
   // Connect to the signals
   // g_signal_connect: Connects a GCallback function to a signal for a particular object.
-  g_signal_connect(agent, "candidate-gathering-done", G_CALLBACK(cb_candidate_gathering_done), NULL);
+  g_signal_connect(agent, "candidate-gathering-done", G_CALLBACK(cb_try), NULL);
 
- // g_signal_connect(agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
+//   char* inputBuffer = new char[6000];
+//   cout << "Please enter remote candidate >";
+//   cin >> inputBuffer;
+
+//   parse_remote_data(agent, stream_id, inputBuffer );
+//  // g_signal_connect(agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
 
   g_signal_connect(agent, "component-state-changed", G_CALLBACK(cb_component_state_changed), NULL);
 
