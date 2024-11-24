@@ -1,6 +1,4 @@
-//
-// Created by user on 24.11.2024 
-//
+
 #pragma once
 #include <iostream>
 #include <stdlib.h>
@@ -8,10 +6,17 @@
 #include <string.h>
 #include <ctype.h>
 #include <vector>
+#include <stdint.h>
 #include "../Utils/ThreadSafeCout.h"
+#include "../../c/LibNice/LibNice.h"
+
+
+
+
 #define STUN_PORT 3478
 #define STUN_ADDR "stun.stunprotocol.org" // TODO - make it a list and do many tries in case this does not work (out of service../)
 
+using std::vector;
 
 extern "C"
 {
@@ -22,15 +27,25 @@ class LibNiceHandler
 {
 
 private:
-    NiceAgent *_agent;
+    NiceAgent *_agent; // the ncie agent that will be used for this connection
     const gchar *_stunAddr = STUN_ADDR;
     const guint _stunPort = STUN_PORT;
-    gboolean _isControlling;   
+    gboolean _isControlling;   // if this conneciton is controllling or being controlled
+    GMainContext* _context;  // this connections context
+    GMainLoop* _gloop; // a blocking loop only for this connection
+    guint _streamId;  // Add this
+    bool _candidatesGathered = false; // bool to track if candidates were already gathered
+
+    int getCandidateData(NiceAgent *agent, guint streamId, guint componentId, char **localDataBuffer);
 
 public:
     /// @brief constructor that intializes the object
     /// @param isControlling if the object was created because someone is requesting to talk to the peer (0)
                     ///     or if the peer wants to talk to someone (1)
     LibNiceHandler(bool isControlling);
+    ~LibNiceHandler();
+    vector<uint8_t> getLocalICEData();
+    static void candidateGatheringDone(NiceAgent *agent, guint streamId, gpointer data);
+   
     
 };
