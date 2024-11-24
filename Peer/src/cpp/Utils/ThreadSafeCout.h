@@ -14,6 +14,6 @@ class ThreadSafeCout
     static std::mutex _coutMutex;
 
     public:
-    static void threadSafeCout(std::string text);
+    static void cout(const std::string& text);
 
 };

@@ -2,9 +2,11 @@
 // Created by user on 24.11.2024 
 //
 #include "ThreadSafeCout.h"
-void ThreadSafeCout::threadSafeCout(std::string text)
+std::mutex ThreadSafeCout::_coutMutex;
+
+void ThreadSafeCout::cout(const std::string& text)
 {
-    std::unique_lock<std::mutex> lock(_coutMutex);
+    std::unique_lock<std::mutex> lock(ThreadSafeCout::_coutMutex);
     std::cout << text;
 
 }

@@ -9,7 +9,6 @@
 #include <ctype.h>
 #include <vector>
 #include "../Utils/ThreadSafeCout.h"
-
 #define STUN_PORT 3478
 #define STUN_ADDR "stun.stunprotocol.org" // TODO - make it a list and do many tries in case this does not work (out of service../)
 
