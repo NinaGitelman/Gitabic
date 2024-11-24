@@ -3,7 +3,7 @@
 //
 #include "LibNiceHandler.h"
 
-LibNiceHandler::LibNiceHandler
+LibNiceHandler::LibNiceHandler(bool isControlling)
 {
     //Initializes the platform networking libraries (eg, on Windows, this calls WSAStartup()).
     // GLib will call this itself if it is needed, so you only need to call it if you directly call system networking functions
@@ -16,9 +16,16 @@ LibNiceHandler::LibNiceHandler
     // Create the nice agent
   _agent = nice_agent_new(g_main_loop_get_context(gloop), NICE_COMPATIBILITY_RFC5245);
    
-    if (agent == NULL)
+    if (agent == NULL) // TODO - error handling here...
     {
-        
-        cout << "Failed to create agent";
+        ThreadSafeCout::print("Failed to create agent")
+    }
+    else
+    {
+        // set the stun server and port for the nice agent
+        g_object_set(agent, "stun-server", _stunAddr, NULL);
+        g_object_set(agent, "stun-server-port", _stunPort, NULL);
+        g_object_set(agent, "controlling-mode", isControlling, NULL);
+
     }
 }
