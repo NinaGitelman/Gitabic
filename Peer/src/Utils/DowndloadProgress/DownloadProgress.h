@@ -36,6 +36,8 @@ struct PieceProgress
 
     uint16_t downloadedBlock(uint16_t block);
     bool allBlocksDownloaded();
+    void setStatus(DownloadStatus status);
+    void updateBlockStatus(uint16_t block, DownloadStatus status);
     vector<uint8_t> serialize() const;
     static PieceProgress deserialize(const vector<uint8_t> &data, size_t &offset);
 };
@@ -50,6 +52,8 @@ public:
     void deserialize(vector<uint8_t> data);
     double proggres();
     void downloadedBlock(uint32_t piece, uint16_t block);
+    void updatePieceStatus(uint32_t piece, DownloadStatus status);
+    void updateBlockStatus(uint32_t piece, uint16_t block, DownloadStatus status);
 
 private:
     void init(MetaDataFile &metaData);

@@ -95,6 +95,20 @@ void DownloadProgress::downloadedBlock(uint32_t piece, uint16_t block)
     totalDownloadBytes += pieces[piece].downloadedBlock(block);
 }
 
+void DownloadProgress::updatePieceStatus(uint32_t piece, DownloadStatus status)
+{
+    if (piece >= pieces.size())
+        throw std::out_of_range("No piece #" + piece);
+    pieces[piece].setStatus(status);
+}
+
+void DownloadProgress::updateBlockStatus(uint32_t piece, uint16_t block, DownloadStatus status)
+{
+    if (piece >= pieces.size())
+        throw std::out_of_range("No piece #" + piece);
+    pieces[piece].updateBlockStatus(block, status);
+}
+
 void DownloadProgress::init(MetaDataFile &metaData)
 {
     using namespace Utils;
@@ -193,6 +207,18 @@ bool PieceProgress::allBlocksDownloaded()
     }
 
     return true;
+}
+
+void PieceProgress::setStatus(DownloadStatus status)
+{
+    this->status = status;
+}
+
+void PieceProgress::updateBlockStatus(uint16_t block, DownloadStatus status)
+{
+    if (block >= blocks.size())
+        throw std::out_of_range("No block #" + block);
+    blocks[block].status = status;
 }
 
 vector<uint8_t> PieceProgress::serialize() const
