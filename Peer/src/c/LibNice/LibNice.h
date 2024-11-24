@@ -33,7 +33,11 @@ void cb_nice_recv(NiceAgent *agent, guint _stream_id, guint component_id, guint 
 
 NiceCandidate* parse_candidate(char *scand, guint _stream_id);
 
-int print_local_data (NiceAgent *agent, guint _stream_id, guint component_id);
+/// @brief Function to get the lcoal data
+/// input: the nice agent being used, the stream id, the component id and the local buffer to which the data will be copied
+/// return: Result code
+/// OBS: the function will allocate the necessary space for the local buffer so send a buffer in the format:   char *outputString = NULL;    
+int getLocalData (NiceAgent *agent, guint _stream_id, guint component_id, char **localDataBuffer);
 
 int parse_remote_data(NiceAgent *agent, guint _stream_id, guint component_id, char *line);
 

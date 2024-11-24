@@ -12,8 +12,6 @@ extern "C"
 }
 
 
-
-
 int main(int argc, char *argv[])
 {
   NiceAgent *agent;
@@ -55,9 +53,6 @@ int main(int argc, char *argv[])
 // creates anew GMainLoop structure (sets global-default main context, if it is running)
   gloop = g_main_loop_new(NULL, FALSE);
 
-#ifdef G_OS_WIN32
-  io_stdin = g_io_channel_win32_new_fd(_fileno(stdin));
-#else
 /*
 The GIOChannel data type aims to provide a portable method for using file descriptors, 
 pipes, and sockets, and integrating them into the main event loop 
@@ -65,7 +60,6 @@ pipes, and sockets, and integrating them into the main event loop
 To create a new GIOChannel on UNIX systems use g_io_channel_unix_new() 
 */
   io_stdin = g_io_channel_unix_new(fileno(stdin));
-#endif
 
   // Create the nice agent
   agent = nice_agent_new(g_main_loop_get_context(gloop), NICE_COMPATIBILITY_RFC5245);
