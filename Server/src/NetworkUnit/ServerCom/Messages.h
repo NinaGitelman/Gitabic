@@ -244,7 +244,7 @@ struct ClientResponseAuthorizedICEConnection
     // Deserialize the buffer into member variables
     void deserialize(const std::vector<uint8_t> &buffer)
     {
-        if (buffer.size() < 4)
+        if (buffer.size() < 2)
         { // Minimum size: 2 bytes for length + 2 bytes for requestId
             throw std::invalid_argument("Buffer too small to deserialize");
         }

@@ -32,7 +32,10 @@ namespace std // Hash method for ID to allow hash map key usage
 // Codes fro protocol
 enum ClientRequestCodes
 {
-     // Signaling
+    // no message received
+    NoMessageReceived = 0,
+
+    // Signaling
     GetUserICEInfo = 1,
 
     // Bit torrent
@@ -40,12 +43,12 @@ enum ClientRequestCodes
     UserListReq = 23,
 
     // debugging
-    DebuggingStringMessageToSend = 255 
+    DebuggingStringMessageToSend = 255
 };
 
 enum ClientResponseCodes
 {
- // signaling
+    // signaling
     ClientResponseAuthorizedICEConnection = 30
 };
 
@@ -59,7 +62,7 @@ enum ServerResponseCodes
     // signaling
     UserAuthorizedICEData = 11,
 
-    // bit torrent 
+    // bit torrent
     StoreSuccess = 221,
     StoreFailure,
     UserListRes
@@ -89,92 +92,68 @@ struct MessageBaseToSend
     }
 };
 
-
-
-
-
 ////////////////////
 //// Signaling  ////
 ///////////////////
 
 /// Message to send
 /// TODO - Client request: get user ICE info
-/// Message: 32 bytes user id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo 
+/// Message: 32 bytes user id | iceCandLen btyes iceCandInfo
 // works!!!!
 struct ClientRequestGetUserICEInfo : MessageBaseToSend
 {
-    const int CONST_SIZE = 6; 
     ID userId;
     vector<uint8_t> iceCandidateInfo;
 
-    ClientRequestGetUserICEInfo(ID userId, vector<uint8_t> iceCandidateInfo) : MessageBaseToSend(ClientRequestCodes::GetUserICEInfo), userId(userId), iceCandidateInfo(move(iceCandidateInfo)){}
+    ClientRequestGetUserICEInfo(ID userId, vector<uint8_t> iceCandidateInfo) : MessageBaseToSend(ClientRequestCodes::GetUserICEInfo), userId(userId), iceCandidateInfo(move(iceCandidateInfo)) {}
 
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
 
-        if(iceCandidateInfo.size() > USHRT_MAX)
-        {
-            throw std::runtime_error("Ice candidate is too long (max size - 2 bytes)");
-        }
-        uint16_t len = iceCandidateInfo.size();
+        // if (iceCandidateInfo.size() > USHRT_MAX)
+        // {
+        //     throw std::runtime_error("Ice candidate is too long (max size - 2 bytes)");
+        // }
 
-        // Serialize `len` into two bytes
-        vector<uint8_t> lenSerialized(2);
-        SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
-        
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + userId.size() + iceCandidateInfo.size());
 
-
-        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + CONST_SIZE + len);
-
-        serialized.insert(serialized.end(), userId.begin(), userId.end());
-        serialized.insert(serialized.end(), lenSerialized.begin(), lenSerialized.end());
-        serialized.insert(serialized.end(), iceCandidateInfo.begin(), iceCandidateInfo.end());
-        
+        SerializeDeserializeUtils::addToEnd(serialized, userId);
+        SerializeDeserializeUtils::addToEnd(serialized, iceCandidateInfo);
         return serialized;
-    
     }
-}; 
-
+};
 
 /// Client Response - ClientResponseAuthorizedICEConnection
 /// lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes)
 struct ClientResponseAuthorizedICEConnection : MessageBaseToSend
 {
-    const int CONST_SIZE = 4;
+    const int CONST_SIZE = 2;
     vector<uint8_t> iceCandidateInfo;
     uint16_t requestId;
 
-    ClientResponseAuthorizedICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId) : MessageBaseToSend(ClientResponseCodes::ClientResponseAuthorizedICEConnection), iceCandidateInfo(move(iceCandidateInfo)), requestId(requestId){}
-    
+    ClientResponseAuthorizedICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId) : MessageBaseToSend(ClientResponseCodes::ClientResponseAuthorizedICEConnection), iceCandidateInfo(move(iceCandidateInfo)), requestId(requestId) {}
+
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
 
-        if(iceCandidateInfo.size() > USHRT_MAX)
+        if (iceCandidateInfo.size() > USHRT_MAX)
         {
             throw std::runtime_error("Ice candidate is too long (max size - 2 bytes)");
         }
-        uint16_t len = iceCandidateInfo.size();
-
-        // Serialize `len` into two bytes vector
-        vector<uint8_t> lenSerialized(2);
-        SerializeDeserializeUtils::serializeUint16IntoVector(lenSerialized, len);
 
         // Serialize `requestId` into two bytes vector
         vector<uint8_t> requestIdSerialized;
         SerializeDeserializeUtils::serializeUint16IntoVector(requestIdSerialized, requestId);
 
         // serialize base struct
-        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize+CONST_SIZE+len);
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + CONST_SIZE + iceCandidateInfo.size());
 
-        serialized.insert(serialized.end(), lenSerialized.begin(), lenSerialized.end());
-        serialized.insert(serialized.end(), iceCandidateInfo.begin(), iceCandidateInfo.end());
-        serialized.insert(serialized.end(), requestIdSerialized.begin(), requestIdSerialized.end());
+        SerializeDeserializeUtils::addToEnd(serialized, iceCandidateInfo);
+        SerializeDeserializeUtils::addToEnd(serialized, requestIdSerialized);
 
         return serialized;
     }
 };
-
-
 
 ////////////////////
 //// Bit torrent //
@@ -184,19 +163,17 @@ struct ClientResponseAuthorizedICEConnection : MessageBaseToSend
 struct DebuggingStringMessageToSend : MessageBaseToSend
 {
 
-
     std::string message;
 
     DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessageToSend) {}
-    
-    virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override 
+
+    virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
         vector<uint8_t> thisSerialized(this->message.begin(), this->message.end());
         vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + thisSerialized.size());
-        serialized.insert(serialized.end(), thisSerialized.begin(), thisSerialized.end()); // Put the base struct serialization in the start of the vector
+        SerializeDeserializeUtils::addToEnd(serialized, thisSerialized); // Put the base struct serialization in the start of the vector
         return serialized;
     }
-
 };
 
 /// @brief A request for user list
@@ -253,8 +230,6 @@ struct MessageBaseReceived
     }
 };
 
-
-
 /// @brief A list of users that has a file
 struct UserListResponse
 {
@@ -295,87 +270,79 @@ struct NewIdResponse
     }
 };
 
-
-
-
 /// MEssage received:
 /// TODO Server Response:  UserAuthorizedICEData = 11,
-/// Message data:  lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), 
+/// Message data:  lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes),
 struct ServerResponseUserAuthorizedICEData
 {
     vector<uint8_t> iceCandidateInfo;
 
-    ServerResponseUserAuthorizedICEData(const MessageBaseReceived& receivedMessage)
+    ServerResponseUserAuthorizedICEData(const MessageBaseReceived &receivedMessage)
     {
         deserailize(receivedMessage.data);
     }
 
-    void deserailize(const std::vector<uint8_t>& buffer)
+    void deserailize(const std::vector<uint8_t> &buffer)
     {
 
         std::cout << "Starting deserialization of ServerResponseUserAuthorizedICEData..." << std::endl;
 
-         // Extract the length of iceCandidateInfo
+        // Extract the length of iceCandidateInfo
         uint16_t length = 0;
         std::memcpy(&length, buffer.data() + SHA256_SIZE, sizeof(uint16_t));
         std::cout << "Extracted iceCandidateInfo length: " << length << std::endl;
-        
+
         // Extract iceCandidateInfo
-          // Validate buffer size for remaining data
+        // Validate buffer size for remaining data
         size_t valueStart = sizeof(uint16_t);
         iceCandidateInfo.assign(buffer.begin() + valueStart, buffer.begin() + valueStart + length);
         std::cout << "Extracted iceCandidateInfo: ";
-        for (auto byte : iceCandidateInfo) {
+        for (auto byte : iceCandidateInfo)
+        {
             std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
         }
         std::cout << std::endl;
-
     }
-
-
 };
 
 /// TODO - Server Request
-/// Message data:   lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes) 
+/// Message data:   lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes)
 struct ServerRequestAuthorizeICEConnection
 {
     vector<uint8_t> iceCandidateInfo;
     uint16_t requestId;
 
-    ServerRequestAuthorizeICEConnection(const MessageBaseReceived& receivedMessage)
+    ServerRequestAuthorizeICEConnection(const MessageBaseReceived &receivedMessage)
     {
         deserailize(receivedMessage.data);
     }
 
-    void deserailize(const std::vector<uint8_t>& buffer)
+    void deserailize(const std::vector<uint8_t> &buffer)
     {
 
         std::cout << "Starting deserialization of ServerResponseUserAuthorizedICEData..." << std::endl;
 
-         // Extract the length of iceCandidateInfo
+        // Extract the length of iceCandidateInfo
         uint16_t length = 0;
         std::memcpy(&length, buffer.data(), sizeof(uint16_t));
         std::cout << "Extracted iceCandidateInfo length: " << length << std::endl;
-        
+
         // Extract iceCandidateInfo
-          // Validate buffer size for remaining data
+        // Validate buffer size for remaining data
         size_t valueStart = sizeof(uint16_t);
         iceCandidateInfo.assign(buffer.begin() + valueStart, buffer.begin() + valueStart + length);
-       
+
         std::cout << "Extracted iceCandidateInfo: ";
-        for (auto byte : iceCandidateInfo) {
+        for (auto byte : iceCandidateInfo)
+        {
             std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
         }
 
-            // Extract the requestId (2 bytes), after iceCandidateInfo
-        valueStart+= length;
+        // Extract the requestId (2 bytes), after iceCandidateInfo
+        valueStart += length;
         std::memcpy(&requestId, buffer.data() + valueStart, sizeof(uint16_t));
         std::cout << "\nExtracted requestId: " << requestId << std::endl;
 
-    
         std::cout << std::endl;
-
     }
-
-
 };
