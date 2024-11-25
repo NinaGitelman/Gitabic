@@ -20,7 +20,13 @@ public:
    static void addToEnd(vector<uint8_t> &to, const vector<uint8_t> &from);
 
    template <size_t N>
-   static void addToFront(vector<uint8_t> &to, const std::array<uint8_t, N> &from);
+   static void addToFront(vector<uint8_t> &to, const std::array<uint8_t, N> &from)
+   {
+      to.insert(to.begin(), from.begin(), from.end());
+   }
    template <size_t N>
-   static void addToEnd(vector<uint8_t> &to, const array<uint8_t, N> &from);
+   static void addToEnd(vector<uint8_t> &to, const std::array<uint8_t, N> &from)
+   {
+      to.insert(to.end(), from.begin(), from.end());
+   }
 };

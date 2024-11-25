@@ -131,7 +131,7 @@ struct ServerResponseUserAuthorizedICEData : MessageBaseToSend
 /// Message data:   lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes)
 struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
 {
-    constexpr uint8_t CONST_SIZE = 2;
+    static constexpr uint8_t CONST_SIZE = 2;
     uint16_t requestId;
     vector<uint8_t> iceCandidateInfo;
 
@@ -168,7 +168,7 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
     {
         vector<uint8_t> thisSerialized(this->message.begin(), this->message.end());
         vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + thisSerialized.size());
-        SerializeDeserializeUtils(serialized, thisSerialized); // Add this serailaized to the end of the vector
+        SerializeDeserializeUtils::addToEnd(serialized, thisSerialized); // Add this serailaized to the end of the vector
         return serialized;
     }
 };
@@ -254,7 +254,7 @@ struct ClientResponseAuthorizedICEConnection
                                 buffer.end() - sizeof(uint16_t));
 
         // Extract requestId
-        std::memcpy(&requestId, buffer.data() + buffer.size() - sizeof(uint16_t) + length, sizeof(uint16_t));
+        std::memcpy(&requestId, buffer.data() + buffer.size() - sizeof(uint16_t), sizeof(uint16_t));
 
         std::cout << "Deserializing Client Response Authorized ICE connection";
         std::cout << "Extracted iceCandidateInfo: ";

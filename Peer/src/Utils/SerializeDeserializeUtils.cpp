@@ -20,15 +20,3 @@ void SerializeDeserializeUtils::addToFront(vector<uint8_t> &to, const vector<uin
 {
     to.insert(to.begin(), from.begin(), from.end());
 }
-
-template <size_t N>
-void SerializeDeserializeUtils::addToFront(vector<uint8_t> &to, const std::array<uint8_t, N> &from)
-{
-    to.insert(to.begin(), from.begin(), from.end());
-}
-
-template <size_t N>
-void SerializeDeserializeUtils::addToEnd(std::vector<uint8_t> &to, const std::array<uint8_t, N> &from)
-{
-    to.insert(to.end(), from.begin(), from.end());
-}

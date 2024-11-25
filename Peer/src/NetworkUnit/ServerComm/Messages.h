@@ -188,7 +188,7 @@ struct UserListRequest : MessageBaseToSend
     {
         vector<uint8_t> thisSerialized(fileId.begin(), fileId.end());
         vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + thisSerialized.size());
-        serialized.insert(serialized.end(), thisSerialized.begin(), thisSerialized.end()); // Put the base struct serialization in the start of the vector
+        SerializeDeserializeUtils::addToEnd(serialized, thisSerialized); // Put the base struct serialization in the start of the vector
         return serialized;
     }
 };
@@ -210,8 +210,8 @@ struct StoreRequest : MessageBaseToSend
         vector<uint8_t> thisSerialized(myId.begin(), myId.end());
         vector<uint8_t> thisSerialized2(fileId.begin(), fileId.end());
         // Concatenate all the data int a vector
-        serialized.insert(serialized.end(), thisSerialized.begin(), thisSerialized.end());
-        serialized.insert(serialized.end(), thisSerialized2.begin(), thisSerialized2.end());
+        SerializeDeserializeUtils::addToEnd(serialized, thisSerialized);
+        SerializeDeserializeUtils::addToEnd(serialized, thisSerialized2);
         return serialized;
     }
 };
@@ -287,21 +287,7 @@ struct ServerResponseUserAuthorizedICEData
 
         std::cout << "Starting deserialization of ServerResponseUserAuthorizedICEData..." << std::endl;
 
-        // Extract the length of iceCandidateInfo
-        uint16_t length = 0;
-        std::memcpy(&length, buffer.data() + SHA256_SIZE, sizeof(uint16_t));
-        std::cout << "Extracted iceCandidateInfo length: " << length << std::endl;
-
-        // Extract iceCandidateInfo
-        // Validate buffer size for remaining data
-        size_t valueStart = sizeof(uint16_t);
-        iceCandidateInfo.assign(buffer.begin() + valueStart, buffer.begin() + valueStart + length);
-        std::cout << "Extracted iceCandidateInfo: ";
-        for (auto byte : iceCandidateInfo)
-        {
-            std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
-        }
-        std::cout << std::endl;
+        iceCandidateInfo = std::move(buffer);
     }
 };
 
@@ -323,26 +309,11 @@ struct ServerRequestAuthorizeICEConnection
         std::cout << "Starting deserialization of ServerResponseUserAuthorizedICEData..." << std::endl;
 
         // Extract the length of iceCandidateInfo
-        uint16_t length = 0;
-        std::memcpy(&length, buffer.data(), sizeof(uint16_t));
-        std::cout << "Extracted iceCandidateInfo length: " << length << std::endl;
 
         // Extract iceCandidateInfo
         // Validate buffer size for remaining data
-        size_t valueStart = sizeof(uint16_t);
-        iceCandidateInfo.assign(buffer.begin() + valueStart, buffer.begin() + valueStart + length);
+        iceCandidateInfo.assign(buffer.begin(), buffer.end() - sizeof(uint16_t));
 
-        std::cout << "Extracted iceCandidateInfo: ";
-        for (auto byte : iceCandidateInfo)
-        {
-            std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
-        }
-
-        // Extract the requestId (2 bytes), after iceCandidateInfo
-        valueStart += length;
-        std::memcpy(&requestId, buffer.data() + valueStart, sizeof(uint16_t));
-        std::cout << "\nExtracted requestId: " << requestId << std::endl;
-
-        std::cout << std::endl;
+        std::memcpy(&requestId, buffer.data() + buffer.size() - sizeof(uint16_t), sizeof(uint16_t));
     }
 };
