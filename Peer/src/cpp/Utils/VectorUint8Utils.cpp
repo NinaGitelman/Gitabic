@@ -19,7 +19,7 @@ void VectorUint8Utils::vectorUint8ToCharArray(std::vector<uint8_t> vec, char** c
     {
         *charArr[i] = static_cast<char>(vec[i]);
     }
-    charArr[vec.size()] = '\0'; // Null-terminate if you treat it as a string
+    *charArr[vec.size()] = '\0'; // Null-terminate if you treat it as a string
 }
 
 // Converts the vector to a std::string and prints it

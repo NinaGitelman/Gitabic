@@ -9,8 +9,9 @@
 #include <stdint.h>
 #include "../Utils/ThreadSafeCout.h"
 #include "../../c/LibNice/LibNice.h"
+#include "../Utils/VectorUint8Utils.h"
 
-
+#define COMPONENT_ID_RTP 1
 
 
 #define STUN_PORT 3478
@@ -20,7 +21,14 @@ using std::vector;
 
 extern "C"
 {
-#include "../../c/LibNice/LibNice.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#include <agent.h>
+
+#include <gio/gnetworking.h>
  
 }
 class LibNiceHandler
@@ -37,21 +45,33 @@ private:
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
 
     /// @brief Helper function to get the candidate data and put it into the given buffer
-    /// @param componentId The component to get the data from id (handled by calling funciton)
     /// @param localDataBuffer The buffer in which the localData will be put (empty null buffer, malloc will be dealt on this function)
     /// @return If it gathered the data right
-    int getCandidateData(guint streamId, guint componentId, char **localDataBuffer);
+    int getCandidateData(char **localDataBuffer);
     
     /// @brief Callbis ack to handle if the candidate gathering is done
-    static void candidateGatheringDone(guint streamId, gpointer data);
+    static void callbackCandidateGatheringDone(NiceAgent* agent, guint streamId, gpointer userData);
     
-    int parseRemoteData(char* remoteData);
+
+    int addRemoteCandidates(char* remoteData);
+
+    NiceCandidate *parseCandidate(char *scand);
+
+
 
 public:
+
+    // constexpr meeans constant expression
+    // used because this variables will be computed at compile time instead of run time, it helps program run faster and use less memory.
+    static constexpr const gchar* candidate_type_name[4] = {"host", "srflx", "prflx", "relay"};
+    static constexpr const gchar* state_name[4] = {"disconnected", "gathering", "connecting", "connected"};
+
+
+
     /// @brief constructor that intializes the object
     /// @param isControlling if the object was created because someone is requesting to talk to the peer (0)
     ///                      or if the peer wants to talk to someone (1)
-    LibNiceHandler(bool isControlling);
+    LibNiceHandler(const bool isControlling);
     
     /// @brief DDestructor - cleans up
     ~LibNiceHandler();
@@ -59,6 +79,9 @@ public:
     /// @brief Function to get the local ice data - deals with all of the candiadtes gatheirng and everythign needed
     /// @return a vector<uint8_t> with the local ice data
     vector<uint8_t> getLocalICEData();
+
+
+    int connectToPeer(const vector<uint8_t> remoteIceData);
 
    
     
