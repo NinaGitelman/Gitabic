@@ -29,29 +29,41 @@ int main(int argc, char *argv[])
   }
   
 
-  LibNiceHandler handler = LibNiceHandler(connect);
+  // LibNiceHandler handler = LibNiceHandler(connect);
 
-  std::vector<uint8_t> data = handler.getLocalICEData();
+  // std::vector<uint8_t> data = handler.getLocalICEData();
   
-   std::cout << "local ice data: \n\n\n";
-   VectorUint8Utils::printVectorUint8(data);
-   std::cout << "\n\n";
-  char* inputBuffer = new char[60000];
-  std::cout << "Please enter remote candidate >";
-  
-  // Use getline to read the entire line including spaces
-  std::cin.getline(inputBuffer, 60000);
 
-  //vector<uint8_t> remoteData =  VectorUint8Utils::readFromCin();
+  // vector<uint8_t> remoteData =  VectorUint8Utils::readFromCin();
   
-  handler.connectToPeer(inputBuffer);
+  // handler.connectToPeer(remoteData);
 
   // LibNiceHandler handler2 = LibNiceHandler(1);
   // std::vector<uint8_t> data2 = handler2.getLocalICEData();
-  //    for (uint8_t c : data2) {
-  //       std::cout << static_cast<char>(c);
-  //   }
-  //   std::cout << std::endl;
+ 
+  // vector<uint8_t> remoteData2 =  VectorUint8Utils::readFromCin();
+  
+  // handler2.connectToPeer(remoteData2);
+
+  // First handler negotiation
+    LibNiceHandler handler1(connect);
+    std::vector<uint8_t> data1 = handler1.getLocalICEData();
+    VectorUint8Utils::printVectorUint8(data1);
+    std::cout << "\n\n\n";
+    std::vector<uint8_t> remoteData1 = VectorUint8Utils::readFromCin();
+    handler1.connectToPeer(remoteData1);
+
+
+    // LibNiceHandler handler2(1);
+    // std::vector<uint8_t> data2 = handler2.getLocalICEData();
+    // std::cout << "\n\n\n";
+    
+   // VectorUint8Utils::printVectorUint8(data2);
+
+   // std::vector<uint8_t> remoteData2 = VectorUint8Utils::readFromCin();
+    //handler2.connectToPeer(remoteData2);
+
+
 //   NiceAgent *agent;
 //   gchar *stun_addr = NULL;
 //   guint stun_port = 0;

@@ -166,12 +166,12 @@ end:
   return result;
 }
 
-int LibNiceHandler::connectToPeer(char* remoteData)
+int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
 {
-  //char *remoteData = nullptr;
+  char *remoteData = nullptr;
 
-  //VectorUint8Utils::vectorUint8ToCharArray(remoteDataVec, &remoteData);
-  //std::cout << "\n\n\n";
+  VectorUint8Utils::vectorUint8ToCharArray(remoteDataVec, &remoteData);
+  std::cout << "\n\n\n";
 
   
   int result = addRemoteCandidates(remoteData);
@@ -401,7 +401,7 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
   {
     NiceCandidate *local, *remote;
 
-    // Get current selected candidate pair and print IP address used
+    // Get current selected  pair and print IP address used
     if (nice_agent_get_selected_pair(agent, streamId, componentId, &local, &remote))
     {
       gchar ipaddr[INET6_ADDRSTRLEN];

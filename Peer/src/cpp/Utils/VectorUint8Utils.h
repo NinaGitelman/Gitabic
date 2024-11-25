@@ -18,12 +18,12 @@ public:
 
 
     /// @brief Function takes the input vector and puts into the given charArray    
-    static void vectorUint8ToCharArray(vector<uint8_t> vec, char** charArr);
+    static void vectorUint8ToCharArray(const vector<uint8_t>& vec, char** charArr);
 
     /// @brief Function puts the given vector into a string
     /// @param vec the vector
     /// @return the strign from the vector
-    static std::string vectorUint8ToString(vector<uint8_t> vec);
+    static std::string vectorUint8ToString(const vector<uint8_t>& vec);
 
 
 };

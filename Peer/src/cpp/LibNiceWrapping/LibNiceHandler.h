@@ -84,7 +84,7 @@ public:
     vector<uint8_t> getLocalICEData();
 
 
-    int connectToPeer(char* remoteData);
+    int connectToPeer(const vector<uint8_t>& remoteData);
 
    
     

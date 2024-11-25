@@ -4,13 +4,13 @@
 #include "VectorUint8Utils.h"
 
 // Prints the contents of the vector as bytes
-void VectorUint8Utils::printVectorUint8(std::vector<uint8_t> vec)
+void VectorUint8Utils::printVectorUint8(const std::vector<uint8_t> vec)
 {
     ThreadSafeCout::cout(vectorUint8ToString(vec));
 }
 
 // Converts the vector to a C-style char array
-void VectorUint8Utils::vectorUint8ToCharArray(std::vector<uint8_t> vec, char** charArr) 
+void VectorUint8Utils::vectorUint8ToCharArray(const std::vector<uint8_t>& vec, char** charArr) 
 {
      // Allocate memory for the char array
     *charArr = new char[vec.size() + 1]; // +1 for null termination
@@ -23,7 +23,7 @@ void VectorUint8Utils::vectorUint8ToCharArray(std::vector<uint8_t> vec, char** c
 }
 
 // Converts the vector to a std::string and prints it
-std::string VectorUint8Utils::vectorUint8ToString(std::vector<uint8_t> vec) 
+std::string VectorUint8Utils::vectorUint8ToString(const std::vector<uint8_t>& vec) 
 {
     std::string str(vec.begin(), vec.end());
 
