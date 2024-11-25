@@ -44,7 +44,9 @@ private:
     
     /// @brief Callbis ack to handle if the candidate gathering is done
     static void candidateGatheringDone(guint streamId, gpointer data);
-   
+    
+    int parseRemoteData(char* remoteData);
+
 public:
     /// @brief constructor that intializes the object
     /// @param isControlling if the object was created because someone is requesting to talk to the peer (0)

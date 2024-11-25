@@ -152,3 +152,15 @@ end:
 
   return result;
 }
+
+
+int LibNiceHandler::addRemoteCandidates(char* remoteData)
+{
+    GSList *remote_candidates = NULL;
+    gchar **line_argv = NULL;
+    const gchar *ufrag = NULL;
+    const gchar *passwd = NULL;
+    int result = EXIT_FAILURE;
+    int i;
+
+}
