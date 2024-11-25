@@ -8,7 +8,6 @@
 #include <vector>
 #include <stdint.h>
 #include "../Utils/ThreadSafeCout.h"
-#include "../../c/LibNice/LibNice.h"
 #include "../Utils/VectorUint8Utils.h"
 
 #define COMPONENT_ID_RTP 1
@@ -21,15 +20,16 @@ using std::vector;
 
 extern "C"
 {
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+// #include <stdlib.h>
+// #include <stdio.h>
+// #include <string.h>
+// #include <ctype.h>
 
-#include <agent.h>
+// #include <agent.h>
 
-#include <gio/gnetworking.h>
- 
+// #include <gio/gnetworking.h>
+
+#include "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/Peer/src/c/LibNice/LibNice.h"
 }
 class LibNiceHandler
 {
@@ -57,14 +57,17 @@ private:
 
     NiceCandidate *parseCandidate(char *scand);
 
+    // has to have those inputs because libnice expects it  even if we only use one of them...
+    static void callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data);
+
 
 
 public:
 
     // constexpr meeans constant expression
     // used because this variables will be computed at compile time instead of run time, it helps program run faster and use less memory.
-    static constexpr const gchar* candidate_type_name[4] = {"host", "srflx", "prflx", "relay"};
-    static constexpr const gchar* state_name[4] = {"disconnected", "gathering", "connecting", "connected"};
+    static constexpr const gchar* candidateTypeName[4] = {"host", "srflx", "prflx", "relay"};
+    static constexpr const gchar* stateName[4] = {"disconnected", "gathering", "connecting", "connected"};
 
 
 
@@ -81,7 +84,7 @@ public:
     vector<uint8_t> getLocalICEData();
 
 
-    int connectToPeer(const vector<uint8_t> remoteIceData);
+    int connectToPeer(char* remoteData);
 
    
     

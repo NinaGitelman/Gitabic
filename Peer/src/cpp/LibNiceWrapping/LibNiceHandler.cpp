@@ -26,13 +26,19 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
     g_object_set(_agent, "stun-server", _stunAddr, NULL);
     g_object_set(_agent, "stun-server-port", _stunPort, NULL);
     g_object_set(_agent, "controlling-mode", isControlling, NULL);
+
+    _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
+    if (_streamId == 0)
+    {
+      ThreadSafeCout::cout("Failed to add stream");
+    }
+
+  nice_agent_attach_recv(_agent,_streamId, 1, _context, cb_nice_recv, NULL);
+
+
   }
 
-  _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
-  if (_streamId == 0)
-  {
-    ThreadSafeCout::cout("Failed to add stream");
-  }
+  
 }
 
 LibNiceHandler::~LibNiceHandler()
@@ -88,6 +94,7 @@ void LibNiceHandler::callbackCandidateGatheringDone(NiceAgent* agent, guint stre
     {
         g_message("Candidate gathering done for stream ID: %u", streamId);
         g_main_loop_quit(handler->_gloop);
+        
     }
     else
     {
@@ -137,7 +144,7 @@ int LibNiceHandler::getCandidateData(char **localDataBuffer)
                            niceCandidate->priority,
                            ipaddr,
                            nice_address_get_port(&niceCandidate->addr),
-                           candidate_type_name[niceCandidate->type]);
+                           candidateTypeName[niceCandidate->type]);
   }
   // printf("\n");
 
@@ -159,87 +166,175 @@ end:
   return result;
 }
 
-int LibNiceHandler::connectToPeer(vector<uint8_t> remoteDataVec)
+int LibNiceHandler::connectToPeer(char* remoteData)
 {
-  char *remoteData = nullptr;
-  VectorUint8Utils::vectorUint8ToCharArray(remoteDataVec, &remoteData);
+  //char *remoteData = nullptr;
 
-  addRemoteCandidates(remoteData);
-  return 1;
+  //VectorUint8Utils::vectorUint8ToCharArray(remoteDataVec, &remoteData);
+  //std::cout << "\n\n\n";
+
+  
+  int result = addRemoteCandidates(remoteData);
+  std::cout << "out";
+ if (!g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this))
+  {
+      g_message("Failed to connect callback");
+  }
+  g_main_loop_run(_gloop);
+
+   return 1;
 }
 
-// Component id 1 is for RTP and 2 is for RTCP
 int LibNiceHandler::addRemoteCandidates(char* remoteData)
 {
-  GSList *remoteCandidates = NULL;
-  gchar **splitLines = NULL;
-  const gchar *ufrag = NULL;
-  const gchar *passwd = NULL;
-  int result = EXIT_FAILURE;
-  int i;
-  guint componentId = COMPONENT_ID_RTP;
+    GSList *remote_candidates = NULL;
+    gchar **line_argv = NULL;
+    const gchar *ufrag = NULL;
+    const gchar *passwd = NULL;
+    int result = EXIT_FAILURE;
+    int i;
+    guint componentId = COMPONENT_ID_RTP;
 
-  splitLines = g_strsplit_set(remoteData, " \t\n", 0);
-  
-  for (i = 0; splitLines && splitLines[i]; i++)
-  {
-    if (strlen(splitLines[i]) == 0)
-      continue;
+    printf("Debug: remoteData: '%s'\n", remoteData);
 
-    // first two args are remote ufrag and password
-    if (!ufrag)
+    line_argv = g_strsplit_set(remoteData, " \t\n", 0);
+    for (i = 0; line_argv && line_argv[i]; i++)
     {
-      ufrag = splitLines[i];
+        if (strlen(line_argv[i]) == 0)
+            continue;
+
+        // first two args are remote ufrag and password
+        if (!ufrag)
+        {
+            ufrag = line_argv[i];
+            printf("Debug: ufrag set to: '%s'\n", ufrag);
+        }
+        else if (!passwd)
+        {
+            passwd = line_argv[i];
+            printf("Debug: passwd set to: '%s'\n", passwd);
+        }
+        else
+        {
+            // Remaining args are serialized candidates (at least one is required)
+            NiceCandidate *c = parseCandidate(line_argv[i]);
+
+            if (c == NULL)
+            {
+                g_message("failed to parse candidate: %s", line_argv[i]);
+                goto end;
+            }
+            printf("Debug: Adding candidate: %s\n", line_argv[i]);
+            remote_candidates = g_slist_prepend(remote_candidates, c);
+        }
     }
-    else if (!passwd)
-    {
-      passwd = splitLines[i];
-    }
-    else
-    {
-      // Remaining args are serialized canidates (at least one is required)
-      NiceCandidate *c = parseCandidate(splitLines[i]);
 
-      if (c == NULL)
-      {
-        g_message("failed to parse candidate: %s", splitLines[i]);
+    if (ufrag == NULL || passwd == NULL || remote_candidates == NULL)
+    {
+        g_message("line must have at least ufrag, password, and one candidate");
         goto end;
-      }
-      remoteCandidates = g_slist_prepend(remoteCandidates, c);
     }
-  }
-  if (ufrag == NULL || passwd == NULL || remoteCandidates == NULL)
-  {
-    g_message("line must have at least ufrag, password, and one candidate");
-    goto end;
-  }
 
-  if (!nice_agent_set_remote_credentials(_agent, _streamId, ufrag, passwd))
-  {
-    g_message("failed to set remote credentials");
-    goto end;
-  }
+    // Debugging the credentials
+    printf("Debug: Setting remote credentials: ufrag=%s, passwd=%s\n", ufrag, passwd);
+    if (!nice_agent_set_remote_credentials(_agent, _streamId, ufrag, passwd))
+    {
+        g_message("failed to set remote credentials");
+        goto end;
+    }
 
-  // Note: this will trigger the start of negotiation.
-  if (nice_agent_set_remote_candidates(_agent, _streamId, componentId,
-                                       remoteCandidates) < 1)
-  {
-    g_message("failed to set remote candidates");
-    goto end;
-  }
+    // Debugging the candidates being set
+    printf("Debug: Setting remote candidates\n");
+    if (nice_agent_set_remote_candidates(_agent, _streamId, componentId, remote_candidates) < 1)
+    {
+        g_message("failed to set remote candidates");
+        goto end;
+    }
+    else{
+      printf("supposed to be success setting remote cand");
+    }
 
-  result = EXIT_SUCCESS;
+    result = EXIT_SUCCESS;
 
 end:
-  if (splitLines != NULL)
-    g_strfreev(splitLines);
-  if (remoteCandidates != NULL)
-    g_slist_free_full(remoteCandidates, (GDestroyNotify)&nice_candidate_free);
+    if (line_argv != NULL)
+        g_strfreev(line_argv);
+    if (remote_candidates != NULL)
+        g_slist_free_full(remote_candidates, (GDestroyNotify)&nice_candidate_free);
 
-  return result;
+    return result;
 }
+// int LibNiceHandler::addRemoteCandidates(char* remoteData)
+// {
+//  GSList *remote_candidates = NULL;
+//   gchar **line_argv = NULL;
+//   const gchar *ufrag = NULL;
+//   const gchar *passwd = NULL;
+//   int result = EXIT_FAILURE;
+//   int i;
+//   guint componentId = COMPONENT_ID_RTP;
 
+  
+//   line_argv = g_strsplit_set(remoteData, " \t\n", 0);
+//   for (i = 0; line_argv && line_argv[i]; i++)
+//   {
+//     if (strlen(line_argv[i]) == 0)
+//       continue;
 
+//     // first two args are remote ufrag and password
+//     if (!ufrag)
+//     {
+//       ufrag = line_argv[i];
+//     }
+//     else if (!passwd)
+//     {
+//       passwd = line_argv[i];
+//     }
+//     else
+//     {
+//       // Remaining args are serialized canidates (at least one is required)
+//       NiceCandidate *c = parseCandidate(line_argv[i]);
+
+//       if (c == NULL)
+//       {
+//         g_message("failed to parse candidate: %s", line_argv[i]);
+//         goto end;
+//       }
+//       remote_candidates = g_slist_prepend(remote_candidates, c);
+//     }
+//   }
+//   if (ufrag == NULL || passwd == NULL || remote_candidates == NULL)
+//   {
+//     g_message("line must have at least ufrag, password, and one candidate");
+//     goto end;
+//   }
+
+//   if (!nice_agent_set_remote_credentials(_agent, _streamId, ufrag, passwd))
+//   {
+//     g_message("failed to set remote credentials");
+//     goto end;
+//   }
+//   // IT GETS HERE BUT WONT SET IT RIGHT. IT CHANGES THE STATE AND THE   CHAR IS RIGHT AND THROWS NO ERRORS BUT IT STILL SETS IT AS NEOGTIOATION FAILED
+//   // Note: this will trigger the start of negotiation.
+//   if (nice_agent_set_remote_candidates(_agent,_streamId, componentId,
+//                                        remote_candidates) < 1)
+//   {
+//     g_message("failed to set remote candidates");
+//     goto end;
+//   }
+
+//   result = EXIT_SUCCESS;
+
+// end:
+//   if (line_argv != NULL)
+//     g_strfreev(line_argv);
+//   if (remote_candidates != NULL)
+//     g_slist_free_full(remote_candidates, (GDestroyNotify)&nice_candidate_free);
+
+//   return result;
+// }
+
+// helper to addRemoteCandidates
 NiceCandidate* LibNiceHandler::parseCandidate(char *scand)
 {
   NiceCandidate *cand = NULL;
@@ -248,20 +343,21 @@ NiceCandidate* LibNiceHandler::parseCandidate(char *scand)
   guint i;
 
   tokens = g_strsplit(scand, ",", 5);
+  
   for (i = 0; tokens[i]; i++)
     ;
   if (i != 5)
     goto end;
 
-  for (i = 0; i < G_N_ELEMENTS(candidate_type_name); i++)
+  for (i = 0; i < G_N_ELEMENTS(candidateTypeName); i++)
   {
-    if (strcmp(tokens[4], candidate_type_name[i]) == 0)
+    if (strcmp(tokens[4], candidateTypeName[i]) == 0)
     {
       ntype = static_cast<NiceCandidateType>(i);
       break;
     }
   }
-  if (i == G_N_ELEMENTS(candidate_type_name))
+  if (i == G_N_ELEMENTS(candidateTypeName))
     goto end;
 
   cand = nice_candidate_new(ntype);
@@ -286,4 +382,58 @@ end:
   g_strfreev(tokens);
 
   return cand;
+}
+
+
+
+/*
+// Function called when the state of the Nice agent is changed - p2p connection done
+// check if the negotiation is complete and handle it
+// This function also gets the input to send to remote and calls another function to handle it
+*/
+void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data)
+{
+  ThreadSafeCout::cout("in callbakComponentStateChanged");
+  g_debug("SIGNAL: state changed %d %d %s[%d]\n",
+          streamId, componentId, stateName[state], state);
+
+  if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
+  {
+    NiceCandidate *local, *remote;
+
+    // Get current selected candidate pair and print IP address used
+    if (nice_agent_get_selected_pair(agent, streamId, componentId, &local, &remote))
+    {
+      gchar ipaddr[INET6_ADDRSTRLEN];
+
+      nice_address_to_string(&local->addr, ipaddr);
+      printf("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
+      nice_address_to_string(&remote->addr, ipaddr);
+      printf(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
+    }
+
+    // Listen to stdin and send data written to it
+    printf("\nSend lines to remote (Ctrl-D to quit):\n");
+    //g_io_add_watch(io_stdin, G_IO_IN, stdin_send_data_cb, agent);
+    printf("> ");
+  }
+  else if (state == NICE_COMPONENT_STATE_FAILED)
+  {
+    LibNiceHandler* handler = static_cast<LibNiceHandler*>(data);
+   
+    if (handler)
+    {
+        if (handler->_gloop)
+        {
+          g_main_loop_quit(handler->_gloop);
+          throw std::runtime_error("Negotiation failed");
+
+        }
+    }
+    else 
+    {
+        throw std::runtime_error("Negotiation failed for stream ID - No handler provided");
+
+    }
+  }
 }

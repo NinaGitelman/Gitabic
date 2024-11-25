@@ -408,6 +408,7 @@ int parse_remote_data(NiceAgent *agent, guint _stream_id, guint componentId, cha
   int result = EXIT_FAILURE;
   int i;
 
+  printf("Parsing remote data");
   line_argv = g_strsplit_set(line, " \t\n", 0);
   for (i = 0; line_argv && line_argv[i]; i++)
   {

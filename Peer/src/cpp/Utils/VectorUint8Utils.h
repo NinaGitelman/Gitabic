@@ -13,6 +13,8 @@ public:
     /// @brief Function prints the given vector (thread safe with threadSafeCout)
     static void printVectorUint8(vector<uint8_t> vec);
 
+    /// for debugging to input into vector uint8
+    static vector<uint8_t> readFromCin();
 
 
     /// @brief Function takes the input vector and puts into the given charArray    

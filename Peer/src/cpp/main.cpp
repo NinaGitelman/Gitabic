@@ -7,31 +7,51 @@
 #include <vector>
 #include <cstdint>
 #include "LibNiceWrapping/LibNiceHandler.h"
+#include "Utils/VectorUint8Utils.h"
 
 extern "C"
 {
-#include "../c/LibNice/LibNice.h"
- void cb_try(NiceAgent *agent, gpointer data);
+//#include "../c/LibNice/LibNice.h"
 }
 
 int main(int argc, char *argv[])
 {
+  int connect = 1;
+ 
+  if(argc>2)
+  {
+       connect = std::stoi(argv[1]);
 
-  LibNiceHandler handler = LibNiceHandler(1);
+  }
+  else
+  {
+    connect =0;
+  }
+  
+
+  LibNiceHandler handler = LibNiceHandler(connect);
 
   std::vector<uint8_t> data = handler.getLocalICEData();
-     for (uint8_t c : data) {
-        std::cout << static_cast<char>(c);
-    }
-    std::cout << std::endl;
   
-  LibNiceHandler handler2 = LibNiceHandler(1);
-  std::vector<uint8_t> data2 = handler2.getLocalICEData();
-     for (uint8_t c : data2) {
-        std::cout << static_cast<char>(c);
-    }
-    std::cout << std::endl;
-  sleep(3);
+   std::cout << "local ice data: \n\n\n";
+   VectorUint8Utils::printVectorUint8(data);
+   std::cout << "\n\n";
+  char* inputBuffer = new char[60000];
+  std::cout << "Please enter remote candidate >";
+  
+  // Use getline to read the entire line including spaces
+  std::cin.getline(inputBuffer, 60000);
+
+  //vector<uint8_t> remoteData =  VectorUint8Utils::readFromCin();
+  
+  handler.connectToPeer(inputBuffer);
+
+  // LibNiceHandler handler2 = LibNiceHandler(1);
+  // std::vector<uint8_t> data2 = handler2.getLocalICEData();
+  //    for (uint8_t c : data2) {
+  //       std::cout << static_cast<char>(c);
+  //   }
+  //   std::cout << std::endl;
 //   NiceAgent *agent;
 //   gchar *stun_addr = NULL;
 //   guint stun_port = 0;
@@ -105,8 +125,8 @@ int main(int argc, char *argv[])
 // //   cout << "Please enter remote candidate >";
 // //   cin >> inputBuffer;
 
-// //   parse_remote_data(agent, stream_id, inputBuffer );
-// //  // g_signal_connect(agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
+// //   parse_remote_data(agent, stream_id, 1, inputBuffer );
+// // useless-only prints.... // g_signal_connect(agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
 
 //   g_signal_connect(agent, "component-state-changed", G_CALLBACK(cb_component_state_changed), NULL);
 
