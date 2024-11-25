@@ -29,7 +29,7 @@ extern "C"
 
 // #include <gio/gnetworking.h>
 
-#include "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/Peer/src/c/LibNice/LibNice.h"
+#include "../../c/LibNice/LibNice.h"
 }
 class LibNiceHandler
 {
