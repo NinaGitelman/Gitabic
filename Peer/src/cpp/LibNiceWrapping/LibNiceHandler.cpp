@@ -51,8 +51,7 @@ vector<uint8_t> LibNiceHandler::getLocalICEData()
     {
         if (!nice_agent_gather_candidates(_agent, _streamId))
         {
-            ThreadSafeCout::cout("Failed to start candidate gathering");
-            return vector<uint8_t>();
+            throw std::runtime_error("Failed to start candidate gathering");
         }
 
         // Wait until gathering is complete
@@ -66,8 +65,8 @@ vector<uint8_t> LibNiceHandler::getLocalICEData()
     char *localDataBuffer = nullptr;
     if (getCandidateData(_agent, _streamId, 1, &localDataBuffer) != EXIT_SUCCESS)
     {
-        ThreadSafeCout::cout("Failed to get local data");
-        return vector<uint8_t>();
+        throw std::runtime_error("Failed to get local data");
+
     }
 
     vector<uint8_t> result;
@@ -82,7 +81,7 @@ vector<uint8_t> LibNiceHandler::getLocalICEData()
 }
 
 // Callback for when candidate gathering is complete
-void LibNiceHandler::candidateGatheringDone(NiceAgent *agent, guint streamId, gpointer data)
+void LibNiceHandler::candidateGatheringDone(guint streamId, gpointer data)
 {
     LibNiceHandler *handler = static_cast<LibNiceHandler *>(data);
     g_main_loop_quit(handler->_gloop);
@@ -90,9 +89,7 @@ void LibNiceHandler::candidateGatheringDone(NiceAgent *agent, guint streamId, gp
 
 
 /// @brief Function to get the lcoal data
-/// input: the nice agent being used, the stream id, the component id and the local buffer to which the data will be copied
-/// return: Result code
-int LibNiceHandler::getCandidateData(NiceAgent *agent, guint streamId, guint componentId, char **localDataBuffer)
+int LibNiceHandler::getCandidateData(guint componentId, char **localDataBuffer)
 {
   int result = EXIT_FAILURE;
   gchar *localUfrag = NULL;
@@ -101,13 +98,13 @@ int LibNiceHandler::getCandidateData(NiceAgent *agent, guint streamId, guint com
   GSList *localCandidates = NULL, *item;
   GString *buffer = NULL;
 
-  if (!nice_agent_get_local_credentials(agent, streamId, &localUfrag, &localPassword))
+  if (!nice_agent_get_local_credentials(_agent, _streamId, &localUfrag, &localPassword))
   {
     goto end;
   }
 
   // get local candidates
-  localCandidates = nice_agent_get_local_candidates(agent, streamId, componentId);
+  localCandidates = nice_agent_get_local_candidates(_agent, _streamId, componentId);
 
   // creates a Gstring to dinamically build the string
   buffer = g_string_new(NULL);
