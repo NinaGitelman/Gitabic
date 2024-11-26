@@ -113,7 +113,7 @@ void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSo
             if (msg.code == (uint8_t)ClientRequestCodes::GetUserICEInfo)
             {
                 std::cout << "here!";
-                ClientRequestGetUserICEInfo dataMsg = ClientRequestGetUserICEInfo(msg);
+                ClientRequestGetUserICEInfo dataMsg(msg);
 
                 std::cout << "id: " << clientId << " - ";
                 printDataAsASCII(dataMsg.iceCandidateInfo);

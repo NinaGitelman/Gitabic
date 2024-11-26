@@ -37,10 +37,8 @@ private:
 
     volatile bool _running;
 
-    std::map<ID, shared_ptr<TCPClientSocket>> ids;
-
     int _serverSocket;
-    // std::map<ID, std::shared_ptr<TCPClientSocket>> _clients;
+    std::map<ID, shared_ptr<TCPClientSocket>> ids;
     std::map<int, std::shared_ptr<TCPClientSocket>> _clients;
     mutex _clientsMutex;
 
