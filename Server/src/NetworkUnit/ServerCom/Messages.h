@@ -59,6 +59,8 @@ enum ServerResponseCodes
     // signaling
     UserAuthorizedICEData = 11,
 
+    NewID = 55,
+
     // bit torrent
     StoreSuccess = 221,
     StoreFailure,
@@ -93,6 +95,21 @@ struct MessageBaseToSend
             result.push_back(((uint8_t *)&PreviousSize)[i]);
         }
         return result;
+    }
+};
+
+struct ServerResponseNewId : MessageBaseToSend
+
+{
+    ID id;
+
+    ServerResponseNewId(const ID &id) : id(id), MessageBaseToSend(ServerResponseCodes::NewID) {}
+
+    vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
+    {
+        auto serialized = MessageBaseToSend::serialize(id.size());
+        SerializeDeserializeUtils::addToEnd(serialized, id);
+        return serialized;
     }
 };
 

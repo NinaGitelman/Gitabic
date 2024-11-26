@@ -39,5 +39,18 @@ private:
     mutex socketMut;
     int sockfd;
 };
+namespace std // Hash method for clientSocket to allow hash map key usage
+{
+    template <>
+    struct hash<TCPClientSocket>
+    {
+        size_t operator()(const TCPClientSocket &tcpSocket) const
+        {
+            size_t res = 0;
+            res ^= hash<uint8_t>()(tcpSocket.getSocketFd());
+            return res;
+        }
+    };
+}
 
 #endif

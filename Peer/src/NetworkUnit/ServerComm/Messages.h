@@ -62,6 +62,8 @@ enum ServerResponseCodes
     // signaling
     UserAuthorizedICEData = 11,
 
+    NewID = 55,
+
     // bit torrent
     StoreSuccess = 221,
     StoreFailure,
@@ -254,12 +256,12 @@ struct UserListResponse
 };
 
 /// @brief Your assigned id
-struct NewIdResponse
+struct ServerResponseNewId
 
 {
     ID id;
 
-    NewIdResponse(MessageBaseReceived msg)
+    ServerResponseNewId(MessageBaseReceived msg)
     {
         deserialize(msg.data);
     }
