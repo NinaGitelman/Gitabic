@@ -1,42 +1,41 @@
 #include "LibNiceHandler.h"
 
 
-
-
 LibNiceHandler::LibNiceHandler(const bool isControlling)
 {
-  // Initialize networking
-  g_networking_init();
+    // Initialize networking
+    g_networking_init();
 
-  // Create our own context for this handler
-  _context = g_main_context_new();
+    // Create our own context for this handler
+    _context = g_main_context_new();
 
-  // Create loop with our context (not NULL)
-  _gloop = g_main_loop_new(_context, FALSE);
+    // Create loop with our context (not NULL)
+    _gloop = g_main_loop_new(_context, FALSE);
 
-  // Create the nice agent with our context
-  _agent = nice_agent_new(_context, NICE_COMPATIBILITY_RFC5245);
+    // Create the nice agent with our context
+    _agent = nice_agent_new(_context, NICE_COMPATIBILITY_RFC5245);
 
-  if (_agent == NULL)
-  {
-    ThreadSafeCout::cout("Failed to create agent");
-  }
-  else
-  {
-    g_object_set(_agent, "stun-server", _stunAddr, NULL);
-    g_object_set(_agent, "stun-server-port", _stunPort, NULL);
-    g_object_set(_agent, "controlling-mode", isControlling, NULL);
-
-    _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
-    if (_streamId == 0)
+    if (_agent == NULL)
     {
-      ThreadSafeCout::cout("Failed to add stream");
+        ThreadSafeCout::cout("Failed to create agent");
     }
+    else
+    {
+        g_object_set(_agent, "stun-server", _stunAddr, NULL);
+        g_object_set(_agent, "stun-server-port", _stunPort, NULL);
+        g_object_set(_agent, "controlling-mode", isControlling, NULL);
 
-  nice_agent_attach_recv(_agent,_streamId, 1, _context, cb_nice_recv, NULL);
+        _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
+        if (_streamId == 0)
+        {
+          ThreadSafeCout::cout("Failed to add stream");
+        }
+
+        // needs this to work
+        nice_agent_attach_recv(_agent,_streamId, 1, _context, cb_nice_recv, NULL);
 
 
-  }
+    }
 
   
 }
@@ -44,52 +43,53 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
 LibNiceHandler::~LibNiceHandler()
 {
 
-  if (_gloop)
-    g_main_loop_unref(_gloop);
-  if (_context)
-    g_main_context_unref(_context);
-  if (_agent)
-    g_object_unref(_agent);
+    if (_gloop)
+      g_main_loop_unref(_gloop);
+    if (_context)
+      g_main_context_unref(_context);
+    if (_agent)
+      g_object_unref(_agent);
 }
 
 vector<uint8_t> LibNiceHandler::getLocalICEData()
 {
-  // Only gather candidates once
-  if (!_candidatesGathered)
-  {
-    if (!nice_agent_gather_candidates(_agent, _streamId))
+    // Only gather candidates once
+    if (!_candidatesGathered)
     {
-      throw std::runtime_error("Failed to start candidate gathering");
+        if (!nice_agent_gather_candidates(_agent, _streamId))
+        {
+          throw std::runtime_error("Failed to start candidate gathering");
+        }
+
+        // Wait until gathering is complete
+        g_signal_connect(_agent, "candidate-gathering-done", G_CALLBACK(callbackCandidateGatheringDone), this);
+        g_main_loop_run(_gloop);
+
+        _candidatesGathered = true;
     }
 
-    // Wait until gathering is complete
-    g_signal_connect(_agent, "candidate-gathering-done", G_CALLBACK(callbackCandidateGatheringDone), this);
-    g_main_loop_run(_gloop);
+    // Get the local candidates data
+    char *localDataBuffer = nullptr;
+    if (getCandidateData(&localDataBuffer) != EXIT_SUCCESS)
+    {
+      throw std::runtime_error("Failed to get local data");
+    }
 
-    _candidatesGathered = true;
-  }
+    vector<uint8_t> result;
+    if (localDataBuffer)
+    {
+      size_t len = strlen(localDataBuffer);
+      result.assign(localDataBuffer, localDataBuffer + len);
+      g_free(localDataBuffer);
+    }
 
-  // Get the local candidates data
-  char *localDataBuffer = nullptr;
-  if (getCandidateData(&localDataBuffer) != EXIT_SUCCESS)
-  {
-    throw std::runtime_error("Failed to get local data");
-  }
-
-  vector<uint8_t> result;
-  if (localDataBuffer)
-  {
-    size_t len = strlen(localDataBuffer);
-    result.assign(localDataBuffer, localDataBuffer + len);
-    g_free(localDataBuffer);
-  }
-
-  return result;
+    return result;
 }
 
 void LibNiceHandler::callbackCandidateGatheringDone(NiceAgent* agent, guint streamId, gpointer userData)
 {
     LibNiceHandler* handler = static_cast<LibNiceHandler*>(userData);
+    
     if (handler && handler->_gloop)
     {
         g_message("Candidate gathering done for stream ID: %u", streamId);
@@ -175,14 +175,31 @@ int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
 
   
   int result = addRemoteCandidates(remoteData);
-  std::cout << "out";
- if (!g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this))
+
+  if (!g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this) || result != EXIT_SUCCESS) 
   {
       g_message("Failed to connect callback");
+      return EXIT_FAILURE;
+
+
+  }
+  else
+  {   
+      // the send messafe is either here or inside the callbackComponentStateChanged
+ 
+      // prints got ehre but doesnt send message /  doesnt sned in the other side
+      // gchar *line = g_strdup("hello world!");
+
+      // nice_agent_send(_agent, _streamId, 1, strlen(line), line);
+   //   nice_agent_send(_agent, stream_id, 1, strlen(line), line);
+     // g_free(line);
+      g_main_loop_quit(_gloop);
+
+
   }
   g_main_loop_run(_gloop);
 
-   return 1;
+   return result;
 }
 
 int LibNiceHandler::addRemoteCandidates(char* remoteData)
@@ -207,12 +224,12 @@ int LibNiceHandler::addRemoteCandidates(char* remoteData)
         if (!ufrag)
         {
             ufrag = line_argv[i];
-            printf("Debug: ufrag set to: '%s'\n", ufrag);
+          //  printf("Debug: ufrag set to: '%s'\n", ufrag);
         }
         else if (!passwd)
         {
             passwd = line_argv[i];
-            printf("Debug: passwd set to: '%s'\n", passwd);
+          //  printf("Debug: passwd set to: '%s'\n", passwd);
         }
         else
         {
@@ -224,7 +241,7 @@ int LibNiceHandler::addRemoteCandidates(char* remoteData)
                 g_message("failed to parse candidate: %s", line_argv[i]);
                 goto end;
             }
-            printf("Debug: Adding candidate: %s\n", line_argv[i]);
+          //  printf("Debug: Adding candidate: %s\n", line_argv[i]);
             remote_candidates = g_slist_prepend(remote_candidates, c);
         }
     }
@@ -236,7 +253,7 @@ int LibNiceHandler::addRemoteCandidates(char* remoteData)
     }
 
     // Debugging the credentials
-    printf("Debug: Setting remote credentials: ufrag=%s, passwd=%s\n", ufrag, passwd);
+  //  printf("Debug: Setting remote credentials: ufrag=%s, passwd=%s\n", ufrag, passwd);
     if (!nice_agent_set_remote_credentials(_agent, _streamId, ufrag, passwd))
     {
         g_message("failed to set remote credentials");
@@ -244,14 +261,14 @@ int LibNiceHandler::addRemoteCandidates(char* remoteData)
     }
 
     // Debugging the candidates being set
-    printf("Debug: Setting remote candidates\n");
+   // printf("Debug: Setting remote candidates\n");
     if (nice_agent_set_remote_candidates(_agent, _streamId, componentId, remote_candidates) < 1)
     {
         g_message("failed to set remote candidates");
         goto end;
     }
     else{
-      printf("supposed to be success setting remote cand");
+      g_message("supposed to be success setting remote cand");
     }
 
     result = EXIT_SUCCESS;
@@ -393,47 +410,53 @@ end:
 */
 void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data)
 {
-  ThreadSafeCout::cout("in callbakComponentStateChanged");
-  g_debug("SIGNAL: state changed %d %d %s[%d]\n",
-          streamId, componentId, stateName[state], state);
+    ThreadSafeCout::cout("in callbakComponentStateChanged");
+    g_debug("SIGNAL: state changed %d %d %s[%d]\n",
+            streamId, componentId, stateName[state], state);
 
-  if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
-  {
-    NiceCandidate *local, *remote;
+      if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
+      {
+          NiceCandidate *local, *remote;
 
-    // Get current selected  pair and print IP address used
-    if (nice_agent_get_selected_pair(agent, streamId, componentId, &local, &remote))
-    {
-      gchar ipaddr[INET6_ADDRSTRLEN];
+          // Get current selected  pair and print IP address used
+          if (nice_agent_get_selected_pair(agent, streamId, componentId, &local, &remote))
+          {
+            gchar ipaddr[INET6_ADDRSTRLEN];
 
-      nice_address_to_string(&local->addr, ipaddr);
-      printf("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
-      nice_address_to_string(&remote->addr, ipaddr);
-      printf(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
+            nice_address_to_string(&local->addr, ipaddr);
+            printf("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
+            nice_address_to_string(&remote->addr, ipaddr);
+            printf(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
+
+
+            gchar *line = g_strdup("\n\nfrom remote: hello world!");
+
+            // function used to send something to the agent
+            nice_agent_send(agent, streamId, 1, strlen(line), line);
+          }
+
+          // Listen to stdin and send data written to it
+          //printf("\nSend lines to remote (Ctrl-D to quit):\n");
+          //g_io_add_watch(io_stdin, G_IO_IN, stdin_send_data_cb, agent);
+          //printf("> ");
+      }
+      else if (state == NICE_COMPONENT_STATE_FAILED)
+      {
+          LibNiceHandler* handler = static_cast<LibNiceHandler*>(data);
+        
+          if (handler)
+          {
+              if (handler->_gloop)
+              {
+               // g_main_loop_quit(handler->_gloop);
+                throw std::runtime_error("Negotiation failed");
+
+              }
+          }
+          else 
+          {
+              throw std::runtime_error("Negotiation failed for stream ID - No handler provided");
+
+          }
     }
-
-    // Listen to stdin and send data written to it
-    printf("\nSend lines to remote (Ctrl-D to quit):\n");
-    //g_io_add_watch(io_stdin, G_IO_IN, stdin_send_data_cb, agent);
-    printf("> ");
-  }
-  else if (state == NICE_COMPONENT_STATE_FAILED)
-  {
-    LibNiceHandler* handler = static_cast<LibNiceHandler*>(data);
-   
-    if (handler)
-    {
-        if (handler->_gloop)
-        {
-          g_main_loop_quit(handler->_gloop);
-          throw std::runtime_error("Negotiation failed");
-
-        }
-    }
-    else 
-    {
-        throw std::runtime_error("Negotiation failed for stream ID - No handler provided");
-
-    }
-  }
 }

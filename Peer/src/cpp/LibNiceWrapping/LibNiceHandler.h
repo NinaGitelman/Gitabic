@@ -52,9 +52,14 @@ private:
     /// @brief Callbis ack to handle if the candidate gathering is done
     static void callbackCandidateGatheringDone(NiceAgent* agent, guint streamId, gpointer userData);
     
-
+    /// @brief Helper function to add the candidates from the remote data
+    /// @param remoteData the remote data received from the client (called from connect ot peer)
+    /// @return If it was successful or not
     int addRemoteCandidates(char* remoteData);
 
+    /// @brief Helper function to parse each candidate (called by addRemoteCandidates)
+    /// @param scand The candidate
+    /// @return A NiceCandidate object from it
     NiceCandidate *parseCandidate(char *scand);
 
     // has to have those inputs because libnice expects it  even if we only use one of them...
@@ -64,7 +69,7 @@ private:
 
 public:
 
-    // constexpr meeans constant expression
+    // constexpr means constant expression
     // used because this variables will be computed at compile time instead of run time, it helps program run faster and use less memory.
     static constexpr const gchar* candidateTypeName[4] = {"host", "srflx", "prflx", "relay"};
     static constexpr const gchar* stateName[4] = {"disconnected", "gathering", "connecting", "connected"};
@@ -76,14 +81,16 @@ public:
     ///                      or if the peer wants to talk to someone (1)
     LibNiceHandler(const bool isControlling);
     
-    /// @brief DDestructor - cleans up
+    /// @brief Destructor - cleans up
     ~LibNiceHandler();
     
     /// @brief Function to get the local ice data - deals with all of the candiadtes gatheirng and everythign needed
     /// @return a vector<uint8_t> with the local ice data
     vector<uint8_t> getLocalICEData();
 
-
+    /// @brief Function to be used to connect to a peer, send the remote data received from the peer
+    /// @param remoteData the ICE connection data
+    /// @return if it was successful or not
     int connectToPeer(const vector<uint8_t>& remoteData);
 
    
