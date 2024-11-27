@@ -424,14 +424,15 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
             gchar ipaddr[INET6_ADDRSTRLEN];
 
             nice_address_to_string(&local->addr, ipaddr);
-            printf("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
+            //printf("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
+            
             nice_address_to_string(&remote->addr, ipaddr);
             printf(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
 
 
-            gchar *line = g_strdup("\n\nfrom remote: hello world!");
+            gchar *line = g_strdup("\n\nfrom remote: hello world!\n\n");
 
-            // function used to send something to the agent
+            // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
             nice_agent_send(agent, streamId, 1, strlen(line), line);
           }
 
