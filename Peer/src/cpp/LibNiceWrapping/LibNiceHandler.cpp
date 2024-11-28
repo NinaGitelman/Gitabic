@@ -5,6 +5,8 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
 {
     // Initialize networking
     g_networking_init();
+    g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
+
 
     // Create our own context for this handler
     _context = g_main_context_new();
@@ -193,7 +195,7 @@ int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
       // nice_agent_send(_agent, _streamId, 1, strlen(line), line);
    //   nice_agent_send(_agent, stream_id, 1, strlen(line), line);
      // g_free(line);
-      g_main_loop_quit(_gloop);
+     // g_main_loop_quit(_gloop);
 
 
   }
@@ -428,10 +430,15 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
             nice_address_to_string(&remote->addr, ipaddr);
             printf(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
 
-  
+
             gchar *line = g_strdup("\n\nfrom remote: hello world!\n\n");
 
             // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
+            nice_agent_send(agent, streamId, 1, strlen(line), line);
+            nice_agent_send(agent, streamId, 1, strlen(line), line);
+            nice_agent_send(agent, streamId, 1, strlen(line), line);
+            nice_agent_send(agent, streamId, 1, strlen(line), line);
+            nice_agent_send(agent, streamId, 1, strlen(line), line);
             nice_agent_send(agent, streamId, 1, strlen(line), line);
           }
 
