@@ -1,6 +1,6 @@
 #include "TCPClientSocket.h"
 
-TCPClientSocket::TCPClientSocket(int existingSocket, const sockaddr_in &address) : clientAddress(address), sockfd(existingSocket) {}
+TCPClientSocket::TCPClientSocket(int existingSocket, const Address &address) : clientAddress(address), sockfd(existingSocket) {}
 
 TCPClientSocket::~TCPClientSocket()
 {

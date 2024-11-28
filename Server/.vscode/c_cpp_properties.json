@@ -9,7 +9,7 @@
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "${default}",
             "cppStandard": "c++20",
-            "intelliSenseMode": "linux-gcc-x64",
+            "intelliSenseMode": "linux-clang-x64",
             "compilerArgs": [
                 ""
             ]

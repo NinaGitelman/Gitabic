@@ -7,7 +7,9 @@
 #include <cstring> // for memcpy
 #include <iterator>
 #include <climits>
+#include <array>
 #include "../../Utils/SerializeDeserializeUtils.h"
+#include <ostream>
 
 using std::vector;
 using ID = HashResult;
@@ -31,6 +33,158 @@ namespace std // Hash method for ID to allow hash map key usage
     };
 }
 
+struct Address
+{
+    static constexpr uint8_t IP_LEN = 4;
+    std::array<uint8_t, IP_LEN> ip;
+    uint16_t port;
+
+    Address()
+    {
+        this->port = 0;
+        this->ip = ipStringToArray("0.0.0.0");
+    }
+
+    Address(string ip, uint16_t port)
+    {
+        this->port = port;
+        this->ip = ipStringToArray(ip);
+    }
+
+    Address(std::array<uint8_t, IP_LEN> ip, uint16_t port)
+    {
+        this->port = port;
+        this->ip = ip;
+    }
+
+    Address(const sockaddr_in &sockaddr)
+    {
+        port = ntohs(sockaddr.sin_port);
+        uint32_t ipAddress = ntohl(sockaddr.sin_addr.s_addr);
+
+        // Convert IP address to array format
+        ip[0] = (ipAddress >> 24) & 0xFF;
+        ip[1] = (ipAddress >> 16) & 0xFF;
+        ip[2] = (ipAddress >> 8) & 0xFF;
+        ip[3] = ipAddress & 0xFF;
+    }
+
+    Address(const Address &other)
+    {
+        this->ip = other.ip;
+        this->port = other.port;
+    }
+
+    Address &operator=(const Address &other)
+    {
+        this->ip = other.ip;
+        this->port = other.port;
+        return *this;
+    }
+
+    // Function to return sockaddr_in
+    sockaddr_in toSockAddr() const
+    {
+        sockaddr_in sockaddr;
+        std::memset(&sockaddr, 0, sizeof(sockaddr));
+        sockaddr.sin_family = AF_INET;
+        sockaddr.sin_port = htons(port);
+
+        // Convert IP array to uint32_t and set in sockaddr_in
+        uint32_t ipAddress = (ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3];
+        sockaddr.sin_addr.s_addr = htonl(ipAddress);
+
+        return sockaddr;
+    }
+
+    bool operator==(const Address &other) const
+    {
+        return other.port == this->port &&
+               other.ip == this->ip;
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const Address &address)
+    {
+        os << "IP: " << address.ipString();
+        os << " Port: " << address.port;
+        return os;
+    }
+
+    std::array<uint8_t, IP_LEN> ipStringToArray(const std::string &ip) const
+    {
+        std::array<uint8_t, 4> ipArray;
+        size_t start = 0;
+        size_t end;
+        int i = 0;
+
+        while ((end = ip.find('.', start)) != std::string::npos)
+        {
+            if (i >= 4)
+            {
+                throw std::invalid_argument("Invalid IP address format");
+            }
+
+            int byte = std::stoi(ip.substr(start, end - start));
+            if (byte < 0 || byte > 255)
+            {
+                throw std::out_of_range("IP segment out of range (0-255)");
+            }
+
+            ipArray[i++] = static_cast<uint8_t>(byte);
+            start = end + 1;
+        }
+
+        // Capture the last segment after the last '.'
+        if (i != 3)
+        {
+            throw std::invalid_argument("Invalid IP address format");
+        }
+
+        int byte = std::stoi(ip.substr(start));
+        if (byte < 0 || byte > 255)
+        {
+            throw std::out_of_range("IP segment out of range (0-255)");
+        }
+
+        ipArray[i] = static_cast<uint8_t>(byte);
+        return ipArray;
+    }
+
+    string ipString() const
+    {
+        return std::to_string(ip[0]) + "." +
+               std::to_string(ip[1]) + "." +
+               std::to_string(ip[2]) + "." +
+               std::to_string(ip[3]);
+    }
+
+    uint32_t ipUint() const
+    {
+        return (ip[0] << 24) +
+               (ip[1] << 16) +
+               (ip[2] << 8) +
+               ip[3];
+    }
+};
+namespace std
+{
+    template <>
+    struct hash<Address>
+    {
+        size_t operator()(const Address &addr) const
+        {
+            size_t h1 = hash<uint16_t>()(addr.port);
+            size_t h2 = hash<uint32_t>()(addr.ipUint());
+            return h1 ^ (h2 << 1);
+        }
+    };
+}
+
+struct ResultMessage
+{
+    ID id;
+    shared_ptr<MessageBaseToSend> msg;
+};
 // Codes fro protocol
 enum ClientRequestCodes
 {
@@ -51,7 +205,7 @@ enum ClientRequestCodes
 enum ClientResponseCodes
 {
     // signaling
-    ClientResponseAuthorizedICEConnection = 30
+    AuthorizedICEConnection = 30
 };
 
 enum ServerResponseCodes
@@ -152,8 +306,8 @@ struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
     uint16_t requestId;
     vector<uint8_t> iceCandidateInfo;
 
-    ServerRequestAuthorizeICEConnection(vector<uint8_t> iceCandidateInfo)
-        : MessageBaseToSend(ServerRequestCodes::AuthorizeICEConnection), iceCandidateInfo(move(iceCandidateInfo)) {}
+    ServerRequestAuthorizeICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId)
+        : MessageBaseToSend(ServerRequestCodes::AuthorizeICEConnection), requestId(requestId), iceCandidateInfo(move(iceCandidateInfo)) {}
 
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
@@ -195,12 +349,22 @@ struct MessageBaseReceived
 {
     uint8_t code;
     vector<uint8_t> data;
+    ID from;
     MessageBaseReceived() {}
 
     MessageBaseReceived(uint8_t code, vector<uint8_t> data)
     {
         this->code = code;
         this->data = data;
+    }
+};
+
+struct GeneralRecieve
+{
+    ID from;
+    GeneralRecieve(const ID &from)
+    {
+        this->from = from;
     }
 };
 
@@ -211,13 +375,13 @@ struct MessageBaseReceived
 /// @brief struct from client to request for another user's ice info (user is defiend by the id) and receive the client's ice info
 /// Message: 32 bytes id | 2 bytes iceCandLen | iceCandLen btyes iceCandInfo
 
-struct ClientRequestGetUserICEInfo
+struct ClientRequestGetUserICEInfo : GeneralRecieve
 {
     ID RequestedUserId;
     std::vector<uint8_t> iceCandidateInfo;
 
     // Constructor to deserialize from received message
-    ClientRequestGetUserICEInfo(const MessageBaseReceived &receivedMessage)
+    ClientRequestGetUserICEInfo(const MessageBaseReceived &receivedMessage) : GeneralRecieve(receivedMessage.from)
     {
         deserialize(receivedMessage.data);
     }
@@ -247,13 +411,13 @@ struct ClientRequestGetUserICEInfo
 
 /// @brief client response to request of another user to authorize ice connections
 /// lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes)
-struct ClientResponseAuthorizedICEConnection
+struct ClientResponseAuthorizedICEConnection : GeneralRecieve
 {
     std::vector<uint8_t> iceCandidateInfo;
     uint16_t requestId;
 
     // Constructor: Takes a received message and deserializes it
-    ClientResponseAuthorizedICEConnection(const MessageBaseReceived &receivedMessage)
+    ClientResponseAuthorizedICEConnection(const MessageBaseReceived &receivedMessage) : GeneralRecieve(receivedMessage.from)
     {
         deserialize(receivedMessage.data);
     }
@@ -285,10 +449,10 @@ struct ClientResponseAuthorizedICEConnection
     }
 };
 
-struct DebuggingStringMessageReceived
+struct DebuggingStringMessageReceived : GeneralRecieve
 {
     std::string data;
-    DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived)
+    DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived) : GeneralRecieve(messageBaseReceived.from)
     {
         deserialize(messageBaseReceived.data);
     }

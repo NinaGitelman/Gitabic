@@ -20,7 +20,7 @@ class TCPClientSocket
 {
 public:
     /// @brief Constructor that accepts an existing socket and uses it as the tcp socket - also its address
-    TCPClientSocket(int existingSocket, const sockaddr_in &address);
+    TCPClientSocket(int existingSocket, const Address &address);
     int getSocketFd() const;
 
     /// @brief closes the socket
@@ -34,8 +34,10 @@ public:
     /// @return The message
     MessageBaseReceived receive();
 
+    void setClientAddress(const Address &clientAddress_) { clientAddress = clientAddress_; }
+
 private:
-    sockaddr_in clientAddress;
+    Address clientAddress;
     mutex socketMut;
     int sockfd;
 };
