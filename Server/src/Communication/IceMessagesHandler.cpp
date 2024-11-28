@@ -27,6 +27,5 @@ ResultMessage IceMessagesHandler::handle(const ClientResponseAuthorizedICEConnec
     res.id = waitsForResponse[request.requestId];
     waitsForResponse.erase(request.requestId);
     res.msg = std::make_shared<ServerResponseUserAuthorizedICEData>(request.iceCandidateInfo);
-    waitsForResponse[waitIds++] = request.from;
     return res;
 }

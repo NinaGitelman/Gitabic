@@ -60,7 +60,6 @@
         "iomanip": "cpp",
         "sstream": "cpp",
         "codecvt": "cpp",
-        "span": "cpp",
-        "map": "cpp"
+        "span": "cpp"
     }
 }

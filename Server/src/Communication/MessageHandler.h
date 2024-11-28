@@ -3,17 +3,28 @@
 
 #pragma once
 
-#include "NetworkUnit/ServerCom/Messages.h"
-
+#include "IceMessagesHandler.h"
 class MessageHandler
 {
 public:
-    MessageHandler();
-    ~MessageHandler();
+    // Deleted copy constructor and assignment operator to enforce singleton
+    MessageHandler(const MessageHandler &) = delete;
+    MessageHandler &operator=(const MessageHandler &) = delete;
 
+    // Access the singleton instance
+    static MessageHandler &getInstance();
+
+    // Functionality
     ResultMessage handle(MessageBaseReceived msg);
 
 private:
+    // Private constructor and destructor
+    MessageHandler();
+
+    // Static instance and flag
+    static std::unique_ptr<MessageHandler> instance;
+    static std::once_flag initInstanceFlag;
+    IceMessagesHandler *iceMessagesHandler;
 };
 
-#endif
+#endif // MESSAGEHANDLER_H

@@ -23,7 +23,10 @@ class MultiThreadedServer
 public:
     // friend class PacketHandler;
 
-    MultiThreadedServer() : _running(true) {};
+    MultiThreadedServer() : _running(true)
+    {
+        messageHandler = &MessageHandler::getInstance();
+    };
 
     ~MultiThreadedServer();
 
@@ -58,4 +61,5 @@ private:
     void printDataAsASCII(vector<uint8_t> data);
 
     ID generateRandomId();
+    MessageHandler *messageHandler;
 };

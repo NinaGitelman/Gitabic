@@ -100,32 +100,35 @@ void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSo
         id = generateRandomId();
         ids[id] = clientSocket;
         clientSocket->send(ServerResponseNewId(id));
+        if (ids.size() == 2)
+        {
+            ID i123 = ids.begin()->first == id ? (++ids.begin())->first : ids.begin()->first;
+            clientSocket->send(ServerResponseNewId(i123));
+        }
         while (_running)
         {
+            if (!messagesToSend[id].empty())
+            {
+                auto msg = messagesToSend[id].front();
+                messagesToSend[id].pop();
+                clientSocket->send(*msg);
+            }
 
             // create id for client and add it to the map...
             auto msg = clientSocket->receive();
+            if (msg.code == 0)
+            {
+                continue;
+            }
+            msg.from = id;
 
-            ResultMessage response = MessageHandler::handle(msg);
+            ResultMessage response = messageHandler->handle(msg);
             if (response.id == ID())
             {
                 continue;
             }
             messagesToSend[response.id].push(response.msg);
-            if (msg.code == (uint8_t)ClientRequestCodes::GetUserICEInfo)
-            {
-                std::cout << "here!";
-                ClientRequestGetUserICEInfo dataMsg(msg);
-
-                std::cout << "id: " << clientId << " - ";
-                printDataAsASCII(dataMsg.iceCandidateInfo);
-
-                std::string message = "Hello world!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-                vector<uint8_t> iceTestData(message.begin(), message.end());
-
-                ServerResponseUserAuthorizedICEData serverResponse = ServerResponseUserAuthorizedICEData(iceTestData);
-                clientSocket->send(serverResponse);
-            }
+            std::cout << "";
         }
     }
     catch (const std::exception &e)

@@ -57,12 +57,12 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
         {
             throw std::runtime_error("Failed to read response code");
         }
-        std::cout << "Received " << (int)code << std::endl;
 
         if (recv(sockfd, &size, sizeof(size), 0) != sizeof(size)) // Read the size (4 bytes)
         {
             throw std::runtime_error("Failed to read response size");
         }
+        std::cout << "Received " << (int)code << std::endl;
 
         vector<uint8_t> data(size);
         if (recv(sockfd, data.data(), size, 0) != size)

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <memory>
 #include <string>
 #include "../../Encryptions/SHA256/sha256.h"
 #include <cstring> // for memcpy
@@ -10,10 +11,12 @@
 #include <array>
 #include "../../Utils/SerializeDeserializeUtils.h"
 #include <ostream>
+#include <arpa/inet.h>
 
 using std::vector;
 using ID = HashResult;
 using EncryptedID = std::array<uint8_t, 48>;
+using std::shared_ptr;
 using std::string;
 
 namespace std // Hash method for ID to allow hash map key usage
@@ -180,11 +183,6 @@ namespace std
     };
 }
 
-struct ResultMessage
-{
-    ID id;
-    shared_ptr<MessageBaseToSend> msg;
-};
 // Codes fro protocol
 enum ClientRequestCodes
 {
@@ -251,7 +249,11 @@ struct MessageBaseToSend
         return result;
     }
 };
-
+struct ResultMessage
+{
+    ID id;
+    std::shared_ptr<MessageBaseToSend> msg;
+};
 struct ServerResponseNewId : MessageBaseToSend
 
 {

@@ -23,30 +23,47 @@ void TCPClientSocket::send(const MessageBaseToSend &msg)
         throw std::runtime_error("Failed to send message data");
     }
 }
-
 MessageBaseReceived TCPClientSocket::receive()
 {
-
-    uint8_t code;
-    uint32_t size;
-
+    uint8_t code = 0;  // Default code value
+    uint32_t size = 0; // Default size value
     std::lock_guard<mutex> guard(socketMut);
 
-    // Use MSG_PEEK to check if there's data available
-    ssize_t peekResult = recv(sockfd, &code, sizeof(code), MSG_PEEK);
+    // Use MSG_PEEK with a timeout mechanism to check for available data
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(sockfd, &read_fds);
 
-    if (peekResult <= 0)
+    struct timeval timeout;
+    timeout.tv_sec = 0;  // No wait time
+    timeout.tv_usec = 0; // Immediate return
+
+    int select_result = select(sockfd + 1, &read_fds, nullptr, nullptr, &timeout);
+
+    if (select_result == 0)
     {
-        if (peekResult == 0)
-        {
+        // No data available immediately
+        return MessageBaseReceived(0, vector<uint8_t>());
+    }
 
-            throw std::runtime_error("Client disconnected");
-        }
+    if (select_result < 0)
+    {
+        // Select error
+        throw std::runtime_error("Select error while checking socket");
+    }
+
+    // Attempt to peek the code
+    ssize_t peekResult = recv(sockfd, &code, sizeof(code), MSG_PEEK);
+    if (peekResult == 0)
+    {
+        throw std::runtime_error("Client disconnected");
+    }
+    if (peekResult < 0)
+    {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
         {
             // No data available
-            vector<uint8_t> emptyVector;
-            return MessageBaseReceived(0, emptyVector);
+            return MessageBaseReceived(0, vector<uint8_t>());
         }
         throw std::runtime_error("Failed to peek message");
     }
@@ -54,12 +71,20 @@ MessageBaseReceived TCPClientSocket::receive()
     // Actually read the code
     if (recv(sockfd, &code, sizeof(code), 0) != sizeof(code))
     {
-        throw std::runtime_error("Failed to read message code");
+        // If we can't read the code, return default values
+        return MessageBaseReceived(0, vector<uint8_t>());
     }
 
+    // Try to read size, return defaults if fails
     if (recv(sockfd, &size, sizeof(size), 0) != sizeof(size))
     {
-        throw std::runtime_error("Failed to read response size");
+        return MessageBaseReceived(0, vector<uint8_t>());
+    }
+
+    // If size is zero, return early
+    if (size == 0)
+    {
+        return MessageBaseReceived(code, vector<uint8_t>());
     }
 
     vector<uint8_t> data(size);
@@ -69,7 +94,8 @@ MessageBaseReceived TCPClientSocket::receive()
         ssize_t received = recv(sockfd, data.data() + total_received, size - total_received, 0);
         if (received <= 0)
         {
-            throw std::runtime_error("Failed to read response data");
+            // If data reception fails, return what we have or default
+            return MessageBaseReceived(code, vector<uint8_t>());
         }
         total_received += received;
     }

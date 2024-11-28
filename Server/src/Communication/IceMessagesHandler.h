@@ -5,7 +5,7 @@
 
 #include <memory> // For std::unique_ptr
 #include <mutex>  // For std::once_flag and std::call_once
-#include "NetworkUnit/ServerCom/Messages.h"
+#include "../NetworkUnit/ServerCom/Messages.h"
 #include <unordered_map>
 
 class IceMessagesHandler
@@ -24,7 +24,6 @@ public:
 private:
     // Constructor and Destructor are private
     IceMessagesHandler() : waitIds(0) {}
-    ~IceMessagesHandler() = default;
 
     std::unordered_map<uint16_t, ID> waitsForResponse;
     uint16_t waitIds;

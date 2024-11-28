@@ -33,24 +33,22 @@ int main()
                                              { return code == ServerResponseCodes::NewID; }));
 
     ID id = newId.id;
-    ServerResponseNewId otherNewId(socket.receive([](uint8_t code)
-                                                  { return code == ServerResponseCodes::NewID; }));
 
-    ID otherId = otherNewId.id;
+    ServerRequestAuthorizeICEConnection authIceReq(socket.receive([](uint8_t code)
+                                                                  { return code == ServerRequestCodes::AuthorizeICEConnection; }));
 
-    std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
-    {
-        return code == ServerResponseCodes::UserAuthorizedICEData;
-    };
+    std::cout << "Received!!\n";
+    printDataAsASCII(authIceReq.iceCandidateInfo);
 
-    std::string message = "Hello world!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    std::string message = "123456 654321!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     vector<uint8_t> iceTestData(message.begin(), message.end());
 
-    ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(otherId, iceTestData);
+    ClientResponseAuthorizedICEConnection requestIce = ClientResponseAuthorizedICEConnection(iceTestData, authIceReq.requestId);
     socket.sendRequest(requestIce);
+    std::cout << "Done!!\n";
 
-    ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
-    printDataAsASCII(response.iceCandidateInfo);
+    // ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
+    // printDataAsASCII(response.iceCandidateInfo);
 
     // DataRepublish dr(nullptr);
     // HashResult res = SHA256::toHashSha256(vector<uint8_t>{1});
