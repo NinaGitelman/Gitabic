@@ -402,7 +402,6 @@ end:
 }
 
 
-
 /*
 // Function called when the state of the Nice agent is changed - p2p connection done
 // check if the negotiation is complete and handle it
@@ -429,7 +428,7 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
             nice_address_to_string(&remote->addr, ipaddr);
             printf(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
 
-
+  
             gchar *line = g_strdup("\n\nfrom remote: hello world!\n\n");
 
             // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
