@@ -59,9 +59,7 @@ int main(int argc, char *argv[])
     //handler2.connectToPeer(remoteData2);
 
 
-
-
-   NiceAgent *agent;
+  NiceAgent *agent;
   gchar *stun_addr = NULL;
   guint stun_port = 0;
   gboolean isControlling;
@@ -133,7 +131,7 @@ To create a new GIOChannel on UNIX systems use g_io_channel_unix_new()
   // g_signal_connect: Connects a GCallback function to a signal for a particular object.
   g_signal_connect(agent, "candidate-gathering-done", G_CALLBACK(cb_candidate_gathering_done), NULL);
 
- // g_signal_connect(agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
+  g_signal_connect(agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
 
   g_signal_connect(agent, "component-state-changed", G_CALLBACK(cb_component_state_changed), NULL);
 
@@ -166,6 +164,4 @@ To create a new GIOChannel on UNIX systems use g_io_channel_unix_new()
   g_io_channel_unref (io_stdin);
 
   return EXIT_SUCCESS;
-
-
 }
