@@ -342,8 +342,8 @@ end:
 */
 void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data)
 {
-  printf("callbackComponentStateChanged");
-    printf("SIGNAL: state changed %d %d %s[%d]\n", streamId, componentId, stateName[state], state);
+  //printf("callbackComponentStateChanged");
+    //printf("SIGNAL: state changed %d %d %s[%d]\n", streamId, componentId, stateName[state], state);
 
       if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
       {
