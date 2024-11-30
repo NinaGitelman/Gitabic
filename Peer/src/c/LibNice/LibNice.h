@@ -15,9 +15,7 @@ extern const gchar *candidate_type_name[];
 
 extern const gchar *state_name[];
 
-extern GMainLoop *gloop;
 extern GIOChannel* io_stdin;
-extern guint stream_id;
 
 void cb_candidate_gathering_done(NiceAgent *agent, guint _stream_id, gpointer data);
 
@@ -25,7 +23,7 @@ gboolean stdin_remote_info_cb (GIOChannel *source, GIOCondition cond, gpointer d
 
 void cb_component_state_changed(NiceAgent *agent, guint _stream_id, guint component_id, guint state, gpointer data);
 
-gboolean stdin_send_data_cb (GIOChannel *source, GIOCondition cond, gpointer data);
+//gboolean stdin_send_data_cb (GIOChannel *source, GIOCondition cond, gpointer data);
 
 void cb_new_selected_pair(NiceAgent *agent, guint _stream_id, guint component_id, gchar *lfoundation, gchar *rfoundation, gpointer data);
 

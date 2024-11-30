@@ -18,9 +18,7 @@ To complete the ICE connectivity checks, the user must either register an I/O ca
  *   simple-example 0 $(host -4 -t A stun.stunprotocol.org | awk '{ print $4 }')
  *   simple-example 1 $(host -4 -t A stun.stunprotocol.org | awk '{ print $4 }')
  */
-GMainLoop *gloop = NULL;
 GIOChannel *io_stdin = NULL;
-guint stream_id = 0;
 
 const gchar *candidate_type_name[] = {"host", "srflx", "prflx", "relay"};
 
@@ -47,40 +45,40 @@ void cb_candidate_gathering_done(NiceAgent *agent, guint _stream_id, gpointer da
   // Adds the GIOChannel into the default main loop context with the default priority.
   //g_io_add_watch (GIOChannel* channel, GIOCondition condition, GIOFunc func, gpointer user_data)
   // this adds a watcher to the stdin and sends the stdin to stdin_remote_info_cb
-  g_io_add_watch(io_stdin, G_IO_IN, stdin_remote_info_cb, agent);
-  printf("> ");
-  fflush (stdout);
+  // g_io_add_watch(io_stdin, G_IO_IN, stdin_remote_info_cb, agent);
+  // printf("> ");
+  // fflush (stdout);
 }
 
-gboolean stdin_remote_info_cb (GIOChannel *source, GIOCondition cond, gpointer data)
-{
-  NiceAgent *agent = data;
-  gchar *line = NULL;
-  int rval;
-  gboolean ret = TRUE;
+// gboolean stdin_remote_info_cb (GIOChannel *source, GIOCondition cond, gpointer data)
+// {
+//   NiceAgent *agent = data;
+//   gchar *line = NULL;
+//   int rval;
+//   gboolean ret = TRUE;
 
-  if (g_io_channel_read_line (source, &line, NULL, NULL, NULL) == G_IO_STATUS_NORMAL) 
-  {
+//   if (g_io_channel_read_line (source, &line, NULL, NULL, NULL) == G_IO_STATUS_NORMAL) 
+//   {
 
-    // Parse remote candidate list and set it on the agent
-    rval = parse_remote_data(agent, stream_id, 1, line);
-    if (rval == EXIT_SUCCESS) 
-    {
-      // Return FALSE so we stop listening to stdin since we parsed the
-      // candidates correctly
-      ret = FALSE;
-      g_debug("waiting for state READY or FAILED signal...");
-    } else {
-      fprintf(stderr, "ERROR: failed to parse remote data\n");
-      printf("Enter remote data (single line, no wrapping):\n");
-      printf("> ");
-      fflush (stdout);
-    }
-    g_free (line);
-  }
+//     // Parse remote candidate list and set it on the agent
+//     rval = parse_remote_data(agent, stream_id, 1, line);
+//     if (rval == EXIT_SUCCESS) 
+//     {
+//       // Return FALSE so we stop listening to stdin since we parsed the
+//       // candidates correctly
+//       ret = FALSE;
+//       g_debug("waiting for state READY or FAILED signal...");
+//     } else {
+//       fprintf(stderr, "ERROR: failed to parse remote data\n");
+//       printf("Enter remote data (single line, no wrapping):\n");
+//       printf("> ");
+//       fflush (stdout);
+//     }
+//     g_free (line);
+//   }
 
-  return ret;
-}
+//   return ret;
+// }
 
 /*
 Function called when the state of the Nice agent is changed
@@ -90,9 +88,10 @@ This function also gets the input to send to remote and calls another function t
 void cb_component_state_changed(NiceAgent *agent, guint _stream_id, guint component_id, guint state, gpointer data)
 {
 
-  g_debug("SIGNAL: state changed %d %d %s[%d]\n",
-      _stream_id, component_id, state_name[state], state);
-
+  // g_debug("SIGNAL: state changed %d %d %s[%d]\n",
+  //     _stream_id, component_id, state_name[state], state);
+  GMainLoop* gloop = (GMainLoop*) data;  // Cast to GMainLoop* 
+    
   if (state == NICE_COMPONENT_STATE_CONNECTED) 
   {
     NiceCandidate *local, *remote;
@@ -109,10 +108,10 @@ void cb_component_state_changed(NiceAgent *agent, guint _stream_id, guint compon
     }
 
     // Listen to stdin and send data written to it
-    printf("\nSend lines to remote (Ctrl-D to quit):\n");
-    g_io_add_watch(io_stdin, G_IO_IN, stdin_send_data_cb, agent);
-    printf("> ");
-    fflush (stdout);
+    // printf("\nSend lines to remote (Ctrl-D to quit):\n");
+    // g_io_add_watch(io_stdin, G_IO_IN, stdin_send_data_cb, agent);
+    // printf("> ");
+    // fflush (stdout);
   }
    else if (state == NICE_COMPONENT_STATE_FAILED)
   {
@@ -122,27 +121,27 @@ void cb_component_state_changed(NiceAgent *agent, guint _stream_id, guint compon
 
 /*
 Function used to send data to the remote
-*/
-gboolean stdin_send_data_cb (GIOChannel *source, GIOCondition cond, gpointer data)
-{
-  NiceAgent *agent = data;
-  gchar *line = NULL;
+// */
+// gboolean stdin_send_data_cb (GIOChannel *source, GIOCondition cond, gpointer data)
+// {
+//   NiceAgent *agent = data;
+//   gchar *line = NULL;
 
-  if (g_io_channel_read_line (source, &line, NULL, NULL, NULL) == G_IO_STATUS_NORMAL) 
-  {
-    nice_agent_send(agent, stream_id, 1, strlen(line), line);
-    g_free (line);
-    printf("> ");
-    fflush (stdout);
-  } else 
-  {
-    nice_agent_send(agent, stream_id, 1, 1, "\0");
-    // Ctrl-D was pressed.
-    g_main_loop_quit (gloop);
-  }
+//   if (g_io_channel_read_line (source, &line, NULL, NULL, NULL) == G_IO_STATUS_NORMAL) 
+//   {
+//     nice_agent_send(agent, stream_id, 1, strlen(line), line);
+//     g_free (line);
+//     printf("> ");
+//     fflush (stdout);
+//   } else 
+//   {
+//     nice_agent_send(agent, stream_id, 1, 1, "\0");
+//     // Ctrl-D was pressed.
+//     g_main_loop_quit (gloop);
+//   }
 
-  return TRUE;
-}
+//   return TRUE;
+// }
 
 /*
 Just prints that a new pair was selected
@@ -155,9 +154,12 @@ void cb_new_selected_pair(NiceAgent *agent, guint _stream_id, guint component_id
 
 /*
 Function that will be called when data is received after connection
+input as data the gloop
 */
 void cb_nice_recv(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data)
 {
+  GMainLoop* gloop = (GMainLoop*) data; 
+
   if (len == 1 && buf[0] == '\0')
   {
     g_main_loop_quit(gloop);

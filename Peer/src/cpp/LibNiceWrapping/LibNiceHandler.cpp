@@ -35,7 +35,7 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
         }
 
         // needs this to work
-        nice_agent_attach_recv(_agent,_streamId, 1, _context, cb_nice_recv, NULL);
+        nice_agent_attach_recv(_agent,_streamId, 1, _context, cb_nice_recv, _gloop);
 
 
     }
