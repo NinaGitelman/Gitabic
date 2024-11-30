@@ -49,14 +49,14 @@ int main(int argc, char *argv[])
     
 
 
-    LibNiceHandler handler2(1);
-    std::vector<uint8_t> data2 = handler2.getLocalICEData();
-    std::cout << "\n\n\n";
+  //   LibNiceHandler handler2(1);
+  //   std::vector<uint8_t> data2 = handler2.getLocalICEData();
+  //   std::cout << "\n\n\n";
     
-   VectorUint8Utils::printVectorUint8(data2);
+  //  VectorUint8Utils::printVectorUint8(data2);
 
-   std::vector<uint8_t> remoteData2 = VectorUint8Utils::readFromCin();
-    handler2.connectToPeer(remoteData2);
+  //  std::vector<uint8_t> remoteData2 = VectorUint8Utils::readFromCin();
+  //   handler2.connectToPeer(remoteData2);
 
 
 //   NiceAgent *agent;
