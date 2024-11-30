@@ -180,16 +180,15 @@ int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
     {
       
       result = addRemoteCandidates(remoteData);
+
+     
+
+
       g_signal_connect(_agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
         
-      if (!g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this) || result != EXIT_SUCCESS) 
-      {
-          ThreadSafeCout::cout("Failed to connect callback");
-          return EXIT_FAILURE;
-
-
-      }
-        g_main_loop_run(_gloop);
+      g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this);
+      
+      g_main_loop_run(_gloop);
     }
     catch(const std::exception& e)
     {
@@ -269,7 +268,8 @@ int LibNiceHandler::addRemoteCandidates(char* remoteData)
         g_message("failed to set remote candidates");
         goto end;
     }
-    else{
+    else
+    {
       g_message("success setting remote cand");
     }
 
