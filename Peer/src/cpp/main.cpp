@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 {
   int connect = 1;
  
-  if(argc>=2)
+  if(argc>2)
   {
        connect = std::stoi(argv[1]);
 
