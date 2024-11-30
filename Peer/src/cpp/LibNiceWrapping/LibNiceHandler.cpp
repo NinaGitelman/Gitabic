@@ -180,7 +180,7 @@ int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
     {
       
       result = addRemoteCandidates(remoteData);
-        g_signal_connect(_agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
+      g_signal_connect(_agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
         
         if (!g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this) || result != EXIT_SUCCESS) 
         {
@@ -270,7 +270,7 @@ int LibNiceHandler::addRemoteCandidates(char* remoteData)
         goto end;
     }
     else{
-      g_message("supposed to be success setting remote cand");
+      g_message("success setting remote cand");
     }
 
     result = EXIT_SUCCESS;
@@ -342,8 +342,8 @@ end:
 */
 void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data)
 {
-    g_message("SIGNAL: state changed %d %d %s[%d]\n",
-            streamId, componentId, stateName[state], state);
+  printf("callbackComponentStateChanged");
+    printf("SIGNAL: state changed %d %d %s[%d]\n", streamId, componentId, stateName[state], state);
 
       if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
       {

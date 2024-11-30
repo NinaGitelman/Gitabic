@@ -258,7 +258,8 @@ Just prints that a new pair was selected
 */
 void cb_new_selected_pair(NiceAgent *agent, guint _stream_id, guint component_id, gchar *lfoundation, gchar *rfoundation, gpointer data)
 {
-  g_debug("SIGNAL: selected pair %s %s", lfoundation, rfoundation);
+  printf("in new selected pair");
+  printf("SIGNAL: selected pair %s %s", lfoundation, rfoundation);
 }
 
 /*

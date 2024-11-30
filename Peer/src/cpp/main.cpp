@@ -35,7 +35,18 @@ int main(int argc, char *argv[])
     VectorUint8Utils::printVectorUint8(data1);
     std::cout << "\n\n\n";
     std::vector<uint8_t> remoteData1 = VectorUint8Utils::readFromCin();
-    handler1.connectToPeer(remoteData1);
+
+
+    try
+    {
+      handler1.connectToPeer(remoteData1);
+    
+    }
+    catch(const std::exception& e)
+    {
+      std::cout << e.what() << " in main.cpp";
+    }
+    
 
 
     // LibNiceHandler handler2(1);
