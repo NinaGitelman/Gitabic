@@ -5,7 +5,7 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
 {
     // Initialize networking
     g_networking_init();
-    g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
+    //g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
     io_stdin = g_io_channel_unix_new(fileno(stdin));
 
 
@@ -172,25 +172,36 @@ end:
 
 int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
 {
-  char *remoteData = nullptr;
+    char *remoteData = nullptr;
+    int result = false;
+    VectorUint8Utils::vectorUint8ToCharArray(remoteDataVec, &remoteData);
+    std::cout << "\n\n\n";
+    try
+    {
+      
+      result = addRemoteCandidates(remoteData);
+        g_signal_connect(_agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
+        
+        if (!g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this) || result != EXIT_SUCCESS) 
+        {
+            ThreadSafeCout::cout("Failed to connect callback");
+            return EXIT_FAILURE;
 
-  VectorUint8Utils::vectorUint8ToCharArray(remoteDataVec, &remoteData);
-  std::cout << "\n\n\n";
 
-  
-  int result = addRemoteCandidates(remoteData);
-  g_signal_connect(_agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
-  
-  if (!g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this) || result != EXIT_SUCCESS) 
-  {
-      g_message("Failed to connect callback");
-      return EXIT_FAILURE;
+        }
+        g_main_loop_run(_gloop);
+    }
+    catch(const std::exception& e)
+    {
+        std::string err = e.what();
+        std::string jl = "\n\n";
+        std::string errJl = err+jl;
+        ThreadSafeCout::cout(errJl);
 
+    } 
+    
 
-  }
-  g_main_loop_run(_gloop);
-
-   return result;
+    return result;
 }
 
 int LibNiceHandler::addRemoteCandidates(char* remoteData)
@@ -345,7 +356,7 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
             gchar ipaddr[INET6_ADDRSTRLEN];
 
             nice_address_to_string(&local->addr, ipaddr);
-            //printf("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
+            printf("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
             
             nice_address_to_string(&remote->addr, ipaddr);
             printf(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
