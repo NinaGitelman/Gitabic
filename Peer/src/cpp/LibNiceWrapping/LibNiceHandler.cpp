@@ -215,8 +215,7 @@ int LibNiceHandler::addRemoteCandidates(char* remoteData)
     int i;
     guint componentId = COMPONENT_ID_RTP;
 
-    printf("Debug: remoteData: '%s'\n", remoteData);
-
+   
     line_argv = g_strsplit_set(remoteData, " \t\n", 0);
     for (i = 0; line_argv && line_argv[i]; i++)
     {
@@ -343,8 +342,7 @@ end:
 */
 void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data)
 {
-    ThreadSafeCout::cout("in callbakComponentStateChanged");
-    g_debug("SIGNAL: state changed %d %d %s[%d]\n",
+    g_message("SIGNAL: state changed %d %d %s[%d]\n",
             streamId, componentId, stateName[state], state);
 
       if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
@@ -357,12 +355,12 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
             gchar ipaddr[INET6_ADDRSTRLEN];
 
             nice_address_to_string(&local->addr, ipaddr);
-            printf("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
+            g_message("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
             
             nice_address_to_string(&remote->addr, ipaddr);
-            printf(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
+            g_message(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
 
-
+            
             gchar *line = g_strdup("\n\nfrom remote: hello world!\n\n");
 
             // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
@@ -382,7 +380,7 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
       else if (state == NICE_COMPONENT_STATE_FAILED)
       {
           LibNiceHandler* handler = static_cast<LibNiceHandler*>(data);
-        
+          g_message("Component state failed");
           if (handler)
           {
               if (handler->_gloop)
