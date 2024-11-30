@@ -5,7 +5,7 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
 {
     // Initialize networking
     g_networking_init();
-    //g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
+    g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
     io_stdin = g_io_channel_unix_new(fileno(stdin));
 
 
@@ -343,6 +343,7 @@ end:
 void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data)
 {
   //printf("callbackComponentStateChanged");
+    // this gives segmentation fault in ec2... for some reason
     //printf("SIGNAL: state changed %d %d %s[%d]\n", streamId, componentId, stateName[state], state);
 
       if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
@@ -385,14 +386,14 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
           {
               if (handler->_gloop)
               {
-               // g_main_loop_quit(handler->_gloop);
+                g_main_loop_quit(handler->_gloop);
                 throw std::runtime_error("Negotiation failed");
 
               }
           }
           else 
           {
-              throw std::runtime_error("Negotiation failed for stream ID - No handler provided");
+              throw std::runtime_error("Negotiation failed for stream ID and No handler provided");
 
           }
     }
