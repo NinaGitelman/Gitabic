@@ -195,7 +195,7 @@ int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
     {
         std::string err = e.what();
         std::string jl = "\n\n in connectToPeer";
-        std::string errJl + errjl;
+        std::string errJl  = err+ jl;
 
         ThreadSafeCout::cout(errJl);
 
