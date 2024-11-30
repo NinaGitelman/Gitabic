@@ -33,7 +33,7 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
         {
           ThreadSafeCout::cout("Failed to add stream");
         }
-
+        g_main_loop_run(_gloop);
         // needs this to work
         nice_agent_attach_recv(_agent,_streamId, 1, _context, cb_nice_recv, NULL);
 
@@ -67,7 +67,7 @@ vector<uint8_t> LibNiceHandler::getLocalICEData()
         // Wait until gathering is complete
         g_signal_connect(_agent, "candidate-gathering-done", G_CALLBACK(callbackCandidateGatheringDone), this);
         
-        g_main_loop_run(_gloop);
+        //g_main_loop_run(_gloop);
 
         _candidatesGathered = true;
     }
@@ -97,7 +97,7 @@ void LibNiceHandler::callbackCandidateGatheringDone(NiceAgent* agent, guint stre
     if (handler && handler->_gloop)
     {
         g_message("Candidate gathering done for stream ID: %u", streamId);
-        g_main_loop_quit(handler->_gloop);
+       // g_main_loop_quit(handler->_gloop);
         
     }
     else
@@ -386,7 +386,7 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
           {
               if (handler->_gloop)
               {
-                g_main_loop_quit(handler->_gloop);
+                // g_main_loop_quit(handler->_gloop);
                 throw std::runtime_error("Negotiation failed");
 
               }
