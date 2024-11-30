@@ -175,20 +175,20 @@ int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
     char *remoteData = nullptr;
     int result = false;
     VectorUint8Utils::vectorUint8ToCharArray(remoteDataVec, &remoteData);
-    std::cout << "\n\n\n";
+    
     try
     {
       
       result = addRemoteCandidates(remoteData);
       g_signal_connect(_agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
         
-        if (!g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this) || result != EXIT_SUCCESS) 
-        {
-            ThreadSafeCout::cout("Failed to connect callback");
-            return EXIT_FAILURE;
+      if (!g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this) || result != EXIT_SUCCESS) 
+      {
+          ThreadSafeCout::cout("Failed to connect callback");
+          return EXIT_FAILURE;
 
 
-        }
+      }
         g_main_loop_run(_gloop);
     }
     catch(const std::exception& e)
