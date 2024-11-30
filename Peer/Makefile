@@ -4,7 +4,7 @@
 
 # Compiler settings - Can be customized.
 CC = g++-10
-CXXFLAGS = -std=c++20 -Wall -g
+CXXFLAGS = -std=c++20 -Wall -g -I$(SRCDIR)
 LDFLAGS = -lrt -pthread
 
 # Makefile settings - Can be customized.
@@ -41,9 +41,9 @@ $(APPNAME): $(OBJ)
 # Creates the dependency rules
 %.d: $(SRCDIR)/%$(EXT)
 	@mkdir -p $(dir $@)
-	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+	@$(CC) $(CXXFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) > $@
 
-# Includes all .h files
+# Includes all .d dependency files
 -include $(DEP)
 
 # Building rule for .o files and its .c/.cpp in combination with all .h
@@ -55,7 +55,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
 # Cleans complete project
 .PHONY: clean
 clean:
-	$(RM) $(DELOBJ) $(DEP) $(APPNAME)
+	$(RM) -r $(OBJDIR) $(DEP) $(APPNAME)
 
 # Cleans only all files with the extension .d
 .PHONY: cleandep
