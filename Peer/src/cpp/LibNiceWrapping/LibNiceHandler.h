@@ -29,7 +29,6 @@ extern "C"
 
 #include <gio/gnetworking.h>
 
-// #include "../../c/LibNice/LibNice.h"
 }
 class LibNiceHandler
 {
