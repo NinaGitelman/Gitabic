@@ -62,10 +62,14 @@ private:
     /// @return A NiceCandidate object from it
     NiceCandidate *parseCandidate(char *scand);
 
-    // has to have those inputs because libnice expects it  even if we only use one of them...
+    /// @brief Callback function to notify when a component state is changed -> only used for printing the state...
+    //   has to have those inputs because libnice expects it  even if we only use one of them...
     static void callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data);
 
 
+    /// @brief Calbback that will handle how the messages are received 
+    /// @param data The gloop of the handler 
+    static void callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data);
 
 public:
 

@@ -35,7 +35,7 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
         }
 
         // needs this to work
-        nice_agent_attach_recv(_agent,_streamId, 1, _context, cb_nice_recv, _gloop);
+        nice_agent_attach_recv(_agent,_streamId, 1, _context, callbackReceive, _gloop);
 
 
     }
@@ -52,6 +52,18 @@ LibNiceHandler::~LibNiceHandler()
       g_main_context_unref(_context);
     if (_agent)
       g_object_unref(_agent);
+}
+
+void LibNiceHandler::callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data)
+{
+  GMainLoop* gloop = (GMainLoop*) data; 
+
+  if (len == 1 && buf[0] == '\0' && gloop != nullptr)
+  {
+    g_main_loop_quit(gloop);
+  }
+  printf("%.*s", len, buf);
+  fflush(stdout);
 }
 
 vector<uint8_t> LibNiceHandler::getLocalICEData()
