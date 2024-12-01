@@ -14,7 +14,7 @@ NICE_LIBS = -lnice -lgio-2.0 -lgobject-2.0 -lglib-2.0
 # Project structure
 APPNAME = peer.out
 CPP_EXT = .cpp
-CPP_SRCDIR = src/cpp
+CPP_SRCDIR = src
 OBJDIR = obj
 
 # Source files
