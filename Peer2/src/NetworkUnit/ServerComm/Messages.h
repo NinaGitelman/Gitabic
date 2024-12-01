@@ -49,7 +49,7 @@ enum ClientRequestCodes
 enum ClientResponseCodes
 {
     // signaling
-    ClientResponseAuthorizedICEConnection = 30
+    AuthorizedICEConnection = 30
 };
 
 enum ServerRequestCodes
@@ -133,7 +133,7 @@ struct ClientResponseAuthorizedICEConnection : MessageBaseToSend
     vector<uint8_t> iceCandidateInfo;
     uint16_t requestId;
 
-    ClientResponseAuthorizedICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId) : MessageBaseToSend(ClientResponseCodes::ClientResponseAuthorizedICEConnection), iceCandidateInfo(move(iceCandidateInfo)), requestId(requestId) {}
+    ClientResponseAuthorizedICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId) : MessageBaseToSend(ClientResponseCodes::AuthorizedICEConnection), iceCandidateInfo(move(iceCandidateInfo)), requestId(requestId) {}
 
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {

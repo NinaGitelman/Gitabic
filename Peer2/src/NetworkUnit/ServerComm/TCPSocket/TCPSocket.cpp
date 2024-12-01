@@ -19,34 +19,28 @@ TCPSocket::~TCPSocket()
     }
 }
 
-void TCPSocket::sendRequest(const RequestMessageBase &msg)
+void TCPSocket::sendRequest(const MessageBaseToSend &msg)
 {
     std::lock_guard<mutex> guard(socketMut); // Lock the resource
 
     vector<uint8_t> serialized = msg.serialize();
-    uint32_t size = serialized.size();
-
-    uint8_t code = msg.code;
-
-    send(sockfd, &code, 1, 0);                // Send the code (1 byte)
-    send(sockfd, &size, sizeof(size), 0);     // Send the size (4 bytes)
-    send(sockfd, serialized.data(), size, 0); // Send the serialized data
+    send(sockfd, serialized.data(), serialized.size(), 0); // Send the serialized data
 }
 
-ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
+MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
 {
     auto start_time = std::chrono::high_resolution_clock::now();
     while (true)
     {
         auto now = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = now - start_time;
-        if (elapsed >= std::chrono::seconds(5)) // If no relevant packet for 5 seconds - stop trying
-        {
-            break;
-        }
+        // if (elapsed >= std::chrono::seconds(5)) // If no relevant packet for 5 seconds - stop trying
+        // {
+        //     break;
+        // }
         { // If there is a relevant message already recieved - return it.
             std::lock_guard<mutex> guard(socketMut);
-            auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const ResponseMessageBase &msg)
+            auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const MessageBaseReceived &msg)
                                     { return isRelevant(msg.code); });
             if (msg != messages.end())
             {
@@ -68,6 +62,7 @@ ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
         {
             throw std::runtime_error("Failed to read response size");
         }
+        std::cout << "Received " << (int)code << std::endl;
 
         vector<uint8_t> data(size);
         if (recv(sockfd, data.data(), size, 0) != size)
@@ -76,11 +71,11 @@ ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
         }
         if (isRelevant(code))
         {
-            return ResponseMessageBase(code, data);
+            return MessageBaseReceived(code, data);
         }
         else
         {
-            messages.push_back(ResponseMessageBase(code, data));
+            messages.push_back(MessageBaseReceived(code, data));
         }
     }
     throw std::runtime_error("No relevant packets");
@@ -89,7 +84,7 @@ ResponseMessageBase TCPSocket::recieve(std::function<bool(uint8_t)> isRelevant)
 void TCPSocket::connectToServer(const sockaddr_in &serverAddress)
 {
     std::lock_guard<mutex> guard(socketMut);
-    if (connect(sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress) == -1))
+    if (connect(sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1)
     {
         throw std::runtime_error("Failed to connect to server");
     }
