@@ -1,10 +1,12 @@
-#include "LibNiceHandler.h"
+#include "ICEConnection.h"
 
 
-LibNiceHandler::LibNiceHandler(const bool isControlling)
+ICEConnection::ICEConnection(const bool isControlling)
 {
     // Initialize networking
     g_networking_init();
+    
+    // for debugging:
     //g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
   
 
@@ -42,7 +44,7 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
   
 }
 
-LibNiceHandler::~LibNiceHandler()
+ICEConnection::~ICEConnection()
 {
 
     if (_gloop)
@@ -53,7 +55,8 @@ LibNiceHandler::~LibNiceHandler()
       g_object_unref(_agent);
 }
 
-void LibNiceHandler::callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data)
+// TODO - change this function to handle packets arrived from the socket....
+void ICEConnection::callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data)
 {
   GMainLoop* gloop = (GMainLoop*) data; 
 
@@ -65,7 +68,7 @@ void LibNiceHandler::callbackReceive(NiceAgent *agent, guint _stream_id, guint c
   fflush(stdout);
 }
 
-vector<uint8_t> LibNiceHandler::getLocalICEData()
+vector<uint8_t> ICEConnection::getLocalICEData()
 {
     // Only gather candidates once
     if (!_candidatesGathered)
@@ -101,9 +104,9 @@ vector<uint8_t> LibNiceHandler::getLocalICEData()
     return result;
 }
 
-void LibNiceHandler::callbackCandidateGatheringDone(NiceAgent* agent, guint streamId, gpointer userData)
+void ICEConnection::callbackCandidateGatheringDone(NiceAgent* agent, guint streamId, gpointer userData)
 {
-    LibNiceHandler* handler = static_cast<LibNiceHandler*>(userData);
+    ICEConnection* handler = static_cast<ICEConnection*>(userData);
     
     if (handler && handler->_gloop)
     {
@@ -117,7 +120,7 @@ void LibNiceHandler::callbackCandidateGatheringDone(NiceAgent* agent, guint stre
     }
 }
 
-int LibNiceHandler::getCandidateData(char **localDataBuffer)
+int ICEConnection::getCandidateData(char **localDataBuffer)
 {
   int result = EXIT_FAILURE;
   gchar *localUfrag = NULL;
@@ -181,7 +184,7 @@ end:
   return result;
 }
 
-int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
+int ICEConnection::connectToPeer(const vector<uint8_t>& remoteDataVec)
 {
     char *remoteData = nullptr;
     int result = false;
@@ -210,7 +213,7 @@ int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
     return result;
 }
 
-int LibNiceHandler::addRemoteCandidates(char* remoteData)
+int ICEConnection::addRemoteCandidates(char* remoteData)
 {
     GSList *remote_candidates = NULL;
     gchar **line_argv = NULL;
@@ -291,7 +294,7 @@ end:
 }
 
 // helper to addRemoteCandidates
-NiceCandidate* LibNiceHandler::parseCandidate(char *scand)
+NiceCandidate* ICEConnection::parseCandidate(char *scand)
 {
   NiceCandidate *cand = NULL;
   NiceCandidateType ntype = NICE_CANDIDATE_TYPE_HOST;
@@ -346,7 +349,7 @@ end:
 // check if the negotiation is complete and handle it
 // This function also gets the input to send to remote and calls another function to handle it
 */
-void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data)
+void ICEConnection::callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data)
 {
   //printf("callbackComponentStateChanged");
     // this gives segmentation fault in ec2... for some reason
@@ -386,7 +389,7 @@ void LibNiceHandler::callbackComponentStateChanged(NiceAgent *agent, guint strea
       }
       else if (state == NICE_COMPONENT_STATE_FAILED)
       {
-          LibNiceHandler* handler = static_cast<LibNiceHandler*>(data);
+          ICEConnection* handler = static_cast<ICEConnection*>(data);
           g_message("Component state failed");
           if (handler)
           {

@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <vector>
 #include <stdint.h>
+#include <map>
 #include "../Utils/ThreadSafeCout.h"
 #include "../Utils/VectorUint8Utils.h"
 
@@ -17,6 +18,7 @@
 #define STUN_ADDR "stun.stunprotocol.org" // TODO - make it a list and do many tries in case this does not work (out of service../)
 
 using std::vector;
+using std::map;
 
 extern "C"
 {
@@ -30,7 +32,7 @@ extern "C"
 #include <gio/gnetworking.h>
 
 }
-class LibNiceHandler
+class ICEConnection
 {
 // comment to change for commit
 private:
@@ -43,6 +45,9 @@ private:
     guint _streamId;  // Add this
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
     
+    
+    
+
     /// @brief Helper function to get the candidate data and put it into the given buffer
     /// @param localDataBuffer The buffer in which the localData will be put (empty null buffer, malloc will be dealt on this function)
     /// @return If it gathered the data right
@@ -82,10 +87,10 @@ public:
     /// @brief constructor that intializes the object
     /// @param isControlling if the object was created because someone is requesting to talk to the peer (0)
     ///                      or if the peer wants to talk to someone (1)
-    LibNiceHandler(const bool isControlling);
+    ICEConnection(const bool isControlling);
     
     /// @brief Destructor - cleans up
-    ~LibNiceHandler();
+    ~ICEConnection();
     
     /// @brief Function to get the local ice data - deals with all of the candiadtes gatheirng and everythign needed
     /// @return a vector<uint8_t> with the local ice data

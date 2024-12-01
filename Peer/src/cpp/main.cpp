@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <vector>
 #include <cstdint>
-#include "LibNiceWrapping/LibNiceHandler.h"
+#include "ICEConnection/ICEConnection.h"
 #include "Utils/VectorUint8Utils.h"
 
 
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   
 
   // First handler negotiation
-     LibNiceHandler handler1(connect);
+     ICEConnection handler1(connect);
     std::vector<uint8_t> data1 = handler1.getLocalICEData();
     VectorUint8Utils::printVectorUint8(data1);
     std::cout << "\n\n\n";
