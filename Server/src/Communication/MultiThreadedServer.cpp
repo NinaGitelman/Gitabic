@@ -175,6 +175,7 @@ ID MultiThreadedServer::generateRandomId()
                           [&id](const auto &pair)
                           {
                               return pair.first == id;
-                          }) != ids.end());
+                          }) != ids.end() ||
+             id == ID());
     return id;
 }
