@@ -1,7 +1,7 @@
 #ifndef DOWNLOADPROGRESS_H
 #define DOWNLOADPROGRESS_H
 #pragma once
-#include <Utils/MetaDataFile/MetaDataFile.h>
+#include "../MetaDataFile/MetaDataFile.h"
 
 /// Represents the current status of a download operation
 enum class DownloadStatus

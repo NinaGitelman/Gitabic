@@ -3,9 +3,9 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <Utils/FileUtils/FileUtils.h>
-#include <NetworkUnit/SocketHandler/SocketHandler.h>
-#include <Encryptions/SHA256/sha256.h>
+#include "../FileUtils/FileUtils.h"
+#include "../../NetworkUnit/SocketHandler/SocketHandler.h"
+#include "../../Encryptions/SHA256/sha256.h"
 using std::string;
 using std::vector;
 

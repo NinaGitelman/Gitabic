@@ -6,8 +6,8 @@
 #include <cstdint>
 #include <stdexcept>
 #include <filesystem>
-#include <Encryptions/SHA256/sha256.h>
-#include <Encryptions/AES/AESHandler.h>
+#include "../../Encryptions/SHA256/sha256.h"
+#include "../../Encryptions/AES/AESHandler.h"
 #include <random>
 
 #define KB 1024UL
