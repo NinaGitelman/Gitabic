@@ -192,9 +192,7 @@ int LibNiceHandler::connectToPeer(const vector<uint8_t>& remoteDataVec)
     {
       
       result = addRemoteCandidates(remoteData);
-      
-      g_signal_connect(_agent, "new-selected-pair", G_CALLBACK(cb_new_selected_pair), NULL);
-        
+            
       g_signal_connect(_agent, "component-state-changed", G_CALLBACK(callbackComponentStateChanged), this);
       
       g_main_loop_run(_gloop);
