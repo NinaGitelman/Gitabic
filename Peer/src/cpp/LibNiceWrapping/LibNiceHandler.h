@@ -20,16 +20,16 @@ using std::vector;
 
 extern "C"
 {
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include <string.h>
-// #include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
-// #include <agent.h>
+#include <agent.h>
 
-// #include <gio/gnetworking.h>
+#include <gio/gnetworking.h>
 
-#include "../../c/LibNice/LibNice.h"
+// #include "../../c/LibNice/LibNice.h"
 }
 class LibNiceHandler
 {
@@ -43,7 +43,7 @@ private:
     GMainLoop* _gloop; // a blocking loop only for this connection
     guint _streamId;  // Add this
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
-
+    
     /// @brief Helper function to get the candidate data and put it into the given buffer
     /// @param localDataBuffer The buffer in which the localData will be put (empty null buffer, malloc will be dealt on this function)
     /// @return If it gathered the data right
