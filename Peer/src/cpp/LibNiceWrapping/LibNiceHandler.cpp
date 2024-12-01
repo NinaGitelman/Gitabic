@@ -5,7 +5,7 @@ LibNiceHandler::LibNiceHandler(const bool isControlling)
 {
     // Initialize networking
     g_networking_init();
-    g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
+    //g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
   
 
     // Create our own context for this handler
