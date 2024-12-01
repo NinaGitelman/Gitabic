@@ -36,12 +36,18 @@ class ICEConnection
 {
 // comment to change for commit
 private:
-    NiceAgent *_agent; // the ncie agent that will be used for this connection
+
+// static as we dont need many of it and will only need one (what changes for each is the streams)
+
+
+    static NiceAgent *_agent; // the ncie agent that will be used for this connection
     const gchar *_stunAddr = STUN_ADDR;
     const guint _stunPort = STUN_PORT;
+
+    // non static
     gboolean _isControlling;   // if this conneciton is controllling or being controlled
     GMainContext* _context;  // this connections context
-    GMainLoop* _gloop; // a blocking loop only for this connection
+    GMainLoop* _gloop; // a blocking loop only for this connection    
     guint _streamId;  // Add this
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
     
