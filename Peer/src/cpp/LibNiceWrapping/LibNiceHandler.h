@@ -33,7 +33,7 @@ extern "C"
 }
 class LibNiceHandler
 {
-
+// comment to change for commit
 private:
     NiceAgent *_agent; // the ncie agent that will be used for this connection
     const gchar *_stunAddr = STUN_ADDR;
