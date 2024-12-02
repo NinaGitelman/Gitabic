@@ -95,37 +95,7 @@ struct MessageBaseToSend
     }
 };
 
-struct DebuggingStringMessageReceived : MessageBaseReceived
-{
-    std::string data;
 
-    DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived)
-    {
-        deserialize(messageBaseReceived.data);
-    }
-
-    void deserialize(const std::vector<uint8_t> &buffer)
-    {
-        data = string(buffer.begin(), buffer.end());
-    }
-
-    /// @brief  Heper function to pritn the DATA
-    void printDataAsASCII() const
-    {
-        for (const auto &byte : data)
-        {
-            if (std::isprint(byte))
-            {
-                std::cout << static_cast<char>(byte); // Printable characters
-            }
-            else
-            {
-                std::cout << '.'; // Replace non-printable characters with '.'
-            }
-        }
-        std::cout << std::endl;
-    }
-};
 
 
 ////////////////////
@@ -266,6 +236,38 @@ struct MessageBaseReceived
     {
         this->code = code;
         this->data = data;
+    }
+};
+
+struct DebuggingStringMessageReceived
+{
+    std::string data;
+
+    DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived) 
+    {
+        deserialize(messageBaseReceived.data);
+    }
+
+    void deserialize(const std::vector<uint8_t> &buffer)
+    {
+        data = string(buffer.begin(), buffer.end());
+    }
+
+    /// @brief  Heper function to pritn the DATA
+    void printDataAsASCII() const
+    {
+        for (const auto &byte : data)
+        {
+            if (std::isprint(byte))
+            {
+                std::cout << static_cast<char>(byte); // Printable characters
+            }
+            else
+            {
+                std::cout << '.'; // Replace non-printable characters with '.'
+            }
+        }
+        std::cout << std::endl;
     }
 };
 
