@@ -36,7 +36,7 @@ ResultMessage MessageHandler::handle(MessageBaseReceived msg)
     case ClientRequestCodes::UserListReq:
         // Handle UserListReq logic
         break;
-    case ClientRequestCodes::DebuggingStringMessageToSend:
+    case ClientRequestCodes::DebuggingStringMessage:
         // Handle DebuggingStringMessageToSend logic
         break;
     case ClientResponseCodes::AuthorizedICEConnection:

@@ -197,7 +197,7 @@ enum ClientRequestCodes
     UserListReq = 23,
 
     // debugging
-    DebuggingStringMessageToSend = 255
+    DebuggingStringMessage = 255
 };
 
 enum ClientResponseCodes
@@ -335,7 +335,7 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
 
     std::string message;
 
-    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessageToSend) {}
+    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessage) {}
 
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {

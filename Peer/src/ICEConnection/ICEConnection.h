@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <mutex>
 #include <queue>
+#include <string>
 #include <map>
 #include "../Utils/ThreadSafeCout.h"
 #include "../Utils/VectorUint8Utils.h"
@@ -39,7 +40,8 @@ class ICEConnection
 {
     // comment to change for commit
 private:
-
+    
+    // glib is thread safe so no need for mutex for everything used in threads
     // variables needed for the nice connection
     NiceAgent *_agent; // the ncie agent that will be used for this connection
     const gchar *_stunAddr = STUN_ADDR;
@@ -83,9 +85,10 @@ private:
     /// @param data The gloop of the handler
     static void callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data);
 
-    /// @brief 
-    /// @param messageData 
-    static MessageBaseReceived messageDeserializer(vector<uint8_t>& messageData);
+    /// @brief Function to transform received data as a vector into a MessageBaseReceived object
+    /// @param messageData the message data
+    /// @param len the message data length
+    static MessageBaseReceived deserializeMessage(gchar* buf, guint len);
 
 public:
     // constexpr means constant expression

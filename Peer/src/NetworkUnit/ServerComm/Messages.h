@@ -43,7 +43,7 @@ enum ClientRequestCodes
     UserListReq = 23,
 
     // debugging
-    DebuggingStringMessageToSend = 255
+    DebuggingStringMessage = 255
 };
 
 enum ClientResponseCodes
@@ -94,6 +94,39 @@ struct MessageBaseToSend
         return result;
     }
 };
+
+struct DebuggingStringMessageReceived : MessageBaseReceived
+{
+    std::string data;
+
+    DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived)
+    {
+        deserialize(messageBaseReceived.data);
+    }
+
+    void deserialize(const std::vector<uint8_t> &buffer)
+    {
+        data = string(buffer.begin(), buffer.end());
+    }
+
+    /// @brief  Heper function to pritn the DATA
+    void printDataAsASCII() const
+    {
+        for (const auto &byte : data)
+        {
+            if (std::isprint(byte))
+            {
+                std::cout << static_cast<char>(byte); // Printable characters
+            }
+            else
+            {
+                std::cout << '.'; // Replace non-printable characters with '.'
+            }
+        }
+        std::cout << std::endl;
+    }
+};
+
 
 ////////////////////
 //// Signaling  ////
@@ -171,7 +204,7 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
 
     std::string message;
 
-    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessageToSend) {}
+    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessage) {}
 
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {

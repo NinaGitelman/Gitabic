@@ -33,7 +33,7 @@ ICEConnection::ICEConnection(const bool isControlling)
     }
 
     // needs this to work
-    nice_agent_attach_recv(_agent, _streamId, 1, _context, callbackReceive, _gloop);
+    nice_agent_attach_recv(_agent, _streamId, 1, _context, callbackReceive, this);
   }
 }
 
@@ -51,21 +51,38 @@ ICEConnection::~ICEConnection()
 // TODO - change this function to handle packets arrived from the socket....
 void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data)
 {
-  GMainLoop *gloop = (GMainLoop *)data;
+  ICEConnection* iceConnection = (ICEConnection*)data;
 
-  if (len == 1 && buf[0] == '\0' && gloop != nullptr)
+  // if the connection finished
+  // TODO - add something to check this...
+  if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr)
   {
-    g_main_loop_quit(gloop);
+    g_main_loop_quit(iceConnection->_gloop);
+    
+  }
+  try
+  {
+      
+    MessageBaseReceived newMessage = deserializeMessage(buf, len);
+    DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
+    recvMessage.printDataAsASCII();
+
+    // add the new received message to the messages queue
+    std::unique_lock<std::mutex> lock(iceConnection->_mutexReceivedMessages);
+    (iceConnection->_receivedMessages).push(newMessage);
+  }
+  catch(const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
   }
 
-  MessageBaseReceived newMessage();
-
-  printf("%.*s", len, buf);
-  fflush(stdout);
 }
 
-MessageBaseReceived ICEConnection::messageDeserializer(vector<uint8_t> &messageData)
+MessageBaseReceived ICEConnection::deserializeMessage(gchar* buf, guint len)
 {
+   std::vector<uint8_t> messageData(reinterpret_cast<uint8_t*>(buf), 
+                                   reinterpret_cast<uint8_t*>(buf + len));
+
     // Ensure the message is at least large enough to contain code and size
     if (messageData.size() < sizeof(uint8_t) + sizeof(uint32_t))
     {
@@ -82,6 +99,7 @@ MessageBaseReceived ICEConnection::messageDeserializer(vector<uint8_t> &messageD
     // Verify the extracted size matches the remaining message data
     if (size != messageData.size() - 1 - sizeof(uint32_t))
     {
+      std::cout << "message size: "<< size << "\n";
       throw std::runtime_error("Size mismatch in message");
     }
 
@@ -389,21 +407,19 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent *_agent, guint strea
       nice_address_to_string(&remote->addr, ipaddr);
       g_message(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
 
-      gchar *line = g_strdup("\n\nfrom remote: hello world!\n\n");
+      
+      // TODO this is temporary
+      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world");
+      std::vector<uint8_t> messageInVector = debuggingStringMessage.serialize();
+
 
       // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
-      nice_agent_send(_agent, streamId, 1, strlen(line), line);
-      nice_agent_send(_agent, streamId, 1, strlen(line), line);
-      nice_agent_send(_agent, streamId, 1, strlen(line), line);
-      nice_agent_send(_agent, streamId, 1, strlen(line), line);
-      nice_agent_send(_agent, streamId, 1, strlen(line), line);
-      nice_agent_send(_agent, streamId, 1, strlen(line), line);
+     nice_agent_send(_agent, streamId, 1, messageInVector.size(),reinterpret_cast<const gchar*>(messageInVector.data()));
+     nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar*>(messageInVector.data()));
+     nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar*>(messageInVector.data()));
+     nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar*>(messageInVector.data()));
+   
     }
-
-    // Listen to stdin and send data written to it
-    // printf("\nSend lines to remote (Ctrl-D to quit):\n");
-    // g_io_add_watch(io_stdin, G_IO_IN, stdin_send_data_cb, _agent);
-    // printf("> ");
   }
   else if (state == NICE_COMPONENT_STATE_FAILED)
   {
