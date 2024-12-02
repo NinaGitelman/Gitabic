@@ -267,6 +267,26 @@ struct ServerResponseNewId : MessageBaseToSend
         return serialized;
     }
 };
+/// @brief A response to a UserListRequest
+struct ServerResponseUserList : MessageBaseToSend
+{
+    vector<ID> userList;
+
+    ServerResponseUserList(vector<ID> userList)
+        : userList(userList), MessageBaseToSend(ServerResponseCodes::UserListRes) {}
+
+    /// @brief Serializes the data to a vector of bytes
+    /// @return A byte vector
+    virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
+    {
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(userList.size() * SHA256_SIZE);
+        for (const ID &id : userList)
+        {
+            SerializeDeserializeUtils::addToEnd(serialized, vector<uint8_t>(id.begin(), id.end()));
+        }
+        return serialized;
+    }
+};
 
 //////////////////
 /// Signaling ///
@@ -366,6 +386,38 @@ struct GeneralRecieve
     GeneralRecieve(const ID &from)
     {
         this->from = from;
+    }
+};
+
+struct ClientRequestStore : GeneralRecieve
+{
+    /// @brief Your encrypted ID
+    ID myId;
+    /// @brief The file id
+    ID fileId;
+    ClientRequestStore(const MessageBaseReceived &receivedMessage) : GeneralRecieve(receivedMessage.from)
+    {
+        deserialize(receivedMessage.data);
+    }
+
+    void deserialize(const std::vector<uint8_t> &buffer)
+    {
+        myId = *(ID *)(buffer.data());
+        fileId = *(ID *)(buffer.data() + SHA256_SIZE);
+    }
+};
+struct ClientRequestUserList : GeneralRecieve
+{
+    /// @brief The file id
+    ID fileId;
+    ClientRequestUserList(const MessageBaseReceived &receivedMessage) : GeneralRecieve(receivedMessage.from)
+    {
+        deserialize(receivedMessage.data);
+    }
+
+    void deserialize(const std::vector<uint8_t> &buffer)
+    {
+        fileId = *(ID *)(buffer.data());
     }
 };
 

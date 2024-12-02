@@ -36,6 +36,20 @@ void TrackerDataStorage::saveData(const ID &key, const ID &value)
     savedData[time(nullptr) + TEN_MINUTES] = std::make_pair(key, value);
 }
 
+vector<ID> TrackerDataStorage::getRegisteredData(const ID &fileId)
+{
+    std::lock_guard<std::mutex> guard(mut);
+    vector<ID> ids;
+    for (auto &&it : savedData)
+    {
+        if (it.second.first == fileId)
+        {
+            ids.push_back(it.second.second);
+        }
+    }
+    return ids;
+}
+
 void TrackerDataStorage::removeOldData()
 {
     while (isActive)

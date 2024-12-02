@@ -8,6 +8,7 @@
 #include <chrono>
 #include <unordered_map>
 #include <memory>
+#include <thread>
 
 using std::condition_variable;
 using std::mutex;
@@ -16,7 +17,7 @@ using std::thread;
 using std::time_t;
 using std::unique_lock;
 
-#define TEN_MINUTES 60 * 10
+#define TEN_MINUTES 4
 
 class TrackerDataStorage
 {
@@ -31,6 +32,7 @@ public:
     /// @param key The key to store
     /// @param value The associated value
     void saveData(const ID &key, const ID &value);
+    vector<ID> getRegisteredData(const ID &fileId);
 
 private:
     // Private constructor for Singleton pattern

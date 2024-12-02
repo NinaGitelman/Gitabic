@@ -77,9 +77,12 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
         }
 
         vector<uint8_t> data(size);
-        if (recv(sockfd, data.data(), size, 0) != size)
+        if (size)
         {
-            throw std::runtime_error("Failed to read response data");
+            if (recv(sockfd, data.data(), size, 0) != size)
+            {
+                throw std::runtime_error("Failed to read response data");
+            }
         }
         if (isRelevant(code))
         {
