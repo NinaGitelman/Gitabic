@@ -20,7 +20,7 @@ def send_hello_world(ip, port):
         print(f"An error occurred: {e}")
 
 # Replace with your desired IP and port
-target_ip = "18.207.118.96"  # Change to the specific IP
+target_ip = "3.87.119.17"  # Change to the specific IP
 target_port = 4789      # Change to the specific port
 
 send_hello_world(target_ip, target_port)
