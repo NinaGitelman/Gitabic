@@ -15,7 +15,6 @@
 
 using std::vector;
 using ID = HashResult;
-using EncryptedID = std::array<uint8_t, 48>;
 using std::shared_ptr;
 using std::string;
 

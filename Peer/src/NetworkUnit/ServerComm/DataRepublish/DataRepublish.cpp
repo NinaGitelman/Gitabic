@@ -1,5 +1,19 @@
 #include "DataRepublish.h"
 
+// Define the static members
+std::unique_ptr<DataRepublish> DataRepublish::instance = nullptr;
+mutex DataRepublish::instanceMutex;
+
+DataRepublish &DataRepublish::getInstance(TCPSocket *tcpSocket)
+{
+    std::lock_guard<mutex> lock(instanceMutex);
+    if (!instance)
+    {
+        instance = std::unique_ptr<DataRepublish>(new DataRepublish(tcpSocket));
+    }
+    return *instance;
+}
+
 DataRepublish::DataRepublish(TCPSocket *tcpSocket) : tcpSocket(tcpSocket)
 {
     isActive = true;
@@ -10,7 +24,10 @@ DataRepublish::DataRepublish(TCPSocket *tcpSocket) : tcpSocket(tcpSocket)
 DataRepublish::~DataRepublish()
 {
     isActive = false;
-    republishOldDataThread.join();
+    if (republishOldDataThread.joinable())
+    {
+        republishOldDataThread.join();
+    }
 }
 
 void DataRepublish::saveData(ID fileId, ID myId)
@@ -31,7 +48,7 @@ void DataRepublish::republishOldData()
     while (isActive)
     {
         time_t current = time(nullptr);
-        // Republish if needed
+
         for (auto &it : savedData)
         {
             if (it.second.second < current)
@@ -42,22 +59,22 @@ void DataRepublish::republishOldData()
                 }
                 else
                 {
-                    // If unseccessful try again in 10 seconds
                     it.second.second = current + TIME_RETRY;
                 }
             }
         }
-        // Find the next time needs to publish
+
         std::unique_lock<mutex> lock(mut);
-        if (this->savedData.size() < 1)
+        if (savedData.empty())
         {
             lock.unlock();
             std::this_thread::sleep_for(std::chrono::seconds(TEN_MINUTES - 1));
             continue;
         }
         lock.unlock();
+
         time_t closest = current + TEN_MINUTES;
-        for (auto &it : savedData)
+        for (const auto &it : savedData)
         {
             if (it.second.second < closest)
             {
@@ -72,16 +89,12 @@ bool DataRepublish::publish(ID fileId, ID myId)
 {
     StoreRequest request(fileId, myId);
     tcpSocket->sendRequest(request);
-    // Verifies that the recieved packet is relevant
+
     auto isRelevant = [](uint8_t code)
     {
-        switch (code)
-        {
-        case ServerResponseCodes::StoreFailure:
-        case ServerResponseCodes::StoreSuccess:
-            return true;
-        }
-        return false;
+        return code == ServerResponseCodes::StoreFailure ||
+               code == ServerResponseCodes::StoreSuccess;
     };
+
     return tcpSocket->receive(isRelevant).code == ServerResponseCodes::StoreSuccess;
 }
