@@ -43,11 +43,12 @@ struct Address
     Address()
     {
         this->port = 0;
-        this->ip = ipStringToArray("0.0.0.0");
+        this->ip = ipStringToArray("0.0.0.0"); 
     }
 
     Address(string ip, uint16_t port)
     {
+        
         this->port = port;
         this->ip = ipStringToArray(ip);
     }

@@ -47,6 +47,7 @@ void MultiThreadedServer::bindAndListen()
     {
         throw std::runtime_error("Failed to listen on socket");
     }
+    
 
     std::cout << "Listening on port " << SERVER_PORT << std::endl;
 

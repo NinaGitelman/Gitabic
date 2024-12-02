@@ -83,6 +83,7 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
 
 void TCPSocket::connectToServer(const sockaddr_in &serverAddress)
 {
+    std::cout << "In connect to server...";
     std::lock_guard<mutex> guard(socketMut);
     if (connect(sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1)
     {
