@@ -31,52 +31,49 @@ void printDataAsASCII(vector<uint8_t> data)
 
 int main(int argc, char *argv[])
 {
-//   int connect = 1;
-//  // First handler negotiation
-//   ICEConnection handler1(connect);
-//   std::vector<uint8_t> data1 = handler1.getLocalICEData();
-//   VectorUint8Utils::printVectorUint8(data1);
-//   std::cout << "\n\n\n";
-//   std::vector<uint8_t> remoteData1 = VectorUint8Utils::readFromCin();
+  //   int connect = 1;
+  //  // First handler negotiation
+  //   ICEConnection handler1(connect);
+  //   std::vector<uint8_t> data1 = handler1.getLocalICEData();
+  //   VectorUint8Utils::printVectorUint8(data1);
+  //   std::cout << "\n\n\n";
+  //   std::vector<uint8_t> remoteData1 = VectorUint8Utils::readFromCin();
 
-//   try
-//   {
-//     handler1.connectToPeer(remoteData1);
-//   }
-//   catch (const std::exception &e)
-//   {
-//     std::cout << e.what() << " in main.cpp";
-//   }
-
+  //   try
+  //   {
+  //     handler1.connectToPeer(remoteData1);
+  //   }
+  //   catch (const std::exception &e)
+  //   {
+  //     std::cout << e.what() << " in main.cpp";
+  //   }
 
   // working example with server for 2 diferent peers
 
-  int connect=1;
-  Address serverAdd = Address("18.207.118.96", 64589);
+  int connect = 1;
+  Address serverAdd = Address("18.207.118.96", 4789);
   TCPSocket socket = TCPSocket(serverAdd);
 
   ServerResponseNewId newId(socket.receive([](uint8_t code)
                                            { return code == ServerResponseCodes::NewID; }));
 
   ID id = newId.id;
-  
- 
-  if (argc >= 2)  // if there is cmd arg then this will start the connection
+
+  if (argc >= 2) // if there is cmd arg then this will start the connection
   {
 
     ServerResponseNewId otherNewId(socket.receive([](uint8_t code)
-                                                { return code == ServerResponseCodes::NewID; }));
+                                                  { return code == ServerResponseCodes::NewID; }));
 
     ID otherId = otherNewId.id;
 
-      std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
-      {
-        return code == ServerResponseCodes::UserAuthorizedICEData;
-      };
-
+    std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
+    {
+      return code == ServerResponseCodes::UserAuthorizedICEData;
+    };
 
     std::cout << "This peer is starting the connection request\n\n";
- 
+
     // get my ice data
     // First handler negotiation
     ICEConnection handler1(connect);
@@ -106,7 +103,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-   
+
     std::cout << "This peer is receiveing the connection request\n\n";
 
     connect = 0;
@@ -123,10 +120,9 @@ int main(int argc, char *argv[])
     ICEConnection handler1(connect);
     std::vector<uint8_t> myIceData = handler1.getLocalICEData();
 
-
-      ClientResponseAuthorizedICEConnection connectionResponse(myIceData, authIceReq.requestId);
-      socket.sendRequest(connectionResponse);
- try
+    ClientResponseAuthorizedICEConnection connectionResponse(myIceData, authIceReq.requestId);
+    socket.sendRequest(connectionResponse);
+    try
     {
       handler1.connectToPeer(authIceReq.iceCandidateInfo);
     }
@@ -134,7 +130,6 @@ int main(int argc, char *argv[])
     {
       std::cout << e.what() << " in main.cpp";
     }
-
   }
 
   return EXIT_SUCCESS;

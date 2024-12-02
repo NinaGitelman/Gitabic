@@ -7,7 +7,21 @@ TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1)
     {
         throw std::runtime_error("Failed to create socket");
     }
-    connectToServer(serverAddress.toSockAddr());
+
+    sockaddr_in addrIn = serverAddress.toSockAddr();
+
+    try
+    {
+    connectToServer(addrIn);
+     
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
+
+    std::cout << "end of constr";
 }
 
 TCPSocket::~TCPSocket()
@@ -81,12 +95,15 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
     throw std::runtime_error("No relevant packets");
 }
 
-void TCPSocket::connectToServer(const sockaddr_in &serverAddress)
+void TCPSocket::connectToServer(sockaddr_in &serverAddress)
 {
+    // this doesnt even print even if debugger tells me it gets here
     std::cout << "In connect to server...";
-    std::lock_guard<mutex> guard(socketMut);
+    std::cout << inet_ntoa(serverAddress.sin_addr);
+    //std::lock_guard<mutex> guard(socketMut);
     if (connect(sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1)
     {
+        std::cerr << "Connection failed. Error: " << strerror(errno) << std::endl;
         throw std::runtime_error("Failed to connect to server");
     }
 }

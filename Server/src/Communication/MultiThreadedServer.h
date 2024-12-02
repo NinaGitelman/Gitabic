@@ -26,7 +26,7 @@ public:
     MultiThreadedServer() : _running(true)
     {
         messageHandler = &MessageHandler::getInstance();
-    };
+    }
 
     ~MultiThreadedServer();
 

@@ -11,6 +11,7 @@
 #include <functional>
 #include "../Messages.h"
 #include "../../SocketHandler/SocketHandler.h"
+
 class TCPSocket
 {
 public:
@@ -31,7 +32,7 @@ public:
 private:
     /// @brief Connects to the server
     /// @param serverAddress Its address
-    void connectToServer(const sockaddr_in &serverAddress);
+    void connectToServer(sockaddr_in &serverAddress);
     /// @brief Messages recieved but irelevant for requester
     vector<MessageBaseReceived> messages;
     mutex socketMut;

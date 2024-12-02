@@ -84,21 +84,31 @@ struct Address
         return *this;
     }
 
-    // Function to return sockaddr_in
-    sockaddr_in toSockAddr() const
-    {
-        sockaddr_in sockaddr;
-        std::memset(&sockaddr, 0, sizeof(sockaddr));
-        sockaddr.sin_family = AF_INET;
-        sockaddr.sin_port = htons(port);
+sockaddr_in toSockAddr() const
+{
+    sockaddr_in sockaddr;
+    std::memset(&sockaddr, 0, sizeof(sockaddr));
+    sockaddr.sin_family = AF_INET;
+    
+    // Debug prints
+    std::cout << "Port: " << port << std::endl;
+    std::cout << "IP: " 
+              << static_cast<int>(ip[0]) << "." 
+              << static_cast<int>(ip[1]) << "." 
+              << static_cast<int>(ip[2]) << "." 
+              << static_cast<int>(ip[3]) << std::endl;
 
-        // Convert IP array to uint32_t and set in sockaddr_in
-        uint32_t ipAddress = (ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3];
-        sockaddr.sin_addr.s_addr = htonl(ipAddress);
+    sockaddr.sin_port = htons(port);
 
-        return sockaddr;
-    }
+    uint32_t ipAddress = (ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3];
+    
+    // Additional debug
+    std::cout << "Converted IP Address: " << std::hex << ipAddress << std::dec << std::endl;
 
+    sockaddr.sin_addr.s_addr = htonl(ipAddress);
+
+    return sockaddr;
+}
     bool operator==(const Address &other) const
     {
         return other.port == this->port &&
