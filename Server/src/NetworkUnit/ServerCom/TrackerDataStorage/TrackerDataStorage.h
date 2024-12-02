@@ -17,7 +17,7 @@ using std::thread;
 using std::time_t;
 using std::unique_lock;
 
-#define TEN_MINUTES 4
+#define TEN_MINUTES 10 * 60
 
 class TrackerDataStorage
 {
