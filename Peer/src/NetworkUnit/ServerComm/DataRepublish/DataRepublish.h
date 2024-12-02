@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <memory>
 
-#define TEN_MINUTES 10
+#define TEN_MINUTES 10 * 60
 #define TIME_RETRY 10
 
 using std::condition_variable;
