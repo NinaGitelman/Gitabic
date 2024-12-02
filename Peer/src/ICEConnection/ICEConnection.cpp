@@ -1,6 +1,5 @@
 #include "ICEConnection.h"
 
-
 ICEConnection::ICEConnection(const bool isControlling)
 {
     // Initialize networking
@@ -16,12 +15,12 @@ ICEConnection::ICEConnection(const bool isControlling)
     // Create loop with our context (not NULL)
     _gloop = g_main_loop_new(_context, FALSE);
 
-    // Create the nice agent with our context
     _agent = nice_agent_new(_context, NICE_COMPATIBILITY_RFC5245);
 
+    
     if (_agent == NULL)
     {
-        ThreadSafeCout::cout("Failed to create agent");
+        ThreadSafeCout::cout("Failed to create _agent");
     }
     else
     {
@@ -58,7 +57,7 @@ ICEConnection::~ICEConnection()
 }
 
 // TODO - change this function to handle packets arrived from the socket....
-void ICEConnection::callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data)
+void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data)
 {
   GMainLoop* gloop = (GMainLoop*) data; 
 
@@ -106,7 +105,7 @@ vector<uint8_t> ICEConnection::getLocalICEData()
     return result;
 }
 
-void ICEConnection::callbackCandidateGatheringDone(NiceAgent* agent, guint streamId, gpointer userData)
+void ICEConnection::callbackCandidateGatheringDone(NiceAgent* _agent, guint streamId, gpointer userData)
 {
     ICEConnection* handler = static_cast<ICEConnection*>(userData);
     
@@ -347,11 +346,11 @@ end:
 
 
 /*
-// Function called when the state of the Nice agent is changed - p2p connection done
+// Function called when the state of the Nice _agent is changed - p2p connection done
 // check if the negotiation is complete and handle it
 // This function also gets the input to send to remote and calls another function to handle it
 */
-void ICEConnection::callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data)
+void ICEConnection::callbackComponentStateChanged(NiceAgent *_agent, guint streamId, guint componentId, guint state, gpointer data)
 {
   //printf("callbackComponentStateChanged");
     // this gives segmentation fault in ec2... for some reason
@@ -362,7 +361,7 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent *agent, guint stream
           NiceCandidate *local, *remote;
 
           // Get current selected  pair and print IP address used
-          if (nice_agent_get_selected_pair(agent, streamId, componentId, &local, &remote))
+          if (nice_agent_get_selected_pair(_agent, streamId, componentId, &local, &remote))
           {
             gchar ipaddr[INET6_ADDRSTRLEN];
 
@@ -376,17 +375,17 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent *agent, guint stream
             gchar *line = g_strdup("\n\nfrom remote: hello world!\n\n");
 
             // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
-            nice_agent_send(agent, streamId, 1, strlen(line), line);
-            nice_agent_send(agent, streamId, 1, strlen(line), line);
-            nice_agent_send(agent, streamId, 1, strlen(line), line);
-            nice_agent_send(agent, streamId, 1, strlen(line), line);
-            nice_agent_send(agent, streamId, 1, strlen(line), line);
-            nice_agent_send(agent, streamId, 1, strlen(line), line);
+            nice_agent_send(_agent, streamId, 1, strlen(line), line);
+            nice_agent_send(_agent, streamId, 1, strlen(line), line);
+            nice_agent_send(_agent, streamId, 1, strlen(line), line);
+            nice_agent_send(_agent, streamId, 1, strlen(line), line);
+            nice_agent_send(_agent, streamId, 1, strlen(line), line);
+            nice_agent_send(_agent, streamId, 1, strlen(line), line);
           }
 
           // Listen to stdin and send data written to it
           //printf("\nSend lines to remote (Ctrl-D to quit):\n");
-          //g_io_add_watch(io_stdin, G_IO_IN, stdin_send_data_cb, agent);
+          //g_io_add_watch(io_stdin, G_IO_IN, stdin_send_data_cb, _agent);
           //printf("> ");
       }
       else if (state == NICE_COMPONENT_STATE_FAILED)

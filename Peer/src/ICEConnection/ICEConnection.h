@@ -34,13 +34,11 @@ class ICEConnection
 {
     // comment to change for commit
 private:
-    // static as we dont need many of it and will only need one (what changes for each is the streams)
 
     NiceAgent *_agent; // the ncie agent that will be used for this connection
     const gchar *_stunAddr = STUN_ADDR;
     const guint _stunPort = STUN_PORT;
 
-    // non static
     gboolean _isControlling;          // if this conneciton is controllling or being controlled
     GMainContext *_context;           // this connections context
     GMainLoop *_gloop;                // a blocking loop only for this connection
@@ -75,6 +73,9 @@ private:
 
 public:
     // constexpr means constant expression
+    // The nice agent will be only one for the class and then for each object will add a stream
+    
+
     // used because this variables will be computed at compile time instead of run time, it helps program run faster and use less memory.
     static constexpr const gchar *candidateTypeName[4] = {"host", "srflx", "prflx", "relay"};
     static constexpr const gchar *stateName[4] = {"disconnected", "gathering", "connecting", "connected"};
