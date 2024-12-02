@@ -25,7 +25,7 @@ public:
     /// @brief Start publishing the data
     /// @param fileId The file ID you have
     /// @param myId your encrypted ID
-    void saveData(ID fileId, EncryptedID myId);
+    void saveData(ID fileId, ID myId);
     /// @brief Stops publishing data
     /// @param fileId The file to stop publish
     void stopRepublish(const ID &fileId);
@@ -37,10 +37,10 @@ private:
     /// @param fileId The file you have
     /// @param myId Your encrypted ID
     /// @return Is the store successful.
-    bool publish(ID fileId, EncryptedID myId);
+    bool publish(ID fileId, ID myId);
 
     /// @brief The saved data and next time nee to be published
-    unordered_map<ID, pair<EncryptedID, std::time_t>> savedData;
+    unordered_map<ID, pair<ID, std::time_t>> savedData;
     mutex mut;
     /// @brief Thread that runs republishOldData method
     thread republishOldDataThread;

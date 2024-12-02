@@ -9,7 +9,6 @@
 #include <ctype.h>
 #include <vector>
 #include <cstdint>
-#include "ICEConnection/ICEConnection.h"
 #include "Utils/VectorUint8Utils.h"
 
 /// @brief  Heper function to pritn the DATA

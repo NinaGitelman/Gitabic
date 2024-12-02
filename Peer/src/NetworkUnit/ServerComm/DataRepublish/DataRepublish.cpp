@@ -13,10 +13,10 @@ DataRepublish::~DataRepublish()
     republishOldDataThread.join();
 }
 
-void DataRepublish::saveData(ID fileId, EncryptedID myId)
+void DataRepublish::saveData(ID fileId, ID myId)
 {
     std::lock_guard<mutex> guard(mut);
-    savedData[fileId] = pair<EncryptedID, std::time_t>(myId, time(nullptr) + TEN_MINUTES);
+    savedData[fileId] = pair<ID, std::time_t>(myId, time(nullptr) + TEN_MINUTES);
     publish(fileId, myId);
 }
 
@@ -68,7 +68,7 @@ void DataRepublish::republishOldData()
     }
 }
 
-bool DataRepublish::publish(ID fileId, EncryptedID myId)
+bool DataRepublish::publish(ID fileId, ID myId)
 {
     StoreRequest request(fileId, myId);
     tcpSocket->sendRequest(request);
