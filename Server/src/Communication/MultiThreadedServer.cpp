@@ -34,9 +34,9 @@ void MultiThreadedServer::bindAndListen()
 {
 
     struct sockaddr_in sa = {};
-    sa.sin_family = inet_addr("18.207.118.96"); // TODO change this
+    sa.sin_family = AF_INET;
     sa.sin_port = htons(SERVER_PORT);
-    sa.sin_addr.s_addr = INADDR_ANY; // change to the public address
+    sa.sin_addr.s_addr = inet_addr("18.207.118.96"); // change to the public address
 
     if (bind(_serverSocket, (struct sockaddr *)&sa, sizeof(sa)) == -1)
     {
