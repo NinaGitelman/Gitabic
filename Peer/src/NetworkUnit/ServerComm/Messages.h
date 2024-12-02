@@ -70,7 +70,8 @@ enum ServerResponseCodes
     UserListRes
 };
 
-/// @brief A base struct to send over the internet. Good for status messages, can be inherited for more data
+
+/// @brief A base struct for the messages sent
 struct MessageBaseToSend
 {
     uint8_t code;
@@ -97,6 +98,9 @@ struct MessageBaseToSend
 ////////////////////
 //// Signaling  ////
 ///////////////////
+
+
+
 
 /// Message to send
 /// TODO - Client request: get user ICE info
@@ -221,11 +225,11 @@ struct StoreRequest : MessageBaseToSend
 /// @brief A base struct to store a response Packet. good for status response
 struct MessageBaseReceived
 {
-    uint8_t code;
     vector<uint8_t> data;
+    uint8_t code;
     MessageBaseReceived() {}
 
-    MessageBaseReceived(uint8_t code, vector<uint8_t> data)
+    MessageBaseReceived(uint8_t code, vector<uint8_t> data) 
     {
         this->code = code;
         this->data = data;

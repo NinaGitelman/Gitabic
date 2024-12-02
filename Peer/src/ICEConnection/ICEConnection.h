@@ -7,9 +7,12 @@
 #include <ctype.h>
 #include <vector>
 #include <stdint.h>
+#include <mutex>
+#include <queue>
 #include <map>
 #include "../Utils/ThreadSafeCout.h"
 #include "../Utils/VectorUint8Utils.h"
+#include "../NetworkUnit/ServerComm/Messages.h"
 
 #define COMPONENT_ID_RTP 1
 
@@ -18,6 +21,8 @@
 
 using std::map;
 using std::vector;
+using std::mutex;
+using std::queue;
 
 extern "C"
 {
@@ -35,6 +40,7 @@ class ICEConnection
     // comment to change for commit
 private:
 
+    // variables needed for the nice connection
     NiceAgent *_agent; // the ncie agent that will be used for this connection
     const gchar *_stunAddr = STUN_ADDR;
     const guint _stunPort = STUN_PORT;
@@ -44,6 +50,12 @@ private:
     GMainLoop *_gloop;                // a blocking loop only for this connection
     guint _streamId;                  // Add this
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
+
+
+    mutex _mutexReceivedMessages; // mutex to lock the received messages queue 
+    queue<MessageBaseReceived> _receivedMessages; // queue where all received messages will be
+
+    
 
     /// @brief Helper function to get the candidate data and put it into the given buffer
     /// @param localDataBuffer The buffer in which the localData will be put (empty null buffer, malloc will be dealt on this function)
@@ -70,6 +82,10 @@ private:
     /// @brief Calbback that will handle how the messages are received
     /// @param data The gloop of the handler
     static void callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data);
+
+    /// @brief 
+    /// @param messageData 
+    static MessageBaseReceived messageDeserializer(vector<uint8_t>& messageData);
 
 public:
     // constexpr means constant expression
