@@ -36,11 +36,14 @@ int main()
                                            { return code == ServerResponseCodes::NewID; }));
 
   ID id = newId.id;
-  ServerResponseNewId otherNewId(socket.receive([](uint8_t code)
-                                                { return code == ServerResponseCodes::NewID; }));
+  // ServerResponseNewId otherNewId(socket.receive([](uint8_t code)
+  //                                               { return code == ServerResponseCodes::NewID; }));
 
-  ID otherId = otherNewId.id;
+  // ID otherId = otherNewId.id;
 
+  DataRepublish &dataRepublish = DataRepublish::getInstance(&socket);
+  dataRepublish.saveData(ID(), id);
+  std::this_thread::sleep_for(std::chrono::seconds(60));
   std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
   {
     return code == ServerResponseCodes::UserAuthorizedICEData;
@@ -49,9 +52,9 @@ int main()
   std::string message = "Hello world!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
   vector<uint8_t> iceTestData(message.begin(), message.end());
 
-  ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(otherId, iceTestData);
-  socket.sendRequest(requestIce);
+  // ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(otherId, iceTestData);
+  // socket.sendRequest(requestIce);
 
-  ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
-  printDataAsASCII(response.iceCandidateInfo);
+  // ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
+  // printDataAsASCII(response.iceCandidateInfo);
 }

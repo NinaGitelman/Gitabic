@@ -4,6 +4,7 @@
 #pragma once
 
 #include "IceMessagesHandler.h"
+#include "TrackerMessageHandling.h"
 class MessageHandler
 {
 public:
@@ -24,7 +25,8 @@ private:
     // Static instance and flag
     static std::unique_ptr<MessageHandler> instance;
     static std::once_flag initInstanceFlag;
-    IceMessagesHandler *iceMessagesHandler;
+    IceMessagesHandler &iceMessagesHandler;
+    TrackerMessageHandling &trackerMessagesHandler;
 };
 
 #endif // MESSAGEHANDLER_H

@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <memory>
 
-#define TEN_MINUTES 60 * 10
+#define TEN_MINUTES 10
 #define TIME_RETRY 10
 
 using std::condition_variable;
@@ -24,7 +24,7 @@ public:
     /// @brief Gets the Singleton instance of DataRepublish
     /// @param tcpSocket the socket to publish in
     /// @return The single instance of DataRepublish
-    static DataRepublish &getInstance(TCPSocket *tcpSocket);
+    static DataRepublish &getInstance(TCPSocket *tcpSocket = nullptr);
 
     /// @brief Stops the thread and deletes the instance
     ~DataRepublish();
