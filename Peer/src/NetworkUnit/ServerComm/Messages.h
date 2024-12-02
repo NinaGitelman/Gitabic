@@ -9,7 +9,6 @@
 
 using std::vector;
 using ID = HashResult;
-using EncryptedID = std::array<uint8_t, 48>;
 using std::string;
 
 namespace std // Hash method for ID to allow hash map key usage
@@ -198,11 +197,11 @@ struct UserListRequest : MessageBaseToSend
 /// @brief A request to anounce you have a file
 struct StoreRequest : MessageBaseToSend
 {
-    StoreRequest(ID fileId, EncryptedID myId) : MessageBaseToSend(ClientRequestCodes::Store), myId(myId), fileId(fileId) {}
-    StoreRequest(ID fileId, EncryptedID myId, uint8_t code) : MessageBaseToSend(code), myId(myId), fileId(fileId) {}
+    StoreRequest(ID fileId, ID myId) : MessageBaseToSend(ClientRequestCodes::Store), myId(myId), fileId(fileId) {}
+    StoreRequest(ID fileId, ID myId, uint8_t code) : MessageBaseToSend(code), myId(myId), fileId(fileId) {}
 
     /// @brief Your encrypted ID
-    EncryptedID myId;
+    ID myId;
     /// @brief The file id
     ID fileId;
 
@@ -235,7 +234,7 @@ struct MessageBaseReceived
 /// @brief A list of users that has a file
 struct UserListResponse
 {
-    vector<EncryptedID> data;
+    vector<ID> data;
     /// @brief Construct from a MessageBaseReceived data
     /// @param msg the recieved message
     UserListResponse(MessageBaseReceived msg)
@@ -247,9 +246,9 @@ struct UserListResponse
     /// @param data The data
     void deserialize(vector<uint8_t> data)
     {
-        for (size_t i = 0; i < data.size(); i += sizeof(EncryptedID))
+        for (size_t i = 0; i < data.size(); i += sizeof(ID))
         {
-            EncryptedID currID = *(EncryptedID *)(data.data() + i);
+            ID currID = *(ID *)(data.data() + i);
             this->data.push_back(currID);
         }
     }

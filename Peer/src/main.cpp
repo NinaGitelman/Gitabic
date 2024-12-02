@@ -8,7 +8,6 @@
 #include <ctype.h>
 #include <vector>
 #include <cstdint>
-#include "ICEConnection/ICEConnection.h"
 #include "Utils/VectorUint8Utils.h"
 
 /// @brief  Heper function to pritn the DATA
@@ -55,33 +54,4 @@ int main()
 
   ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
   printDataAsASCII(response.iceCandidateInfo);
-
-  // int connect = 1;
-
-  // if (argc > 2)
-  // {
-  //   connect = std::stoi(argv[1]);
-  // }
-  // else
-  // {
-  //   connect = 0;
-  // }
-
-  // // First handler negotiation
-  // ICEConnection handler1(connect);
-  // std::vector<uint8_t> data1 = handler1.getLocalICEData();
-  // VectorUint8Utils::printVectorUint8(data1);
-  // std::cout << "\n\n\n";
-  // std::vector<uint8_t> remoteData1 = VectorUint8Utils::readFromCin();
-
-  // try
-  // {
-  //   handler1.connectToPeer(remoteData1);
-  // }
-  // catch (const std::exception &e)
-  // {
-  //   std::cout << e.what() << " in main.cpp";
-  // }
-
-  // return EXIT_SUCCESS;
 }
