@@ -1,6 +1,5 @@
 #include "MultiThreadedServer.h"
 int MultiThreadedServer::id = 0;
-MultiThreadedServer *MultiThreadedServer::g_serverInstance = nullptr;
 
 MultiThreadedServer::~MultiThreadedServer()
 {

@@ -21,8 +21,6 @@ class MultiThreadedServer
 {
 
 public:
-    static MultiThreadedServer *g_serverInstance;
-
     // friend class PacketHandler;
     MultiThreadedServer() : _running(true)
     {
