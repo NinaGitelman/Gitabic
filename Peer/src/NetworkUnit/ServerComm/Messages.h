@@ -12,6 +12,9 @@ using ID = HashResult;
 using EncryptedID = std::array<uint8_t, 48>;
 using std::string;
 
+// if a message with this code is received it means there isnt any message received by the ICE Connection
+#define CODE_NO_MESSAGES_RECEIVED 255
+
 namespace std // Hash method for ID to allow hash map key usage
 {
     template <>
@@ -70,7 +73,6 @@ enum ServerResponseCodes
     UserListRes
 };
 
-
 /// @brief A base struct for the messages sent
 struct MessageBaseToSend
 {
@@ -95,15 +97,9 @@ struct MessageBaseToSend
     }
 };
 
-
-
-
 ////////////////////
 //// Signaling  ////
 ///////////////////
-
-
-
 
 /// Message to send
 /// TODO - Client request: get user ICE info
@@ -232,7 +228,7 @@ struct MessageBaseReceived
     uint8_t code;
     MessageBaseReceived() {}
 
-    MessageBaseReceived(uint8_t code, vector<uint8_t> data) 
+    MessageBaseReceived(uint8_t code, vector<uint8_t> data)
     {
         this->code = code;
         this->data = data;
@@ -243,7 +239,7 @@ struct DebuggingStringMessageReceived
 {
     std::string data;
 
-    DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived) 
+    DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived)
     {
         deserialize(messageBaseReceived.data);
     }

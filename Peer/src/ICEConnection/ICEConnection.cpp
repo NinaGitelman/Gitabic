@@ -8,6 +8,11 @@ ICEConnection::ICEConnection(const bool isControlling)
   // for debugging:
   // g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
 
+  // scope to set the mutex for is connected
+  {
+    std::unique_lock<mutex> lock(_mutexIsConnectedBool);
+    _isConnected = false;
+  }
   // Create our own context for this handler
   _context = g_main_context_new();
 
@@ -18,7 +23,7 @@ ICEConnection::ICEConnection(const bool isControlling)
 
   if (_agent == NULL)
   {
-    ThreadSafeCout::cout("Failed to create _agent");
+    throw std::runtime_error("Could not create agent");
   }
   else
   {
@@ -29,10 +34,10 @@ ICEConnection::ICEConnection(const bool isControlling)
     _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
     if (_streamId == 0)
     {
-      ThreadSafeCout::cout("Failed to add stream");
+      throw std::runtime_error("Failed to add stream");
     }
 
-    // needs this to work
+    // set the callback for receiveing messages
     nice_agent_attach_recv(_agent, _streamId, 1, _context, callbackReceive, this);
   }
 }
@@ -48,66 +53,110 @@ ICEConnection::~ICEConnection()
     g_object_unref(_agent);
 }
 
-// TODO - change this function to handle packets arrived from the socket....
-void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data)
+int ICEConnection::receivedMessagesCount()
 {
-  ICEConnection* iceConnection = (ICEConnection*)data;
+  std::unique_lock<std::mutex> lock(_mutexReceivedMessages);
 
-  // if the connection finished
-  // TODO - add something to check this...
-  if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr)
-  {
-    g_main_loop_quit(iceConnection->_gloop);
-    
-  }
-  try
-  {
-      
-    MessageBaseReceived newMessage = deserializeMessage(buf, len);
-    DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
-    recvMessage.printDataAsASCII();
-
-    // add the new received message to the messages queue
-    std::unique_lock<std::mutex> lock(iceConnection->_mutexReceivedMessages);
-    (iceConnection->_receivedMessages).push(newMessage);
-  }
-  catch(const std::exception& e)
-  {
-    std::cerr << e.what() << '\n';
-  }
-
+  return _receivedMessages.size();
 }
 
-MessageBaseReceived ICEConnection::deserializeMessage(gchar* buf, guint len)
+MessageBaseReceived ICEConnection::receiveMessage()
 {
-   std::vector<uint8_t> messageData(reinterpret_cast<uint8_t*>(buf), 
-                                   reinterpret_cast<uint8_t*>(buf + len));
 
-    // Ensure the message is at least large enough to contain code and size
-    if (messageData.size() < sizeof(uint8_t) + sizeof(uint32_t))
+  MessageBaseReceived receivedMessage;
+
+  std::unique_lock<std::mutex> lock(_mutexReceivedMessages);
+
+  // check if there is
+  if (_receivedMessages.size() > 0)
+  {
+
+    receivedMessage = _receivedMessages.front();
+    _receivedMessages.pop();
+  }
+  else
+  {
+    receivedMessage = MessageBaseReceived(CODE_NO_MESSAGES_RECEIVED, vector<uint8_t>());
+  }
+
+  return receivedMessage;
+}
+
+bool ICEConnection::isConnected()
+{
+
+  std::unique_lock<mutex> lock(_mutexIsConnectedBool);
+  return _isConnected;
+}
+
+// TODO - by now it deals with a debugging string message
+void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data)
+{
+  ICEConnection *iceConnection = static_cast<ICEConnection *>(data);
+  if (iceConnection)
+  {
+
+    if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr) // if the connection finished
     {
-      throw std::runtime_error("Message too short to deserialize");
+      {
+        std::unique_lock<mutex> lock(iceConnection->_mutexIsConnectedBool);
+        iceConnection->_isConnected = false;
+      }
+      g_main_loop_quit(iceConnection->_gloop);
     }
-
-    // Extract code (first byte)
-    uint8_t code = messageData[0];
-
-    // Extract size (next 4 bytes)
-    uint32_t size;
-    memcpy(&size, &messageData[1], sizeof(size));
-
-    // Verify the extracted size matches the remaining message data
-    if (size != messageData.size() - 1 - sizeof(uint32_t))
+    else
     {
-      std::cout << "message size: "<< size << "\n";
-      throw std::runtime_error("Size mismatch in message");
+
+      try
+      {
+
+        MessageBaseReceived newMessage = deserializeMessage(buf, len);
+
+        // add the new received message to the messages queue
+        std::unique_lock<std::mutex> lock(iceConnection->_mutexReceivedMessages);
+        (iceConnection->_receivedMessages).push(newMessage);
+      }
+      catch (const std::exception &e)
+      {
+        std::cerr << e.what() << '\n';
+      }
     }
+  }
+  else
+  {
+    throw std::runtime_error("No ICEConnection provided on callback receive");
+  }
+}
 
-    // Extract payload
-    vector<uint8_t> data(messageData.begin() + 1 + sizeof(uint32_t), messageData.end());
+MessageBaseReceived ICEConnection::deserializeMessage(gchar *buf, guint len)
+{
+  std::vector<uint8_t> messageData(reinterpret_cast<uint8_t *>(buf),
+                                   reinterpret_cast<uint8_t *>(buf + len));
 
-    MessageBaseReceived retMessage =  MessageBaseReceived(code, data);
-    return retMessage;
+  // Ensure the message is at least large enough to contain code and size
+  if (messageData.size() < sizeof(uint8_t) + sizeof(uint32_t))
+  {
+    throw std::runtime_error("Message too short to deserialize");
+  }
+
+  // Extract code (first byte)
+  uint8_t code = messageData[0];
+
+  // Extract size (next 4 bytes)
+  uint32_t size;
+  memcpy(&size, &messageData[1], sizeof(size));
+
+  // Verify the extracted size matches the remaining message data
+  if (size != messageData.size() - 1 - sizeof(uint32_t))
+  {
+    throw std::runtime_error("Size mismatch in message");
+  }
+
+  // Extract payload
+  vector<uint8_t> data(messageData.begin() + 1 + sizeof(uint32_t), messageData.end());
+
+  MessageBaseReceived retMessage = MessageBaseReceived(code, data);
+  return retMessage;
 }
 
 vector<uint8_t> ICEConnection::getLocalICEData()
@@ -388,54 +437,56 @@ end:
 */
 void ICEConnection::callbackComponentStateChanged(NiceAgent *_agent, guint streamId, guint componentId, guint state, gpointer data)
 {
-  // printf("callbackComponentStateChanged");
-  //  this gives segmentation fault in ec2... for some reason
-  // printf("SIGNAL: state changed %d %d %s[%d]\n", streamId, componentId, stateName[state], state);
 
-  if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
+  ICEConnection *iceConnection = static_cast<ICEConnection *>(data);
+  if (iceConnection)
   {
-    NiceCandidate *local, *remote;
 
-    // Get current selected  pair and print IP address used
-    if (nice_agent_get_selected_pair(_agent, streamId, componentId, &local, &remote))
+    if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
     {
-      gchar ipaddr[INET6_ADDRSTRLEN];
+      NiceCandidate *local, *remote;
 
-      nice_address_to_string(&local->addr, ipaddr);
-      g_message("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
-
-      nice_address_to_string(&remote->addr, ipaddr);
-      g_message(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
-
-      
-      // TODO this is temporary
-      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world");
-      std::vector<uint8_t> messageInVector = debuggingStringMessage.serialize();
-
-
-      // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
-     nice_agent_send(_agent, streamId, 1, messageInVector.size(),reinterpret_cast<const gchar*>(messageInVector.data()));
-     nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar*>(messageInVector.data()));
-     nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar*>(messageInVector.data()));
-     nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar*>(messageInVector.data()));
-   
-    }
-  }
-  else if (state == NICE_COMPONENT_STATE_FAILED)
-  {
-    ICEConnection *handler = static_cast<ICEConnection *>(data);
-    g_message("Component state failed");
-    if (handler)
-    {
-      if (handler->_gloop)
+      if (nice_agent_get_selected_pair(_agent, streamId, componentId, &local, &remote)) // if the negotiation was successgul and connected p2p
       {
-        g_main_loop_quit(handler->_gloop);
-        throw std::runtime_error("Negotiation failed");
+
+        // Get current selected  pair and print IP address used to print
+        gchar ipaddr[INET6_ADDRSTRLEN];
+
+        nice_address_to_string(&local->addr, ipaddr);
+        g_message("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
+
+        nice_address_to_string(&remote->addr, ipaddr);
+        g_message(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
+
+        // set connection as connected
+        {
+          std::unique_lock<mutex> lock(iceConnection->_mutexIsConnectedBool);
+          iceConnection->_isConnected = true;
+        }
+
+        // TODO this is temporary sending messages hardcoded
+        DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world");
+        std::vector<uint8_t> messageInVector = debuggingStringMessage.serialize();
+
+        // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
+        nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar *>(messageInVector.data()));
+        nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar *>(messageInVector.data()));
+        nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar *>(messageInVector.data()));
+        nice_agent_send(_agent, streamId, 1, messageInVector.size(), reinterpret_cast<const gchar *>(messageInVector.data()));
       }
     }
-    else
+    else if (state == NICE_COMPONENT_STATE_FAILED)
     {
-      throw std::runtime_error("Negotiation failed for stream ID and No handler provided");
+
+      if (iceConnection->_gloop)
+      {
+        g_main_loop_quit(iceConnection->_gloop);
+      }
+      throw std::runtime_error("Negotiation failed");
     }
+  }
+  else
+  {
+    throw std::runtime_error("No ice connection object provided in callback state changed");
   }
 }

@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   // working example with server for 2 diferent peers
 
   int connect = 1;
-  Address serverAdd = Address("100.26.145.12", 4789);
+  Address serverAdd = Address("0.0.0.0", 4789);
   TCPSocket socket = TCPSocket(serverAdd);
 
   ServerResponseNewId newId(socket.receive([](uint8_t code)
@@ -94,7 +94,19 @@ int main(int argc, char *argv[])
 
     try
     {
-      handler1.connectToPeer(response.iceCandidateInfo);
+      std::thread peerThread([&handler1, &response]()
+                             { handler1.connectToPeer(response.iceCandidateInfo); });
+      peerThread.detach();
+      sleep(2);
+      while (handler1.receivedMessagesCount() > 0)
+      {
+        MessageBaseReceived newMessage = handler1.receiveMessage();
+        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
+        {
+          DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
+          recvMessage.printDataAsASCII();
+        }
+      }
     }
     catch (const std::exception &e)
     {
@@ -124,7 +136,20 @@ int main(int argc, char *argv[])
     socket.sendRequest(connectionResponse);
     try
     {
-      handler1.connectToPeer(authIceReq.iceCandidateInfo);
+      std::thread peerThread([&handler1, &authIceReq]()
+                             { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
+      peerThread.detach();
+      sleep(2);
+
+      while (handler1.receivedMessagesCount() > 0)
+      {
+        MessageBaseReceived newMessage = handler1.receiveMessage();
+        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
+        {
+          DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
+          recvMessage.printDataAsASCII();
+        }
+      }
     }
     catch (const std::exception &e)
     {
