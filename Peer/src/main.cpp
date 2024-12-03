@@ -10,6 +10,11 @@
 #include <vector>
 #include <cstdint>
 #include "Utils/VectorUint8Utils.h"
+#include <iostream>
+#include <unistd.h>
+#include "NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
+#include "NetworkUnit/SocketHandler/SocketHandler.h"
+#include "NetworkUnit/ServerComm/Messages.h"
 
 /// @brief  Heper function to pritn the DATA
 void printDataAsASCII(vector<uint8_t> data)
@@ -28,7 +33,7 @@ void printDataAsASCII(vector<uint8_t> data)
   std::cout << std::endl;
 }
 
-int main(int argc, char *argv[])
+void main1()
 {
   //   int connect = 1;
   //  // First handler negotiation
@@ -71,90 +76,69 @@ int main(int argc, char *argv[])
       return code == ServerResponseCodes::UserAuthorizedICEData;
     };
 
-    std::cout << "This peer is starting the connection request\n\n - getting my ice data";
+    std::string message = "Hello world!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    vector<uint8_t> iceTestData(message.begin(), message.end());
 
-    // get my ice data
-    // First handler negotiation
-    ICEConnection handler1(connect);
-    std::vector<uint8_t> myIceData = handler1.getLocalICEData();
+    // ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(otherId, iceTestData);
+    // socket.sendRequest(requestIce);
 
-    std::cout << "sending to server my ice data\n";
-    VectorUint8Utils::printVectorUint8(myIceData);
-    std::cout << "\n\n";
-
-    ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(otherId, myIceData);
-    socket.sendRequest(requestIce);
-
-    ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
-
-    std::cout << "second peer ice data received from server: \n";
-    printDataAsASCII(response.iceCandidateInfo);
-    std::cout << "\n\n";
-
-    try
-    {
-      std::thread peerThread([&handler1, &response]()
-                             { handler1.connectToPeer(response.iceCandidateInfo); });
-      peerThread.detach();
-      sleep(2);
-      while (handler1.receivedMessagesCount() > 0)
-      {
-        MessageBaseReceived newMessage = handler1.receiveMessage();
-        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
-        {
-          DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
-          recvMessage.printDataAsASCII();
-        }
-      }
-    }
-    catch (const std::exception &e)
-    {
-      std::cout << e.what() << " in main.cpp";
-    }
+    // ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
+    // printDataAsASCII(response.iceCandidateInfo);
   }
-  else
+  void main2()
   {
+    Address serverAdd = Address("0.0.0.0", 4789);
+    TCPSocket socket = TCPSocket(serverAdd);
 
-    std::cout << "This peer is receiveing the connection request\n\n";
+    ServerResponseNewId newId(socket.receive([](uint8_t code)
+                                             { return code == ServerResponseCodes::NewID; }));
 
-    connect = 0;
+    ID id = newId.id;
 
     ServerRequestAuthorizeICEConnection authIceReq(socket.receive([](uint8_t code)
                                                                   { return code == ServerRequestCodes::AuthorizeICEConnection; }));
 
-    std::cout << "Received connection request from another peer: \n";
+    std::cout << "Received!!\n";
     printDataAsASCII(authIceReq.iceCandidateInfo);
-    std::cout << "\n\n\n";
 
-    // get my ice data
-    // First handler negotiation
-    ICEConnection handler1(connect);
-    std::vector<uint8_t> myIceData = handler1.getLocalICEData();
+    std::string message = "123456 654321!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    vector<uint8_t> iceTestData(message.begin(), message.end());
 
-    ClientResponseAuthorizedICEConnection connectionResponse(myIceData, authIceReq.requestId);
-    socket.sendRequest(connectionResponse);
-    try
-    {
-      std::thread peerThread([&handler1, &authIceReq]()
-                             { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
-      peerThread.detach();
-      sleep(2);
-
-      while (handler1.receivedMessagesCount() > 0)
-      {
-        MessageBaseReceived newMessage = handler1.receiveMessage();
-        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
-        {
-          DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
-          recvMessage.printDataAsASCII();
-        }
-      }
-    }
-    catch (const std::exception &e)
-    {
-      std::cout << e.what() << " in main.cpp";
-    }
+    ClientResponseAuthorizedICEConnection iceResponse = ClientResponseAuthorizedICEConnection(iceTestData, authIceReq.requestId);
+    socket.sendRequest(iceResponse);
+    std::cout << "Done!!\n";
   }
 
-  return EXIT_SUCCESS;
-}
+  int main(int argc, char **argv)
+  {
+    short option = -1;
+    if (argc == 2)
+    {
+      option = std::stoi(argv[1]);
+    }
+    if (option < 1 || option > 2)
+    {
+      std::cout << "Enter an option (1 or 2): ";
+      std::cin >> option;
+
+      // Validate input
+      while (std::cin.fail() || (option != 1 && option != 2))
+      {
+        std::cin.clear();                                                   // Clear the error flag
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+        std::cout << "Invalid input. Please enter 1 or 2: ";
+        std::cin >> option;
+      }
+    }
+    switch (option)
+    {
+    case 1:
+      main1();
+      break;
+    case 2:
+      main2();
+      break;
+    }
+
+    return 0;
+  }
