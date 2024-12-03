@@ -60,6 +60,8 @@ private:
     // helper only for debugging...
     void printDataAsASCII(vector<uint8_t> data);
 
+    // closes socket anf unbinds port
+    void cleanupSocket();
     ID generateRandomId();
     MessageHandler *messageHandler;
 };

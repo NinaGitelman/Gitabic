@@ -12,14 +12,12 @@ TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1)
 
     try
     {
-    connectToServer(addrIn);
-     
+        connectToServer(addrIn);
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
     }
-    
 
     std::cout << "end of constr";
 }
@@ -100,7 +98,7 @@ void TCPSocket::connectToServer(sockaddr_in &serverAddress)
     // this doesnt even print even if debugger tells me it gets here
     std::cout << "In connect to server...";
     std::cout << inet_ntoa(serverAddress.sin_addr);
-    //std::lock_guard<mutex> guard(socketMut);
+    std::lock_guard<mutex> guard(socketMut);
     if (connect(sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1)
     {
         std::cerr << "Connection failed. Error: " << strerror(errno) << std::endl;

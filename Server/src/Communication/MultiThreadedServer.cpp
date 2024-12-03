@@ -5,13 +5,33 @@ MultiThreadedServer::~MultiThreadedServer()
 {
     try
     {
-        stop();
-        close(_serverSocket);
+        cleanupSocket();
 
         _clients.clear();
     }
     catch (...)
     {
+    }
+}
+
+void MultiThreadedServer::cleanupSocket()
+{
+
+    if (_serverSocket != -1)
+    {
+        // Unbind the port
+        struct sockaddr_in sa = {};
+        sa.sin_family = AF_INET;
+        sa.sin_port = htons(SERVER_PORT);
+        sa.sin_addr.s_addr = INADDR_ANY;
+
+        // Attempt to release the socket address
+        int optval = 1;
+        setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+
+        // Close the socket
+        close(_serverSocket);
+        _serverSocket = -1;
     }
 }
 
