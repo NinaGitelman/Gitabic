@@ -21,8 +21,9 @@ class MultiThreadedServer
 {
 
 public:
-    // friend class PacketHandler;
+    static MultiThreadedServer *g_serverInstance;
 
+    // friend class PacketHandler;
     MultiThreadedServer() : _running(true)
     {
         messageHandler = &MessageHandler::getInstance();
