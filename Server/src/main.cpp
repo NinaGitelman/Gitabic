@@ -20,6 +20,7 @@ void signalHandler(int signum)
 int main()
 {
     // Register signal handler for Ctrl+C (optional)
+
     signal(SIGINT, signalHandler);
 
     try
