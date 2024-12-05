@@ -18,6 +18,17 @@
 
 #define COMPONENT_ID_RTP 1
 
+/// TURN configs
+// the ip should not change - the last two times i checked it didnt change...
+// if needed to check, do nslookup for: relay1.expressturn.com
+// using free express turn....
+// todo later - put this in a configs file in a safer way....
+#define TURN_ADDR "23.26.133.136"
+#define TURN_USERNAME "ef8X4GWHOIXIDE3M2R"
+#define TURN_PASSWORD
+#define TURN_PORT 3478
+
+/// STUN configs
 #define STUN_PORT 3478
 #define STUN_ADDR "stun.stunprotocol.org" // TODO - make it a list and do many tries in case this does not work (out of service../)
 
