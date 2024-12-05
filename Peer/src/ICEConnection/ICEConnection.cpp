@@ -110,7 +110,7 @@ void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint c
     }
     else
     {
-
+      std::cout << "Received a message in callback receive";
       try
       {
 
