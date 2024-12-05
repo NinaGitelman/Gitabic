@@ -30,7 +30,10 @@ ICEConnection::ICEConnection(const bool isControlling)
     g_object_set(_agent, "stun-server", _stunAddr, NULL);
     g_object_set(_agent, "stun-server-port", _stunPort, NULL);
     g_object_set(_agent, "controlling-mode", isControlling, NULL);
-
+    // Enable verbose logging
+    g_object_set(_agent, "stun-max-retransmissions", 3, NULL);
+    g_object_set(_agent, "stun-initial-timeout", 500, NULL);
+    nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 1024, 65535);
     _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
     if (_streamId == 0)
     {
@@ -38,8 +41,9 @@ ICEConnection::ICEConnection(const bool isControlling)
     }
 
     // set the callback for receiveing messages
-    nice_agent_attach_recv(_agent, _streamId, COMPONENT_ID_RTP, _context, callbackReceive, this);
     nice_agent_set_relay_info(_agent, _streamId, COMPONENT_ID_RTP, "23.26.133.136", 3478, "ef8X4GWHOIXIDE3M2R", "rpKpXiK0tpIWNzOB", NICE_RELAY_TYPE_TURN_UDP);
+
+    nice_agent_attach_recv(_agent, _streamId, COMPONENT_ID_RTP, _context, callbackReceive, this);
   }
 }
 
