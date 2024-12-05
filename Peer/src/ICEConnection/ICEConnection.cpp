@@ -38,7 +38,8 @@ ICEConnection::ICEConnection(const bool isControlling)
     }
 
     // set the callback for receiveing messages
-    nice_agent_attach_recv(_agent, _streamId, 1, _context, callbackReceive, this);
+    nice_agent_attach_recv(_agent, _streamId, COMPONENT_ID_RTP, _context, callbackReceive, this);
+    nice_agent_set_relay_info(_agent, _streamId, COMPONENT_ID_RTP, "23.26.133.136", 3478, "ef8X4GWHOIXIDE3M2R", "rpKpXiK0tpIWNzOB", NICE_RELAY_TYPE_TURN_TCP);
   }
 }
 
@@ -50,7 +51,10 @@ ICEConnection::~ICEConnection()
   if (_context)
     g_main_context_unref(_context);
   if (_agent)
+  {
+    nice_agent_close_async(_agent, NULL, NULL);
     g_object_unref(_agent);
+  }
 }
 
 int ICEConnection::receivedMessagesCount()
