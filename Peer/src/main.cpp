@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
       return code == ServerResponseCodes::UserAuthorizedICEData;
     };
 
-    std::cout << "This peer is starting the connection request\n\n";
+    std::cout << "This peer is starting the connection request\n\n - getting my ice data";
 
     // get my ice data
     // First handler negotiation

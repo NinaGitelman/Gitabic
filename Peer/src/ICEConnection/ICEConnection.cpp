@@ -4,9 +4,9 @@ ICEConnection::ICEConnection(const bool isControlling)
 {
   // Initialize networking
   g_networking_init();
-
+  g_message("in ice connection constructor");
   // for debugging:
-  // g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
+  g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
 
   // scope to set the mutex for is connected
   {
