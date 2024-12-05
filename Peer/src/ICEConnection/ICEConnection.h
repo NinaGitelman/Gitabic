@@ -25,7 +25,7 @@
 // todo later - put this in a configs file in a safer way....
 #define TURN_ADDR "23.26.133.136"
 #define TURN_USERNAME "ef8X4GWHOIXIDE3M2R"
-#define TURN_PASSWORD
+#define TURN_PASSWORD "rpKpXiK0tpIWNzOB"
 #define TURN_PORT 3478
 
 /// STUN configs
@@ -74,10 +74,15 @@ private:
     mutex _mutexIsConnectedBool; // mutex for the is connected bool
     bool _isConnected;           // bool to set if its conencted and receiveing messages
 
+    // turn constants
+    const gchar *turnUsername = TURN_USERNAME;
+    const gchar *turnPassword = TURN_PASSWORD;
+
     /// @brief Helper function to get the candidate data and put it into the given buffer
     /// @param localDataBuffer The buffer in which the localData will be put (empty null buffer, malloc will be dealt on this function)
     /// @return If it gathered the data right
-    int getCandidateData(char **localDataBuffer);
+    int
+    getCandidateData(char **localDataBuffer);
 
     /// @brief Callbis ack to handle if the candidate gathering is done
     static void callbackCandidateGatheringDone(NiceAgent *agent, guint streamId, gpointer userData);
