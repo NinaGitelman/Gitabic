@@ -7,10 +7,10 @@
 #include <iostream>
 #include <unordered_map>
 #include <queue>
-#include <algorithm>
 #include <cstdint>
-#include "../NetworkUnit/ServerCom/TCPClientSocket/TCPClientSocket.h"
-#include "MessageHandler.h"
+#include "../../NetworkUnit/TCPClientSocket/TCPClientSocket.h"
+#include "../../NetworkUnit/Messages.h"
+#include "../MessageHandler/MessageHandler.h"
 using std::map;
 using std::mutex;
 using std::shared_ptr;
@@ -41,7 +41,7 @@ private:
 
     volatile bool _running;
 
-    int _serverSocket;
+    int _serverSocket{};
     std::map<ID, shared_ptr<TCPClientSocket>> ids;
     std::map<int, std::shared_ptr<TCPClientSocket>> _clients;
     std::unordered_map<ID, std::queue<std::shared_ptr<MessageBaseToSend>>> messagesToSend;
@@ -61,5 +61,5 @@ private:
     void printDataAsASCII(vector<uint8_t> data);
 
     ID generateRandomId();
-    MessageHandler *messageHandler;
+    MessageHandler *messageHandler{};
 };

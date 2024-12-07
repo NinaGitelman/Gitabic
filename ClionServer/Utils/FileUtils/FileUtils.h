@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <filesystem>
+
 #include "../../Encryptions/SHA256/sha256.h"
 #include "../../Encryptions/AES/AESHandler.h"
 #include <random>

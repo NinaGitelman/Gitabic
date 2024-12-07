@@ -483,7 +483,7 @@ void AESHandler::decryptMat(Matrix4x4 &mat)
     addRoundKey(mat, 0);
 }
 
-Matrix4x4 &AESHandler::convertToMat(const uint8_t *dataStart)
+Matrix4x4 &AESHandler::convertToMat(uint8_t *dataStart)
 {
     return *reinterpret_cast<Matrix4x4 *>(dataStart);
 }
