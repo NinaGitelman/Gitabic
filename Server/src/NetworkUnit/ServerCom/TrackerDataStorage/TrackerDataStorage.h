@@ -32,7 +32,7 @@ public:
     /// @param key The key to store
     /// @param value The associated value
     void saveData(const ID &key, const ID &value);
-    vector<ID> getRegisteredData(const ID &fileId);
+    vector<ID> getRegisteredData(const ID &fileId, const ID &yourID = ID());
 
 private:
     // Private constructor for Singleton pattern
