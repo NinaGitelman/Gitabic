@@ -36,13 +36,13 @@ void TrackerDataStorage::saveData(const ID &key, const ID &value)
     savedData[time(nullptr) + TEN_MINUTES] = std::make_pair(key, value);
 }
 
-vector<ID> TrackerDataStorage::getRegisteredData(const ID &fileId)
+vector<ID> TrackerDataStorage::getRegisteredData(const ID &fileId, const ID &yourID)
 {
     std::lock_guard<std::mutex> guard(mut);
     vector<ID> ids;
     for (auto &&it : savedData)
     {
-        if (it.second.first == fileId)
+        if (it.second.first == fileId && it.second.second != yourID)
         {
             ids.push_back(it.second.second);
         }

@@ -16,7 +16,7 @@ ResultMessage TrackerMessageHandling::handle(const ClientRequestUserList &reques
 {
     ResultMessage res;
     res.id = request.from;
-    res.msg = std::make_shared<ServerResponseUserList>(trackerDataStorage.getRegisteredData(request.fileId));
+    res.msg = std::make_shared<ServerResponseUserList>(trackerDataStorage.getRegisteredData(request.fileId, request.from));
     return res;
 }
 
