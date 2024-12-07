@@ -5,9 +5,9 @@
 
 #include <memory> // For std::unique_ptr
 #include <mutex>  // For std::once_flag and std::call_once
-#include "../NetworkUnit/ServerCom/Messages.h"
+#include "../../NetworkUnit/Messages.h"
 #include <unordered_map>
-#include "../NetworkUnit/ServerCom/TrackerDataStorage/TrackerDataStorage.h"
+#include "../../NetworkUnit/TrackerDataStorage/TrackerDataStorage.h"
 
 class TrackerMessageHandling
 {

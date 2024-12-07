@@ -1,5 +1,7 @@
 #include "FileUtils.h"
 
+#include <fstream>
+
 using namespace Utils;
 
 std::vector<uint8_t> FileUtils::readFileToVector(const std::string &filePath)
@@ -13,7 +15,7 @@ std::vector<uint8_t> FileUtils::readFileToVector(const std::string &filePath)
 
     // Move to the end of the file to get the file size
     file.seekg(0, std::ios::end);
-    std::streamsize fileSize = file.tellg();
+    const std::streamsize fileSize = file.tellg();
     file.seekg(0, std::ios::beg);
 
     // Resize vector to hold the file data and read the file contents

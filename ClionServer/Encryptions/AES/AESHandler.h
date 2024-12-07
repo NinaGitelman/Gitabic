@@ -139,7 +139,7 @@ private:
     /// @brief Converts raw data to a 4x4 matrix reference.
     /// @param dataStart Pointer to the start of the raw data.
     /// @return Reference to a 4x4 matrix.
-    static Matrix4x4 &convertToMat(const uint8_t *dataStart);
+    static Matrix4x4 &convertToMat(uint8_t *dataStart);
 
     /// @brief Expanded round keys.
     std::array<std::array<uint8_t, BLOCK>, R + 1> keys{};
