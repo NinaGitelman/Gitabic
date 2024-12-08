@@ -68,82 +68,79 @@ void main1()
 
   ID id = newId.id;
 
-  if (argc >= 2) // if there is cmd arg then this will start the connection
+  ServerResponseNewId otherNewId(socket.receive([](uint8_t code)
+                                                { return code == ServerResponseCodes::NewID; }));
+
+  ID otherId = otherNewId.id;
+
+  std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
   {
+    return code == ServerResponseCodes::UserAuthorizedICEData;
+  };
 
-    ServerResponseNewId otherNewId(socket.receive([](uint8_t code)
-                                                  { return code == ServerResponseCodes::NewID; }));
+  std::string message = "Hello world!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+  vector<uint8_t> iceTestData(message.begin(), message.end());
 
-    ID otherId = otherNewId.id;
+  // ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(otherId, iceTestData);
+  // socket.sendRequest(requestIce);
 
-    std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
-    {
-      return code == ServerResponseCodes::UserAuthorizedICEData;
-    };
+  // ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
+  // printDataAsASCII(response.iceCandidateInfo);
+}
+void main2()
+{
+  Address serverAdd = Address("0.0.0.0", 4789);
+  TCPSocket socket = TCPSocket(serverAdd);
 
-    std::string message = "Hello world!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-    vector<uint8_t> iceTestData(message.begin(), message.end());
+  ServerResponseNewId newId(socket.receive([](uint8_t code)
+                                           { return code == ServerResponseCodes::NewID; }));
 
-    // ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(otherId, iceTestData);
-    // socket.sendRequest(requestIce);
+  ID id = newId.id;
 
-    // ServerResponseUserAuthorizedICEData response = socket.receive(isRelevant);
-    // printDataAsASCII(response.iceCandidateInfo);
+  ServerRequestAuthorizeICEConnection authIceReq(socket.receive([](uint8_t code)
+                                                                { return code == ServerRequestCodes::AuthorizeICEConnection; }));
+
+  std::cout << "Received!!\n";
+  printDataAsASCII(authIceReq.iceCandidateInfo);
+
+  std::string message = "123456 654321!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+  vector<uint8_t> iceTestData(message.begin(), message.end());
+
+  ClientResponseAuthorizedICEConnection iceResponse = ClientResponseAuthorizedICEConnection(iceTestData, authIceReq.requestId);
+  socket.sendRequest(iceResponse);
+  std::cout << "Done!!\n";
+}
+
+int main(int argc, char **argv)
+{
+  short option = -1;
+  if (argc == 2)
+  {
+    option = std::stoi(argv[1]);
   }
-  void main2()
+  if (option < 1 || option > 2)
   {
-    Address serverAdd = Address("0.0.0.0", 4789);
-    TCPSocket socket = TCPSocket(serverAdd);
+    std::cout << "Enter an option (1 or 2): ";
+    std::cin >> option;
 
-    ServerResponseNewId newId(socket.receive([](uint8_t code)
-                                             { return code == ServerResponseCodes::NewID; }));
-
-    ID id = newId.id;
-
-    ServerRequestAuthorizeICEConnection authIceReq(socket.receive([](uint8_t code)
-                                                                  { return code == ServerRequestCodes::AuthorizeICEConnection; }));
-
-    std::cout << "Received!!\n";
-    printDataAsASCII(authIceReq.iceCandidateInfo);
-
-    std::string message = "123456 654321!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-    vector<uint8_t> iceTestData(message.begin(), message.end());
-
-    ClientResponseAuthorizedICEConnection iceResponse = ClientResponseAuthorizedICEConnection(iceTestData, authIceReq.requestId);
-    socket.sendRequest(iceResponse);
-    std::cout << "Done!!\n";
-  }
-
-  int main(int argc, char **argv)
-  {
-    short option = -1;
-    if (argc == 2)
+    // Validate input
+    while (std::cin.fail() || (option != 1 && option != 2))
     {
-      option = std::stoi(argv[1]);
-    }
-    if (option < 1 || option > 2)
-    {
-      std::cout << "Enter an option (1 or 2): ";
+      std::cin.clear();                                                   // Clear the error flag
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+      std::cout << "Invalid input. Please enter 1 or 2: ";
       std::cin >> option;
-
-      // Validate input
-      while (std::cin.fail() || (option != 1 && option != 2))
-      {
-        std::cin.clear();                                                   // Clear the error flag
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
-        std::cout << "Invalid input. Please enter 1 or 2: ";
-        std::cin >> option;
-      }
     }
-    switch (option)
-    {
-    case 1:
-      main1();
-      break;
-    case 2:
-      main2();
-      break;
-    }
-
-    return 0;
   }
+  switch (option)
+  {
+  case 1:
+    main1();
+    break;
+  case 2:
+    main2();
+    break;
+  }
+
+  return 0;
+}
