@@ -15,6 +15,11 @@
 #include "NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
 #include "NetworkUnit/SocketHandler/SocketHandler.h"
 #include "NetworkUnit/ServerComm/Messages.h"
+#include <iostream>
+#include <unistd.h>
+#include "NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
+#include "NetworkUnit/SocketHandler/SocketHandler.h"
+#include "NetworkUnit/ServerComm/Messages.h"
 
 /// @brief  Heper function to pritn the DATA
 void printDataAsASCII(vector<uint8_t> data)
