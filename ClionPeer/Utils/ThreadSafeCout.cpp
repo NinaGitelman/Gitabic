@@ -1,30 +1,12 @@
-#pragma once
-#include <mutex>
-#include <iostream>
-#include <string>
+//
+// Created by user on 24.11.2024 
+//
+#include "ThreadSafeCout.h"
+std::mutex ThreadSafeCout::_coutMutex;
 
-class ThreadSafeCout {
-private:
-    static std::mutex _coutMutex;
+void ThreadSafeCout::cout(const std::string& text)
+{
+    std::unique_lock<std::mutex> lock(ThreadSafeCout::_coutMutex);
+    std::cout << text;
 
-    // Private constructor to prevent instantiation
-    ThreadSafeCout() = default;
-
-public:
-    // Static method for simple output
-    template<typename T>
-    static void cout(const T &value, const std::string &end = "\n") {
-        std::lock_guard<std::mutex> lock(_coutMutex);
-        std::cout << value << end;
-    }
-
-    // Overload operator<< for chained output
-    template<typename T>
-    friend ThreadSafeCout &operator<<(ThreadSafeCout &tsCout, const T &value);
-
-    // Provide a static instance
-    static ThreadSafeCout &instance() {
-        static ThreadSafeCout instance;
-        return instance;
-    }
-};
+}

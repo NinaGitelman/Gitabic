@@ -1,6 +1,5 @@
 
 #include "SerializeDeserializeUtils.h"
-#include <array>
 
 void SerializeDeserializeUtils::serializeUint16IntoVector(vector<uint8_t> &buffer, uint16_t num)
 {
@@ -11,6 +10,7 @@ void SerializeDeserializeUtils::serializeUint16IntoVector(vector<uint8_t> &buffe
     buffer[0] = static_cast<uint8_t>(num & 0xFF);        // Lower byte
     buffer[1] = static_cast<uint8_t>((num >> 8) & 0xFF); // Upper byte
 }
+
 void SerializeDeserializeUtils::addToEnd(vector<uint8_t> &to, const vector<uint8_t> &from)
 {
     to.insert(to.end(), from.begin(), from.end());

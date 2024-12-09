@@ -5,7 +5,7 @@
 
 #include <memory> // For std::unique_ptr
 #include <mutex>  // For std::once_flag and std::call_once
-#include "../../NetworkUnit/Messages.h"
+#include "../NetworkUnit/ServerCom/Messages.h"
 #include <unordered_map>
 
 class IceMessagesHandler

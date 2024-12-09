@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include "../IceMessagesHandler/IceMessagesHandler.h"
-#include "../TrackerMessageHandling/TrackerMessageHandling.h"
-
+#include "IceMessagesHandler.h"
+#include "TrackerMessageHandling.h"
 class MessageHandler
 {
 public:

@@ -4,14 +4,14 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include "../../Encryptions/SHA256/sha256.h"
 #include <cstring> // for memcpy
 #include <iterator>
 #include <climits>
 #include <array>
+#include "../../Utils/SerializeDeserializeUtils.h"
 #include <ostream>
 #include <arpa/inet.h>
-#include "../Encryptions/SHA256/sha256.h"
-#include "../Utils/SerializeDeserializeUtils/SerializeDeserializeUtils.h"
 
 using std::vector;
 using ID = HashResult;
@@ -112,21 +112,21 @@ struct Address
         return os;
     }
 
-    std::array<uint8_t, IP_LEN> ipStringToArray(const std::string &strIp) const
+    std::array<uint8_t, IP_LEN> ipStringToArray(const std::string &ip) const
     {
         std::array<uint8_t, 4> ipArray;
         size_t start = 0;
         size_t end;
         int i = 0;
 
-        while ((end = strIp.find('.', start)) != std::string::npos)
+        while ((end = ip.find('.', start)) != std::string::npos)
         {
             if (i >= 4)
             {
                 throw std::invalid_argument("Invalid IP address format");
             }
 
-            int byte = std::stoi(strIp.substr(start, end - start));
+            int byte = std::stoi(ip.substr(start, end - start));
             if (byte < 0 || byte > 255)
             {
                 throw std::out_of_range("IP segment out of range (0-255)");
@@ -142,7 +142,7 @@ struct Address
             throw std::invalid_argument("Invalid IP address format");
         }
 
-        int byte = std::stoi(strIp.substr(start));
+        int byte = std::stoi(ip.substr(start));
         if (byte < 0 || byte > 255)
         {
             throw std::out_of_range("IP segment out of range (0-255)");
@@ -196,7 +196,7 @@ enum ClientRequestCodes
     UserListReq = 23,
 
     // debugging
-    DebuggingStringMessageToSend = 255
+    DebuggingStringMessage = 255
 };
 
 enum ClientResponseCodes
@@ -300,7 +300,7 @@ struct ServerResponseUserAuthorizedICEData : MessageBaseToSend
     vector<uint8_t> iceCandidateInfo;
 
     ServerResponseUserAuthorizedICEData(vector<uint8_t> iceCandidateInfo)
-        : MessageBaseToSend(ServerResponseCodes::UserAuthorizedICEData), iceCandidateInfo(std::move(iceCandidateInfo)) {}
+        : MessageBaseToSend(ServerResponseCodes::UserAuthorizedICEData), iceCandidateInfo(move(iceCandidateInfo)) {}
 
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
@@ -328,7 +328,7 @@ struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
     vector<uint8_t> iceCandidateInfo;
 
     ServerRequestAuthorizeICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId)
-        : MessageBaseToSend(ServerRequestCodes::AuthorizeICEConnection), requestId(requestId), iceCandidateInfo(std::move(iceCandidateInfo)) {}
+        : MessageBaseToSend(ServerRequestCodes::AuthorizeICEConnection), requestId(requestId), iceCandidateInfo(move(iceCandidateInfo)) {}
 
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
@@ -354,7 +354,7 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
 
     std::string message;
 
-    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessageToSend) {}
+    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessage) {}
 
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {

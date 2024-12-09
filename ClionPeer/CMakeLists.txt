@@ -1,24 +1,41 @@
 cmake_minimum_required(VERSION 3.30)
 project(ClionPeer)
 
-# Set the C++ standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g")
 
-# Automatically find all source and header files
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/*.cpp" "${CMAKE_SOURCE_DIR}/*.h")
+# Find libnice and related packages
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(NICE REQUIRED nice)
+pkg_check_modules(GLIB REQUIRED glib-2.0)
 
-# Add executable target
+# Exclude CMake's compiler identification file
+file(GLOB_RECURSE SOURCES
+        CONFIGURE_DEPENDS
+        "${CMAKE_SOURCE_DIR}/*.cpp"
+        "${CMAKE_SOURCE_DIR}/*.h"
+)
+
+list(FILTER SOURCES EXCLUDE REGEX "CMakeFiles/.*")
+
+# Create the executable
 add_executable(ClionPeer ${SOURCES})
 
-# Find libnice using pkg-config
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBNICE REQUIRED nice)
+# Include directories
+target_include_directories(ClionPeer PRIVATE
+        ${NICE_INCLUDE_DIRS}
+        ${GLIB_INCLUDE_DIRS}
+)
 
-# Include libnice directories
-include_directories(${LIBNICE_INCLUDE_DIRS})
-link_directories(${LIBNICE_LIBRARY_DIRS})
+# Link necessary libraries
+target_link_libraries(ClionPeer
+        pthread
+        ${NICE_LIBRARIES}
+        ${GLIB_LIBRARIES}
+)
 
-# Link libnice libraries
-target_link_libraries(ClionPeer PRIVATE ${LIBNICE_LIBRARIES} rt pthread)
+# Add compiler flags
+target_compile_options(ClionPeer PRIVATE
+        ${NICE_CFLAGS}
+        ${GLIB_CFLAGS}
+)
