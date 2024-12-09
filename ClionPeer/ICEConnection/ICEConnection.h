@@ -1,20 +1,21 @@
 
 #pragma once
-#include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <ctype.h>
-#include <vector>
-#include <stdint.h>
+#include <iostream>
+#include <map>
 #include <mutex>
 #include <queue>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <string>
 #include <thread>
-#include <map>
+#include <vector>
+
+#include "../NetworkUnit/ServerComm/Messages.h"
 #include "../Utils/ThreadSafeCout.h"
 #include "../Utils/VectorUint8Utils.h"
-#include "../NetworkUnit/ServerComm/Messages.h"
 
 #define COMPONENT_ID_RTP 1
 
@@ -32,13 +33,13 @@
 #define STUN_PORT 3478
 #define STUN_ADDR "stun.stunprotocol.org" // TODO - make it a list and do many tries in case this does not work (out of service../)
 
+
 using std::map;
 using std::mutex;
 using std::queue;
 using std::vector;
 
-extern "C"
-{
+extern "C" {
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -52,8 +53,7 @@ extern "C"
 // OBS:
 // There is an isConnected function. this is how we can know if its still conected or not. maybe we will need to check it every few minutes or something...
 
-class ICEConnection
-{
+class ICEConnection {
     // comment to change for commit
 private:
     // glib is thread safe so no need for mutex for everything used in threads
@@ -62,17 +62,17 @@ private:
     const gchar *_stunAddr = STUN_ADDR;
     const guint _stunPort = STUN_PORT;
 
-    gboolean _isControlling;          // if this conneciton is controllling or being controlled
-    GMainContext *_context;           // this connections context
-    GMainLoop *_gloop;                // a blocking loop only for this connection
-    guint _streamId;                  // Add this
+    gboolean _isControlling; // if this conneciton is controllling or being controlled
+    GMainContext *_context; // this connections context
+    GMainLoop *_gloop; // a blocking loop only for this connection
+    guint _streamId; // Add this
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
 
-    mutex _mutexReceivedMessages;                 // mutex to lock the received messages queue
+    mutex _mutexReceivedMessages; // mutex to lock the received messages queue
     queue<MessageBaseReceived> _receivedMessages; // queue where all received messages will be
 
     mutex _mutexIsConnectedBool; // mutex for the is connected bool
-    bool _isConnected;           // bool to set if its conencted and receiveing messages
+    bool _isConnected; // bool to set if its conencted and receiveing messages
 
     // turn constants
     const gchar *turnUsername = TURN_USERNAME;
@@ -99,11 +99,13 @@ private:
 
     /// @brief Callback function to notify when a component state is changed -> only used for printing the state...
     //   has to have those inputs because libnice expects it  even if we only use one of them...
-    static void callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data);
+    static void callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state,
+                                              gpointer data);
 
     /// @brief Callback that will handle the received messages and out it into the messages queue of the IceConnection object passed in the data
     /// @param data The ice connection that calls it
-    static void callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data);
+    static void callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf,
+                                gpointer data);
 
     /// @brief Function to transform received data as a vector into a MessageBaseReceived object
     /// @param messageData the message data

@@ -1,36 +1,24 @@
 cmake_minimum_required(VERSION 3.30)
 project(ClionPeer)
 
-set(CMAKE_CXX_STANDARD 26)
+# Set the C++ standard
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g")
 
-add_executable(ClionPeer main.cpp
-        Encryptions/AES/AESHandler.cpp
-        Encryptions/AES/AESHandler.h
-        Encryptions/SHA256/sha256.cpp
-        Encryptions/SHA256/sha256.h
+# Automatically find all source and header files
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/*.cpp" "${CMAKE_SOURCE_DIR}/*.h")
 
-        ICEConnection/ICEConnection.cpp
-        ICEConnection/ICEConnection.h
+# Add executable target
+add_executable(ClionPeer ${SOURCES})
 
-        NetworkUnit/PseudoTCP/TCPConnection.cpp
-        NetworkUnit/PseudoTCP/TCPConnection.h
-        NetworkUnit/ServerComm/DataRepublish/DataRepublish.cpp
-        NetworkUnit/ServerComm/DataRepublish/DataRepublish.h
-        NetworkUnit/ServerComm/TCPSocket/TCPSocket.cpp
-        NetworkUnit/ServerComm/TCPSocket/TCPSocket.h
-        NetworkUnit/SocketHandler/SocketHandler.cpp
-        NetworkUnit/SocketHandler/SocketHandler.h
+# Find libnice using pkg-config
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBNICE REQUIRED nice)
 
-        Utils/DowndloadProgress/DownloadProgress.cpp
-        Utils/DowndloadProgress/DownloadProgress.h
-        Utils/FileUtils/FileUtils.cpp
-        Utils/FileUtils/FileUtils.h
-        Utils/MetaDataFile/MetaDataFile.cpp
-        Utils/MetaDataFile/MetaDataFile.h
-        Utils/SerializeDeserializeUtils.cpp
-        Utils/SerializeDeserializeUtils.h
-        Utils/ThreadSafeCout.cpp
-        Utils/ThreadSafeCout.h
-        Utils/VectorUint8Utils.cpp
-        Utils/VectorUint8Utils.h
-)
+# Include libnice directories
+include_directories(${LIBNICE_INCLUDE_DIRS})
+link_directories(${LIBNICE_LIBRARY_DIRS})
+
+# Link libnice libraries
+target_link_libraries(ClionPeer PRIVATE ${LIBNICE_LIBRARIES} rt pthread)
