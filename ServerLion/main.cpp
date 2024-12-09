@@ -17,12 +17,12 @@ void signalHandler(int signum)
     }
 }
 
-int main(int argc, char** argv)
+int main()
 {
     // Register signal handler for Ctrl+C (optional)
 
     signal(SIGINT, signalHandler);
-
+    std::cout << "Starting server..." << std::endl;
     try
     {
         MultiThreadedServer server;
