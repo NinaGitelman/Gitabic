@@ -4,7 +4,7 @@ DownloadProgress::DownloadProgress(MetaDataFile &metaData) {
     init(metaData);
 }
 
-DownloadProgress::DownloadProgress(vector<uint8_t> &data) {
+DownloadProgress::DownloadProgress(const vector<uint8_t> &data) {
     deserialize(data);
 }
 
@@ -15,12 +15,16 @@ vector<uint8_t> DownloadProgress::serialize() {
     vector<uint8_t> data;
 
     // Serialize basic properties
-    data.insert(data.end(), reinterpret_cast<uint8_t *>(&completed), (uint8_t *) &completed + sizeof(completed));
-    data.insert(data.end(), (uint8_t *) &totalDownloadBytes,
-                (uint8_t *) &totalDownloadBytes + sizeof(totalDownloadBytes));
-    data.insert(data.end(), (uint8_t *) &fileSize, (uint8_t *) &fileSize + sizeof(fileSize));
-    data.insert(data.end(), (uint8_t *) &startTime, (uint8_t *) &startTime + sizeof(startTime));
-    data.insert(data.end(), reinterpret_cast<uint8_t *>(&lastTime), reinterpret_cast<uint8_t *>(&lastTime) + sizeof(lastTime));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&completed),
+                reinterpret_cast<uint8_t *>(&completed) + sizeof(completed));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&totalDownloadBytes),
+                reinterpret_cast<uint8_t *>(&totalDownloadBytes) + sizeof(totalDownloadBytes));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&fileSize),
+                reinterpret_cast<uint8_t *>(&fileSize) + sizeof(fileSize));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&startTime),
+                reinterpret_cast<uint8_t *>(&startTime) + sizeof(startTime));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&lastTime),
+                reinterpret_cast<uint8_t *>(&lastTime) + sizeof(lastTime));
     data.insert(data.end(), fileHash.data(), fileHash.data() + fileHash.size());
     uint8_t nameSize = fileName.size();
     data.insert(data.end(), (uint8_t *) &nameSize, (uint8_t *) &nameSize + sizeof(nameSize));
@@ -28,7 +32,8 @@ vector<uint8_t> DownloadProgress::serialize() {
 
     // Serialize pieces
     uint32_t piecesCount = pieces.size();
-    data.insert(data.end(), (uint8_t *) &piecesCount, (uint8_t *) &piecesCount + sizeof(piecesCount));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&piecesCount),
+                reinterpret_cast<uint8_t *>(&piecesCount) + sizeof(piecesCount));
 
     for (const auto &piece: pieces) {
         auto pieceData = piece.serialize();
