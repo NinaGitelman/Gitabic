@@ -21,7 +21,7 @@ void FileHandler::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex
     Utils::FileUtils::writeChunkToFile(data, fileName,getOffset(pieceIndex, blockIndex));
 }
 
-vector<uint8_t> FileHandler::loadBlock(const uint32_t pieceIndex, const uint32_t blockIndex) {
-    return Utils::FileUtils::readFileChunk(dirPath+fileName, getOffset(pieceIndex, blockIndex), Utils::FileUtils::BLOCK_SIZE);
+vector<uint8_t> FileHandler::loadBlock(const uint32_t pieceIndex, const uint32_t blockIndex) const {
+    return Utils::FileUtils::readFileChunk(dirPath+fileName, getOffset(pieceIndex, blockIndex), Utils::FileSplitter::BLOCK_SIZE);
 
 }
