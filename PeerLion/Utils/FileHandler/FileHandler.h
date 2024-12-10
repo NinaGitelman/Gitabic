@@ -46,7 +46,7 @@ public:
 	void savePiece(uint32_t pieceIndex, const vector<uint8_t>& pieceData) const;
     vector<uint8_t> loadPiece(uint32_t pieceIndex) const;
     void saveBlock(uint32_t pieceIndex, uint16_t blockIndex, const vector<uint8_t> &data) const;
-    vector<uint8_t> loadBlock(uint32_t pieceIndex, uint32_t blockIndex);
+    vector<uint8_t> loadBlock(uint32_t pieceIndex, uint32_t blockIndex) const;
 
 
 };
