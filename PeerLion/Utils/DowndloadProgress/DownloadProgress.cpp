@@ -1,40 +1,36 @@
 #include "DownloadProgress.h"
 
-DownloadProgress::DownloadProgress(MetaDataFile &metaData)
-{
+DownloadProgress::DownloadProgress(MetaDataFile &metaData) {
     init(metaData);
 }
 
-DownloadProgress::DownloadProgress(vector<uint8_t> &data)
-{
+DownloadProgress::DownloadProgress(vector<uint8_t> &data) {
     deserialize(data);
 }
 
 DownloadProgress::~DownloadProgress()
-{
-}
+= default;
 
-vector<uint8_t> DownloadProgress::serialize()
-{
+vector<uint8_t> DownloadProgress::serialize() {
     vector<uint8_t> data;
 
     // Serialize basic properties
-    data.insert(data.end(), (uint8_t *)&completed, (uint8_t *)&completed + sizeof(completed));
-    data.insert(data.end(), (uint8_t *)&totalDownloadBytes, (uint8_t *)&totalDownloadBytes + sizeof(totalDownloadBytes));
-    data.insert(data.end(), (uint8_t *)&fileSize, (uint8_t *)&fileSize + sizeof(fileSize));
-    data.insert(data.end(), (uint8_t *)&startTime, (uint8_t *)&startTime + sizeof(startTime));
-    data.insert(data.end(), (uint8_t *)&lastTime, (uint8_t *)&lastTime + sizeof(lastTime));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&completed), (uint8_t *) &completed + sizeof(completed));
+    data.insert(data.end(), (uint8_t *) &totalDownloadBytes,
+                (uint8_t *) &totalDownloadBytes + sizeof(totalDownloadBytes));
+    data.insert(data.end(), (uint8_t *) &fileSize, (uint8_t *) &fileSize + sizeof(fileSize));
+    data.insert(data.end(), (uint8_t *) &startTime, (uint8_t *) &startTime + sizeof(startTime));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&lastTime), reinterpret_cast<uint8_t *>(&lastTime) + sizeof(lastTime));
     data.insert(data.end(), fileHash.data(), fileHash.data() + fileHash.size());
     uint8_t nameSize = fileName.size();
-    data.insert(data.end(), (uint8_t *)&nameSize, (uint8_t *)&nameSize + sizeof(nameSize));
+    data.insert(data.end(), (uint8_t *) &nameSize, (uint8_t *) &nameSize + sizeof(nameSize));
     data.insert(data.end(), fileName.c_str(), fileName.c_str() + fileName.size());
 
     // Serialize pieces
     uint32_t piecesCount = pieces.size();
-    data.insert(data.end(), (uint8_t *)&piecesCount, (uint8_t *)&piecesCount + sizeof(piecesCount));
+    data.insert(data.end(), (uint8_t *) &piecesCount, (uint8_t *) &piecesCount + sizeof(piecesCount));
 
-    for (const auto &piece : pieces)
-    {
+    for (const auto &piece: pieces) {
         auto pieceData = piece.serialize();
         data.insert(data.end(), pieceData.begin(), pieceData.end());
     }
@@ -42,8 +38,7 @@ vector<uint8_t> DownloadProgress::serialize()
     return data;
 }
 
-void DownloadProgress::deserialize(vector<uint8_t> data)
-{
+void DownloadProgress::deserialize(vector<uint8_t> data) {
     size_t offset = 0;
 
     // Deserialize basic properties
@@ -77,40 +72,34 @@ void DownloadProgress::deserialize(vector<uint8_t> data)
     offset += sizeof(piecesCount);
 
     pieces.clear();
-    for (uint32_t i = 0; i < piecesCount; i++)
-    {
+    for (uint32_t i = 0; i < piecesCount; i++) {
         pieces.push_back(PieceProgress::deserialize(data, offset));
     }
 }
 
-double DownloadProgress::proggres()
-{
+double DownloadProgress::proggres() {
     return totalDownloadBytes / fileSize;
 }
 
-void DownloadProgress::downloadedBlock(uint32_t piece, uint16_t block)
-{
+void DownloadProgress::downloadedBlock(uint32_t piece, uint16_t block) {
     if (piece > pieces.size())
         throw std::out_of_range("No piece #" + piece);
     totalDownloadBytes += pieces[piece].downloadedBlock(block);
 }
 
-void DownloadProgress::updatePieceStatus(uint32_t piece, DownloadStatus status)
-{
+void DownloadProgress::updatePieceStatus(uint32_t piece, DownloadStatus status) {
     if (piece >= pieces.size())
         throw std::out_of_range("No piece #" + piece);
     pieces[piece].setStatus(status);
 }
 
-void DownloadProgress::updateBlockStatus(uint32_t piece, uint16_t block, DownloadStatus status)
-{
+void DownloadProgress::updateBlockStatus(uint32_t piece, uint16_t block, DownloadStatus status) {
     if (piece >= pieces.size())
         throw std::out_of_range("No piece #" + piece);
     pieces[piece].updateBlockStatus(block, status);
 }
 
-void DownloadProgress::init(MetaDataFile &metaData)
-{
+void DownloadProgress::init(MetaDataFile &metaData) {
     using namespace Utils;
     fileName = metaData.getFileName();
     startTime = time(nullptr);
@@ -122,16 +111,14 @@ void DownloadProgress::init(MetaDataFile &metaData)
     auto temp = fileSize;
     uint32_t pieceSize = FileSplitter::pieceSize(temp);
     int i = 0;
-    while (temp > 0)
-    {
+    while (temp > 0) {
         PieceProgress piece(fileSize - temp, temp > pieceSize ? pieceSize : temp, metaData.getPartsHashes()[i]);
         temp -= piece.size;
         pieces.push_back(piece);
     }
 }
 
-PieceProgress::PieceProgress(uint64_t offset, uint32_t size, HashResult hash)
-{
+PieceProgress::PieceProgress(uint64_t offset, uint32_t size, HashResult hash) {
     {
         this->offset = offset;
         this->size = size;
@@ -141,8 +128,7 @@ PieceProgress::PieceProgress(uint64_t offset, uint32_t size, HashResult hash)
         blocks = vector<BlockInfo>();
         auto temp = size;
         this->hash = hash;
-        while (temp > 0)
-        {
+        while (temp > 0) {
             BlockInfo block;
             block.offset = size - temp;
             block.size = Utils::FileSplitter::BLOCK_SIZE < temp ? Utils::FileSplitter::BLOCK_SIZE : temp;
@@ -153,18 +139,16 @@ PieceProgress::PieceProgress(uint64_t offset, uint32_t size, HashResult hash)
     }
 }
 
-vector<uint8_t> BlockInfo::serialize() const
-{
+vector<uint8_t> BlockInfo::serialize() const {
     vector<uint8_t> data;
-    data.insert(data.end(), (uint8_t *)&offset, (uint8_t *)&offset + sizeof(offset));
-    data.insert(data.end(), (uint8_t *)&size, (uint8_t *)&size + sizeof(size));
-    data.insert(data.end(), (uint8_t *)&isLastBlock, (uint8_t *)&isLastBlock + sizeof(isLastBlock));
-    data.insert(data.end(), (uint8_t *)&status, (uint8_t *)&status + sizeof(status));
+    data.insert(data.end(), (uint8_t *) &offset, (uint8_t *) &offset + sizeof(offset));
+    data.insert(data.end(), (uint8_t *) &size, (uint8_t *) &size + sizeof(size));
+    data.insert(data.end(), (uint8_t *) &isLastBlock, (uint8_t *) &isLastBlock + sizeof(isLastBlock));
+    data.insert(data.end(), (uint8_t *) &status, (uint8_t *) &status + sizeof(status));
     return data;
 }
 
-BlockInfo BlockInfo::deserialize(const vector<uint8_t> &data, size_t &offset)
-{
+BlockInfo BlockInfo::deserialize(const vector<uint8_t> &data, size_t &offset) {
     BlockInfo block;
     memcpy(&block.offset, data.data() + offset, sizeof(block.offset));
     offset += sizeof(block.offset);
@@ -181,27 +165,21 @@ BlockInfo BlockInfo::deserialize(const vector<uint8_t> &data, size_t &offset)
     return block;
 }
 
-uint16_t PieceProgress::downloadedBlock(uint16_t block)
-{
-    if (block > blocks.size())
-    {
+uint16_t PieceProgress::downloadedBlock(uint16_t block) {
+    if (block > blocks.size()) {
         throw std::out_of_range("No block # " + block);
     }
     blocks[block]
-        .status = DownloadStatus::Downloaded;
-    if (allBlocksDownloaded())
-    {
+            .status = DownloadStatus::Downloaded;
+    if (allBlocksDownloaded()) {
         status = DownloadStatus::Downloaded;
     }
     return blocks[block].size;
 }
 
-bool PieceProgress::allBlocksDownloaded()
-{
-    for (auto &&i : blocks)
-    {
-        if (i.status != DownloadStatus::Downloaded)
-        {
+bool PieceProgress::allBlocksDownloaded() {
+    for (auto &&i: blocks) {
+        if (i.status != DownloadStatus::Downloaded) {
             return false;
         }
     }
@@ -209,36 +187,32 @@ bool PieceProgress::allBlocksDownloaded()
     return true;
 }
 
-void PieceProgress::setStatus(DownloadStatus status)
-{
+void PieceProgress::setStatus(DownloadStatus status) {
     this->status = status;
 }
 
-void PieceProgress::updateBlockStatus(uint16_t block, DownloadStatus status)
-{
+void PieceProgress::updateBlockStatus(uint16_t block, DownloadStatus status) {
     if (block >= blocks.size())
         throw std::out_of_range("No block #" + block);
     blocks[block].status = status;
 }
 
-vector<uint8_t> PieceProgress::serialize() const
-{
+vector<uint8_t> PieceProgress::serialize() const {
     vector<uint8_t> data;
 
     // Serialize piece properties
-    data.insert(data.end(), (uint8_t *)&offset, (uint8_t *)&offset + sizeof(offset));
-    data.insert(data.end(), (uint8_t *)&size, (uint8_t *)&size + sizeof(size));
-    data.insert(data.end(), (uint8_t *)&bytesDownloaded, (uint8_t *)&bytesDownloaded + sizeof(bytesDownloaded));
-    data.insert(data.end(), (uint8_t *)&lastAccess, (uint8_t *)&lastAccess + sizeof(lastAccess));
-    data.insert(data.end(), (uint8_t *)&status, (uint8_t *)&status + sizeof(status));
+    data.insert(data.end(), (uint8_t *) &offset, (uint8_t *) &offset + sizeof(offset));
+    data.insert(data.end(), (uint8_t *) &size, (uint8_t *) &size + sizeof(size));
+    data.insert(data.end(), (uint8_t *) &bytesDownloaded, (uint8_t *) &bytesDownloaded + sizeof(bytesDownloaded));
+    data.insert(data.end(), (uint8_t *) &lastAccess, (uint8_t *) &lastAccess + sizeof(lastAccess));
+    data.insert(data.end(), (uint8_t *) &status, (uint8_t *) &status + sizeof(status));
     data.insert(data.end(), hash.data(), hash.data() + hash.size());
 
     // Serialize blocks
     uint32_t blocksCount = blocks.size();
-    data.insert(data.end(), (uint8_t *)&blocksCount, (uint8_t *)&blocksCount + sizeof(blocksCount));
+    data.insert(data.end(), (uint8_t *) &blocksCount, (uint8_t *) &blocksCount + sizeof(blocksCount));
 
-    for (const auto &block : blocks)
-    {
+    for (const auto &block: blocks) {
         auto blockData = block.serialize();
         data.insert(data.end(), blockData.begin(), blockData.end());
     }
@@ -246,8 +220,7 @@ vector<uint8_t> PieceProgress::serialize() const
     return data;
 }
 
-PieceProgress PieceProgress::deserialize(const vector<uint8_t> &data, size_t &vecOffset)
-{
+PieceProgress PieceProgress::deserialize(const vector<uint8_t> &data, size_t &vecOffset) {
     uint64_t offset;
     uint32_t size;
     HashResult hash;
@@ -288,8 +261,7 @@ PieceProgress PieceProgress::deserialize(const vector<uint8_t> &data, size_t &ve
     vecOffset += sizeof(blocksCount);
 
     piece.blocks.clear();
-    for (uint32_t i = 0; i < blocksCount; i++)
-    {
+    for (uint32_t i = 0; i < blocksCount; i++) {
         piece.blocks.push_back(BlockInfo::deserialize(data, vecOffset));
     }
 
