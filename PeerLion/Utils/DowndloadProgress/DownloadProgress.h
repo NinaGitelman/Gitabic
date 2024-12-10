@@ -132,12 +132,12 @@ private:
     void init(MetaDataFile &metaData);
 
     string fileName;              ///< Name of the file being downloaded
-    HashResult fileHash;          ///< Hash of the complete file
-    bool completed;               ///< Indicates if download is complete
-    uint64_t totalDownloadBytes;  ///< Total bytes downloaded so far
-    uint64_t fileSize;            ///< Total size of the file
-    time_t startTime;             ///< Time when download started
-    time_t lastTime;              ///< Time of last download activity
+    HashResult fileHash{};          ///< Hash of the complete file
+    bool completed{};               ///< Indicates if download is complete
+    uint64_t totalDownloadBytes{};  ///< Total bytes downloaded so far
+    uint64_t fileSize{};            ///< Total size of the file
+    time_t startTime{};             ///< Time when download started
+    time_t lastTime{};              ///< Time of last download activity
     vector<PieceProgress> pieces; ///< List of all pieces in the download
 };
 

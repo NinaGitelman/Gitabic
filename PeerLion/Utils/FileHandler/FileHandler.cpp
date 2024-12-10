@@ -4,6 +4,24 @@
 
 #include "FileHandler.h"
 #include "../FileUtils/FileUtils.h"
-void FileHandler::savePiece(uint32_t pieceIndex, vector<uint8_t> pieceData){
-    Utils::FileUtils::writeChunkToFile(pieceData, fileName,pieceIndex* Utils::FileSplitter::pieceSize(metaDataFile.getFileSize()));
+
+size_t FileHandler::getOffset(const uint32_t pieceIndex, const uint16_t blockIndex) const{
+    return  pieceSize *pieceIndex + blockIndex * Utils::FileSplitter::BLOCK_SIZE;
+}
+
+void FileHandler::savePiece(const uint32_t pieceIndex, const vector<uint8_t>& pieceData) const {
+    Utils::FileUtils::writeChunkToFile(pieceData, fileName,getOffset(pieceIndex));
+}
+
+vector<uint8_t> FileHandler::loadPiece(const uint32_t pieceIndex) const {
+    return Utils::FileUtils::readFileChunk(dirPath+fileName, getOffset(pieceIndex), pieceSize);
+}
+
+void FileHandler::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex, const vector<uint8_t> &data) const {
+    Utils::FileUtils::writeChunkToFile(data, fileName,getOffset(pieceIndex, blockIndex));
+}
+
+vector<uint8_t> FileHandler::loadBlock(const uint32_t pieceIndex, const uint32_t blockIndex) {
+    return Utils::FileUtils::readFileChunk(dirPath+fileName, getOffset(pieceIndex, blockIndex), Utils::FileUtils::BLOCK_SIZE);
+
 }
