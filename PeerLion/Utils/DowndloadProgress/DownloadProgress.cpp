@@ -12,6 +12,7 @@ DownloadProgress::~DownloadProgress()
 = default;
 
 vector<uint8_t> DownloadProgress::serialize() {
+    std::lock_guard<mutex> guard(mut);
     vector<uint8_t> data;
 
     // Serialize basic properties
@@ -44,6 +45,8 @@ vector<uint8_t> DownloadProgress::serialize() {
 }
 
 void DownloadProgress::deserialize(vector<uint8_t> data) {
+    std::lock_guard<mutex> guard(mut);
+
     size_t offset = 0;
 
     // Deserialize basic properties
@@ -82,29 +85,53 @@ void DownloadProgress::deserialize(vector<uint8_t> data) {
     }
 }
 
-double DownloadProgress::proggres() {
-    return totalDownloadBytes / fileSize;
+double DownloadProgress::progress() {
+    std::lock_guard<std::mutex> guard(mut);
+    return totalDownloadBytes / static_cast<double>(fileSize);
 }
 
-void DownloadProgress::downloadedBlock(uint32_t piece, uint16_t block) {
+void DownloadProgress::downloadedBlock(const uint32_t piece, const uint16_t block) {
+    std::lock_guard<mutex> guard(mut);
+
     if (piece > pieces.size())
         throw std::out_of_range("No piece #" + piece);
     totalDownloadBytes += pieces[piece].downloadedBlock(block);
 }
 
-void DownloadProgress::updatePieceStatus(uint32_t piece, DownloadStatus status) {
+void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadStatus status) {
+    std::lock_guard<mutex> guard(mut);
+
     if (piece >= pieces.size())
         throw std::out_of_range("No piece #" + piece);
     pieces[piece].setStatus(status);
 }
 
-void DownloadProgress::updateBlockStatus(uint32_t piece, uint16_t block, DownloadStatus status) {
+void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t block, const DownloadStatus status) {
     if (piece >= pieces.size())
         throw std::out_of_range("No piece #" + piece);
     pieces[piece].updateBlockStatus(block, status);
 }
 
-void DownloadProgress::init(MetaDataFile &metaData) {
+vector<PieceProgress> DownloadProgress::getPiecesStatused(const DownloadStatus status) {
+    vector<PieceProgress> pieces;
+
+    for (const auto &piece: this->pieces) {
+        if (piece.status == status) { pieces.push_back(piece); }
+    }
+
+    return pieces;
+}
+
+vector<PieceProgress> DownloadProgress::getBlocksStatused(DownloadStatus status) const {
+    vector<PieceProgress> res;
+    res.reserve(this->pieces.size());
+    for (const auto &piece: this->pieces) {
+        res.push_back(piece.getBlocksStatused());
+    }
+    return res;
+}
+
+void DownloadProgress::init(const MetaDataFile &metaData) {
     using namespace Utils;
     fileName = metaData.getFileName();
     startTime = time(nullptr);
@@ -114,19 +141,19 @@ void DownloadProgress::init(MetaDataFile &metaData) {
     completed = false;
     fileHash = metaData.getFileHash();
     auto temp = fileSize;
-    uint32_t pieceSize = FileSplitter::pieceSize(temp);
+    const uint32_t pieceSize = FileSplitter::pieceSize(temp);
     int i = 0;
     while (temp > 0) {
         PieceProgress piece(fileSize - temp, temp > pieceSize ? pieceSize : temp, metaData.getPartsHashes()[i]);
         temp -= piece.size;
         pieces.push_back(piece);
+        i++;
     }
 }
 
-PieceProgress::PieceProgress(uint64_t offset, uint32_t size, HashResult hash) {
+PieceProgress::PieceProgress(const uint64_t offset, const uint32_t size, const HashResult &hash) : offset(offset),
+    size(size), hash(hash) {
     {
-        this->offset = offset;
-        this->size = size;
         this->bytesDownloaded = 0;
         lastAccess = time(nullptr);
         status = DownloadStatus::Empty;
@@ -134,7 +161,7 @@ PieceProgress::PieceProgress(uint64_t offset, uint32_t size, HashResult hash) {
         auto temp = size;
         this->hash = hash;
         while (temp > 0) {
-            BlockInfo block;
+            BlockInfo block{};
             block.offset = size - temp;
             block.size = Utils::FileSplitter::BLOCK_SIZE < temp ? Utils::FileSplitter::BLOCK_SIZE : temp;
             temp -= block.size;
@@ -154,7 +181,7 @@ vector<uint8_t> BlockInfo::serialize() const {
 }
 
 BlockInfo BlockInfo::deserialize(const vector<uint8_t> &data, size_t &offset) {
-    BlockInfo block;
+    BlockInfo block{};
     memcpy(&block.offset, data.data() + offset, sizeof(block.offset));
     offset += sizeof(block.offset);
 
@@ -182,7 +209,7 @@ uint16_t PieceProgress::downloadedBlock(uint16_t block) {
     return blocks[block].size;
 }
 
-bool PieceProgress::allBlocksDownloaded() {
+bool PieceProgress::allBlocksDownloaded() const {
     for (auto &&i: blocks) {
         if (i.status != DownloadStatus::Downloaded) {
             return false;
@@ -200,6 +227,17 @@ void PieceProgress::updateBlockStatus(uint16_t block, DownloadStatus status) {
     if (block >= blocks.size())
         throw std::out_of_range("No block #" + block);
     blocks[block].status = status;
+}
+
+PieceProgress PieceProgress::getBlocksStatused(const DownloadStatus status) const {
+    PieceProgress piece_progress(offset, size, hash);
+    piece_progress.status = status;
+    for (auto &&i: blocks) {
+        if (i.status == status) {
+            piece_progress.blocks.push_back(i);
+        }
+    }
+    return piece_progress;
 }
 
 vector<uint8_t> PieceProgress::serialize() const {
