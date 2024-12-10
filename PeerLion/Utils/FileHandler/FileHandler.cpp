@@ -9,16 +9,15 @@ size_t FileHandler::getOffset(const uint32_t pieceIndex, const uint16_t blockInd
     return pieceSize * pieceIndex + blockIndex * Utils::FileSplitter::BLOCK_SIZE;
 }
 
-FileHandler::FileHandler(const string &path, const string &name, const FileMode mode) {
-    this->dirPath = path;
-    this->fileName = name;
-    const string files = path + "/" + this->fileName;
-    metaDataFile = MetaDataFile(files + ".gitabic");
-    downloadProgress = DownloadProgress(Utils::FileUtils::fileExists(files + ".prog")
-                                            ? Utils::FileUtils::readFileToVector(files + ".prog")
-                                            : metaDataFile);
-    pieceSize = Utils::FileSplitter::pieceSize(metaDataFile.getFileSize());
-    this->mode = mode;
+FileHandler::FileHandler(const string &path, const string &name, const FileMode mode)
+    : dirPath(path),
+      fileName(name),
+      metaDataFile(path + "/" + fileName + ".gitabic"),
+      mode(mode),
+      downloadProgress(Utils::FileUtils::fileExists(path + "/" + fileName + ".prog")
+                           ? DownloadProgress(Utils::FileUtils::readFileToVector(path + "/" + fileName + ".prog"))
+                           : DownloadProgress(metaDataFile)),
+      pieceSize(Utils::FileSplitter::pieceSize(metaDataFile.getFileSize())) {
 }
 
 void FileHandler::savePiece(const uint32_t pieceIndex, const vector<uint8_t> &pieceData) const {

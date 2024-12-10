@@ -21,7 +21,7 @@ struct BlockInfo {
 
     /// @brief Serializes the block information into a byte vector
     /// @return Vector containing the serialized block data
-    vector<uint8_t> serialize() const;
+    [[nodiscard]] vector<uint8_t> serialize() const;
 
     /// @brief Deserializes block information from a byte vector
     /// @param data Vector containing the serialized data
@@ -44,7 +44,7 @@ struct PieceProgress {
     /// @param offset Offset of the piece within the file
     /// @param size Size of the piece in bytes
     /// @param hash Expected hash value for verification
-    PieceProgress(uint64_t offset, uint32_t size, HashResult hash);
+    PieceProgress(uint64_t offset, uint32_t size, const HashResult &hash);
 
     /// @brief Marks a block as downloaded and updates piece status
     /// @param block Index of the block that was downloaded
@@ -54,7 +54,7 @@ struct PieceProgress {
 
     /// @brief Checks if all blocks in the piece have been downloaded
     /// @return true if all blocks are downloaded, false otherwise
-    bool allBlocksDownloaded();
+    [[nodiscard]] bool allBlocksDownloaded() const;
 
     /// @brief Updates the download status of the piece
     /// @param status New status to set
@@ -66,9 +66,12 @@ struct PieceProgress {
     /// @throw std::out_of_range if block index is invalid
     void updateBlockStatus(uint16_t block, DownloadStatus status);
 
+    [[nodiscard]] PieceProgress getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
+
+
     /// @brief Serializes the piece progress information
     /// @return Vector containing the serialized piece data
-    vector<uint8_t> serialize() const;
+    [[nodiscard]] vector<uint8_t> serialize() const;
 
     /// @brief Deserializes piece progress information
     /// @param data Vector containing the serialized data
@@ -101,7 +104,7 @@ public:
 
     /// @brief Calculates the current download progress as a percentage
     /// @return Progress value between 0.0 and 1.0
-    double proggres();
+    [[nodiscard]] double progress();
 
     /// @brief Updates progress when a block is downloaded
     /// @param piece Index of the piece containing the block
@@ -122,10 +125,14 @@ public:
     /// @throw std::out_of_range if piece or block index is invalid
     void updateBlockStatus(uint32_t piece, uint16_t block, DownloadStatus status);
 
+    vector<PieceProgress> getPiecesStatused(DownloadStatus status = DownloadStatus::Empty);
+
+    [[nodiscard]] vector<PieceProgress> getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
+
 private:
     /// @brief Initializes the download progress tracker with metadata
     /// @param metaData Metadata of the file being downloaded
-    void init(MetaDataFile &metaData);
+    void init(const MetaDataFile &metaData);
 
     string fileName; ///< Name of the file being downloaded
     HashResult fileHash{}; ///< Hash of the complete file
@@ -135,6 +142,7 @@ private:
     time_t startTime{}; ///< Time when download started
     time_t lastTime{}; ///< Time of last download activity
     vector<PieceProgress> pieces; ///< List of all pieces in the download
+    std::mutex mut;
 };
 
 #endif
