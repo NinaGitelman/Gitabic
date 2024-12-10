@@ -2,12 +2,10 @@
 
 using namespace Utils;
 
-std::vector<uint8_t> FileUtils::readFileToVector(const std::string &filePath)
-{
+std::vector<uint8_t> FileUtils::readFileToVector(const std::string &filePath) {
     std::ifstream file(filePath, std::ios::in | std::ios::binary);
 
-    if (!file)
-    {
+    if (!file) {
         throw std::runtime_error("Could not open the file: " + filePath);
     }
 
@@ -18,21 +16,16 @@ std::vector<uint8_t> FileUtils::readFileToVector(const std::string &filePath)
 
     // Resize vector to hold the file data and read the file contents
     std::vector<uint8_t> content(fileSize);
-    if (file.read(reinterpret_cast<char *>(content.data()), fileSize))
-    {
+    if (file.read(reinterpret_cast<char *>(content.data()), fileSize)) {
         return content;
-    }
-    else
-    {
+    } else {
         throw std::runtime_error("Error reading the file: " + filePath);
     }
 }
 
-std::vector<uint8_t> Utils::FileUtils::readFileChunk(const std::string &filePath, size_t offset, size_t size)
-{
+std::vector<uint8_t> Utils::FileUtils::readFileChunk(const std::string &filePath, size_t offset, size_t size) {
     std::ifstream file(filePath, std::ios::binary);
-    if (!file)
-    {
+    if (!file) {
         throw std::runtime_error("Failed to open file: " + filePath);
     }
 
@@ -43,37 +36,32 @@ std::vector<uint8_t> Utils::FileUtils::readFileChunk(const std::string &filePath
     return buffer;
 }
 
-void FileUtils::writeVectorToFile(const std::vector<uint8_t> &data, const std::string &filePath)
-{
+void FileUtils::writeVectorToFile(const std::vector<uint8_t> &data, const std::string &filePath) {
     std::ofstream outFile(filePath, std::ios::out | std::ios::binary | std::ios::trunc);
-    if (!outFile)
-    {
+    if (!outFile) {
         throw std::ios_base::failure("Failed to open file for writing");
     }
     outFile.write(reinterpret_cast<const char *>(data.data()), data.size());
     outFile.close();
 }
 
-void Utils::FileUtils::writeChunkToFile(const std::vector<uint8_t> &data, const std::string &filePath, uint64_t offset)
-{
+void Utils::FileUtils::writeChunkToFile(const std::vector<uint8_t> &data, const std::string &filePath,
+                                        uint64_t offset) {
     // Open the file in binary mode for both reading and writing, without truncating
     std::ofstream outFile(filePath, std::ios::in | std::ios::out | std::ios::binary);
-    if (!outFile)
-    {
+    if (!outFile) {
         throw std::ios_base::failure("Failed to open file for writing");
     }
 
     // Move the write pointer to the specified offset
     outFile.seekp(static_cast<std::streampos>(offset));
-    if (!outFile)
-    {
+    if (!outFile) {
         throw std::ios_base::failure("Failed to seek to the specified offset");
     }
 
     // Write the data at the offset
     outFile.write(reinterpret_cast<const char *>(data.data()), data.size());
-    if (!outFile)
-    {
+    if (!outFile) {
         throw std::ios_base::failure("Failed to write data to the file");
     }
 
@@ -81,28 +69,24 @@ void Utils::FileUtils::writeChunkToFile(const std::vector<uint8_t> &data, const 
     outFile.close();
 }
 
-void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_t size)
-{
+void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_t size) {
     // Open the file in binary mode for writing
     std::ofstream file(filePath, std::ios::binary | std::ios::trunc);
-    if (!file.is_open())
-    {
+    if (!file.is_open()) {
         throw std::runtime_error("Failed to create file: " + filePath);
     }
 
     // Allocate a buffer to write in chunks
-    const size_t bufferSize = 4 * 1024;        // 4 KB buffer
+    const size_t bufferSize = 4 * 1024; // 4 KB buffer
     std::vector<char> buffer(bufferSize, '0'); // Fill buffer with zeros
 
     uint64_t bytesWritten = 0;
-    while (bytesWritten < size)
-    {
+    while (bytesWritten < size) {
         size_t bytesToWrite = std::min<uint64_t>(bufferSize, size - bytesWritten);
         file.write(buffer.data(), bytesToWrite);
         bytesWritten += bytesToWrite;
 
-        if (!file)
-        {
+        if (!file) {
             throw std::runtime_error("Error while writing to file: " + filePath);
         }
     }
@@ -111,48 +95,44 @@ void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_
     file.close();
 }
 
-bool FileUtils::verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size, HashResult hash)
-{
+bool FileUtils::verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size, HashResult hash) {
     auto data = readFileChunk(filePath, offset, size);
     return hash == SHA256::toHashSha256(data);
 }
 
-std::array<uint8_t, 16> Conversions::cutArray(HashResult &from)
-{
-    std::array<uint8_t, 16> result;
+bool FileUtils::fileExists(const std::string &filePath) {
+    return std::filesystem::exists(filePath);
+}
+
+std::array<uint8_t, 16> Conversions::cutArray(HashResult &from) {
+    std::array<uint8_t, 16> result{};
     memcpy(result.data(), from.data(), result.size());
     return result;
 }
 
-std::vector<uint8_t> Utils::Conversions::toVector(HashResult hash)
-{
+std::vector<uint8_t> Utils::Conversions::toVector(HashResult hash) {
     vector<uint8_t> result;
     result.insert(result.end(), hash.begin(), hash.end());
     return result;
 }
 
-std::vector<uint8_t> Utils::Conversions::toVector(array<uint8_t, 16> aesKey)
-{
+std::vector<uint8_t> Utils::Conversions::toVector(array<uint8_t, 16> aesKey) {
     vector<uint8_t> result;
     result.insert(result.end(), aesKey.begin(), aesKey.end());
     return result;
 }
 
-array<uint8_t, 16> Utils::Conversions::toKey(std::vector<uint8_t> vec)
-{
+array<uint8_t, 16> Utils::Conversions::toKey(std::vector<uint8_t> vec) {
     array<uint8_t, 16> result;
-    memcpy(result.data(), vec.data(), std::min(16, (int)vec.size()));
+    memcpy(result.data(), vec.data(), std::min(16, (int) vec.size()));
     return result;
 }
 
-uint FileSplitter::pieceSize(const uint64_t fileSize)
-{
-    if (fileSize <= KB * MIN_PIECE_SIZE)
-    {
+uint FileSplitter::pieceSize(const uint64_t fileSize) {
+    if (fileSize <= KB * MIN_PIECE_SIZE) {
         return MIN_PIECE_SIZE;
     }
-    if (fileSize <= MAX_PIECE_SIZE * KB)
-    {
+    if (fileSize <= MAX_PIECE_SIZE * KB) {
         return fileSize / KB;
     }
     return MAX_PIECE_SIZE;

@@ -4,21 +4,19 @@
 #include "../MetaDataFile/MetaDataFile.h"
 
 /// Represents the current status of a download operation
-enum class DownloadStatus
-{
-    Empty,       ///< No data has been downloaded
+enum class DownloadStatus {
+    Empty, ///< No data has been downloaded
     Downloading, ///< Download is in progress
-    Downloaded,  ///< Data has been completely downloaded
-    Verified,    ///< Downloaded data has been verified
-    Invalid      ///< Downloaded data is invalid or corrupted
+    Downloaded, ///< Data has been completely downloaded
+    Verified, ///< Downloaded data has been verified
+    Invalid ///< Downloaded data is invalid or corrupted
 };
 
 /// @brief Represents information about a block within a piece of the download
-struct BlockInfo
-{
-    uint32_t offset;       ///< Offset of the block within its piece
-    uint16_t size;         ///< Size of the block in bytes
-    bool isLastBlock;      ///< Indicates if this is the last block in the piece
+struct BlockInfo {
+    uint32_t offset; ///< Offset of the block within its piece
+    uint16_t size; ///< Size of the block in bytes
+    bool isLastBlock; ///< Indicates if this is the last block in the piece
     DownloadStatus status; ///< Current download status of the block
 
     /// @brief Serializes the block information into a byte vector
@@ -33,15 +31,14 @@ struct BlockInfo
 };
 
 /// @brief Represents progress information for a piece of the download
-struct PieceProgress
-{
-    DownloadStatus status;         ///< Current download status of the piece
-    uint64_t offset;               ///< Offset of the piece within the file
+struct PieceProgress {
+    DownloadStatus status; ///< Current download status of the piece
+    uint64_t offset; ///< Offset of the piece within the file
     std::vector<BlockInfo> blocks; ///< List of blocks within the piece
-    uint32_t size;                 ///< Size of the piece in bytes
-    uint32_t bytesDownloaded;      ///< Number of bytes downloaded for this piece
-    time_t lastAccess;             ///< Timestamp of last access to this piece
-    HashResult hash;               ///< Hash of the piece for verification
+    uint32_t size; ///< Size of the piece in bytes
+    uint32_t bytesDownloaded; ///< Number of bytes downloaded for this piece
+    time_t lastAccess; ///< Timestamp of last access to this piece
+    HashResult hash; ///< Hash of the piece for verification
 
     /// @brief Constructs a new piece progress tracker
     /// @param offset Offset of the piece within the file
@@ -81,16 +78,15 @@ struct PieceProgress
 };
 
 /// @brief Manages and tracks the progress of a file download
-class DownloadProgress
-{
+class DownloadProgress {
 public:
     /// @brief Constructs a new download progress tracker from metadata
     /// @param metaData Metadata of the file being downloaded
-    DownloadProgress(MetaDataFile &metaData);
+    explicit DownloadProgress(MetaDataFile &metaData);
 
     /// @brief Constructs a download progress tracker from serialized data
     /// @param data Vector containing serialized download progress data
-    DownloadProgress(vector<uint8_t> &data);
+    explicit DownloadProgress(const vector<uint8_t> &data);
 
     /// @brief Destructor
     ~DownloadProgress();
@@ -131,13 +127,13 @@ private:
     /// @param metaData Metadata of the file being downloaded
     void init(MetaDataFile &metaData);
 
-    string fileName;              ///< Name of the file being downloaded
-    HashResult fileHash{};          ///< Hash of the complete file
-    bool completed{};               ///< Indicates if download is complete
-    uint64_t totalDownloadBytes{};  ///< Total bytes downloaded so far
-    uint64_t fileSize{};            ///< Total size of the file
-    time_t startTime{};             ///< Time when download started
-    time_t lastTime{};              ///< Time of last download activity
+    string fileName; ///< Name of the file being downloaded
+    HashResult fileHash{}; ///< Hash of the complete file
+    bool completed{}; ///< Indicates if download is complete
+    uint64_t totalDownloadBytes{}; ///< Total bytes downloaded so far
+    uint64_t fileSize{}; ///< Total size of the file
+    time_t startTime{}; ///< Time when download started
+    time_t lastTime{}; ///< Time of last download activity
     vector<PieceProgress> pieces; ///< List of all pieces in the download
 };
 
