@@ -19,17 +19,17 @@ using std::array;
 using std::vector;
 using Word = array<uint8_t, WORD>;
 using Matrix4x4 = array<Word, 4>;
+using AESKey = array<uint8_t, BLOCK>;
 
 /// @brief AES encryption and decryption handler for AES-128 in ECB or CBC mode
-class AESHandler
-{
+class AESHandler {
 public:
     /// @brief Default constructor. Initializes random seed if needed.
     AESHandler();
 
     /// @brief Constructor with a specific key.
     /// @param key 128-bit key used for AES encryption and decryption.
-    AESHandler(array<uint8_t, BLOCK> key);
+    AESHandler(AESKey key);
 
     /// @brief Default destructor.
     ~AESHandler() = default;
@@ -53,11 +53,11 @@ public:
 
     /// @brief Generates a random 128-bit AES key.
     /// @return A random 128-bit key.
-    static array<uint8_t, BLOCK> generateRandomKey();
+    static AESKey generateRandomKey();
 
     /// @brief Gets the currently active AES key.
     /// @return The current AES key.
-    array<uint8_t, BLOCK> getKey();
+    AESKey getKey();
 
     /// @brief Prints a hexadecimal dump of a 4x4 matrix.
     /// @param matrix The matrix to be printed.
@@ -65,7 +65,7 @@ public:
 
     /// @brief Prints a hexadecimal dump of a 128-bit key.
     /// @param key The key to be printed.
-    void printHexDump(const array<uint8_t, BLOCK> &key);
+    void printHexDump(const AESKey &key);
 
 private:
     /// @brief Returns the round constant for a specific round (log in GF of the round).
@@ -130,7 +130,7 @@ private:
 
     /// @brief Expands the key into round keys.
     /// @param key The key to expand.
-    void keyExpansion(array<uint8_t, BLOCK> key);
+    void keyExpansion(AESKey key);
 
     /// @brief Encrypts a single 4x4 matrix (block).
     /// @param mat The matrix to encrypt.
@@ -146,7 +146,7 @@ private:
     Matrix4x4 &convertToMat(uint8_t *dataStart);
 
     /// @brief Expanded round keys.
-    std::array<std::array<uint8_t, BLOCK>, R + 1> keys;
+    std::array<std::AESKey, R + 1> keys;
 
     /// Lookup table for x • 2 in GF(2^8)
     static const array<uint8_t, 256> mul2;
