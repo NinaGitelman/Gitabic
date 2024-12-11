@@ -6,20 +6,19 @@
 #include "../FileUtils/FileUtils.h"
 #include "../../NetworkUnit/SocketHandler/SocketHandler.h"
 #include "../../Encryptions/SHA256/sha256.h"
+#include "../../Encryptions/SHA256/sha256.h"
 using std::string;
 using std::vector;
 
 /// @brief Structure containing file metadata sizes and flags
-struct Sizes
-{
-    uint64_t fileSize : 47;   ///< Size of the file in bytes (47-bit field)
-    uint64_t partsCount : 16; ///< Number of parts the file is split into (16-bit field)
-    uint64_t hasPassword : 1; ///< Flag indicating if the file is password-protected (1-bit field)
+struct Sizes {
+    uint64_t fileSize: 47; ///< Size of the file in bytes (47-bit field)
+    uint64_t partsCount: 16; ///< Number of parts the file is split into (16-bit field)
+    uint64_t hasPassword: 1; ///< Flag indicating if the file is password-protected (1-bit field)
 };
 
 /// @brief Class handling file metadata including encryption, hashing, and file information
-class MetaDataFile
-{
+class MetaDataFile {
 public:
     /// @brief Constructs metadata object from serialized data
     /// @param data Vector containing serialized metadata
@@ -126,29 +125,31 @@ public:
     /// @param size New file size in bytes
     void setFileSize(uint64_t size) { sizes.fileSize = size; }
 
+    AESKey decryptAesKey(const string &password) const;
+
 private:
     /// @brief Serializes a string to a byte vector
     /// @param data Vector to append serialized string to
     /// @param str String to serialize
-    void serializeString(vector<uint8_t> &data, string &str);
+    static void serializeString(vector<uint8_t> &data, const string &str);
 
     /// @brief Serializes a hash to a byte vector
     /// @param data Vector to append serialized hash to
     /// @param hash Hash to serialize
-    void serializeHash(vector<uint8_t> &data, HashResult &hash);
+    static void serializeHash(vector<uint8_t> &data, HashResult &hash);
 
     /// @brief Serializes a 16-byte block to a byte vector
     /// @param data Vector to append serialized block to
     /// @param block Block to serialize
-    void serializeBlock(vector<uint8_t> &data, array<uint8_t, 16> &block);
+    static void serializeBlock(vector<uint8_t> &data, array<uint8_t, 16> &block);
 
-    string fileName;                    ///< Name of the file
-    string creator;                     ///< Creator identifier
-    HashResult fileHash;                ///< Hash of the complete file
-    vector<HashResult> partsHashes;     ///< Hashes of individual file parts
-    Address signalingAddress;           ///< Network address for signaling
-    Sizes sizes;                        ///< File size and metadata information
-    array<uint8_t, 16> encryptedAesKey; ///< Encrypted AES key for file encryption
-    array<uint8_t, 16> salt;            ///< Salt for password hashing
+    string fileName; ///< Name of the file
+    string creator; ///< Creator identifier
+    HashResult fileHash; ///< Hash of the complete file
+    vector<HashResult> partsHashes; ///< Hashes of individual file parts
+    Address signalingAddress; ///< Network address for signaling
+    Sizes sizes; ///< File size and metadata information
+    AESKey encryptedAesKey; ///< Encrypted AES key for file encryption
+    array<uint8_t, 16> salt; ///< Salt for password hashing
 };
 #endif

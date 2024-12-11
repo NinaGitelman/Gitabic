@@ -15,6 +15,7 @@ private:
 	FileMode mode;
 	DownloadProgress downloadProgress;
 	size_t pieceSize;
+	mutable mutex mutex_;
 
 	[[nodiscard]] size_t getOffset(uint32_t pieceIndex, uint16_t blockIndex = 0) const;
 
@@ -43,18 +44,37 @@ private:
 	std::mutex mut;
 
 public:
-	FileHandler(const string &path, const string &name, FileMode mode);
+	FileHandler(const string &path, string name, FileMode mode);
 
 	~FileHandler() = default;
 
+	/**
+	 *
+	 * @param pieceIndex The index of the piece
+	 * @param pieceData The data to save
+	 */
+	void savePiece(uint32_t pieceIndex, const vector<uint8_t> &pieceData);
 
-	void savePiece(uint32_t pieceIndex, const vector<uint8_t> &pieceData) const;
+	/**
+	 *
+	 * @param pieceIndex The index of the piece
+	 * @param blockIndex The index of the block
+	 * @param data The block data
+	 */
+	void saveBlock(uint32_t pieceIndex, uint16_t blockIndex, const vector<uint8_t> &data);
 
-	vector<uint8_t> loadPiece(uint32_t pieceIndex) const;
+	/**
+	 * @param pieceIndex the piece index
+	 * @return The loaded piece data
+	 */
+	[[nodiscard]] vector<uint8_t> loadPiece(uint32_t pieceIndex) const;
 
-	void saveBlock(uint32_t pieceIndex, uint16_t blockIndex, const vector<uint8_t> &data) const;
-
-	vector<uint8_t> loadBlock(uint32_t pieceIndex, uint32_t blockIndex) const;
+	/**
+	 * @param pieceIndex the piece index
+	 * @param blockIndex the block index
+	 * @return The loaded piece data
+	 */
+	[[nodiscard]] vector<uint8_t> loadBlock(uint32_t pieceIndex, uint32_t blockIndex) const;
 };
 
 

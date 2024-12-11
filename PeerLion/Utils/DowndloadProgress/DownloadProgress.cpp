@@ -30,6 +30,9 @@ vector<uint8_t> DownloadProgress::serialize() {
     uint8_t nameSize = fileName.size();
     data.insert(data.end(), (uint8_t *) &nameSize, (uint8_t *) &nameSize + sizeof(nameSize));
     data.insert(data.end(), fileName.c_str(), fileName.c_str() + fileName.size());
+    nameSize = creator.size();
+    data.insert(data.end(), (uint8_t *) &nameSize, (uint8_t *) &nameSize + sizeof(nameSize));
+    data.insert(data.end(), creator.c_str(), creator.c_str() + creator.size());
 
     // Serialize pieces
     uint32_t piecesCount = pieces.size();
@@ -73,6 +76,10 @@ void DownloadProgress::deserialize(vector<uint8_t> data) {
     offset += sizeof(fileNameSize);
     fileName = string(data.data() + offset, data.data() + offset + fileNameSize);
     offset += fileNameSize;
+    memcpy(&fileNameSize, data.data() + offset, sizeof(fileNameSize));
+    offset += sizeof(fileNameSize);
+    creator = string(data.data() + offset, data.data() + offset + fileNameSize);
+    offset += fileNameSize;
 
     // Deserialize pieces
     uint32_t piecesCount;
@@ -85,17 +92,22 @@ void DownloadProgress::deserialize(vector<uint8_t> data) {
     }
 }
 
-double DownloadProgress::progress() {
+double DownloadProgress::progress() const {
     std::lock_guard<std::mutex> guard(mut);
     return totalDownloadBytes / static_cast<double>(fileSize);
 }
 
-void DownloadProgress::downloadedBlock(const uint32_t piece, const uint16_t block) {
+bool DownloadProgress::downloadedBlock(const uint32_t piece, const uint16_t block) {
     std::lock_guard<mutex> guard(mut);
 
-    if (piece > pieces.size())
+    if (piece >= pieces.size())
         throw std::out_of_range("No piece #" + piece);
+
+    // Update last access time
+    lastTime = time(nullptr);
+
     totalDownloadBytes += pieces[piece].downloadedBlock(block);
+    return pieces[piece].status == DownloadStatus::Downloaded;
 }
 
 void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadStatus status) {
@@ -103,16 +115,26 @@ void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadSta
 
     if (piece >= pieces.size())
         throw std::out_of_range("No piece #" + piece);
+
+    // Update last access time
+    lastTime = time(nullptr);
+
     pieces[piece].setStatus(status);
 }
 
 void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t block, const DownloadStatus status) {
+    std::lock_guard<std::mutex> guard(mut);
     if (piece >= pieces.size())
         throw std::out_of_range("No piece #" + piece);
+
+    // Update last access time
+    lastTime = time(nullptr);
+
     pieces[piece].updateBlockStatus(block, status);
 }
 
 vector<PieceProgress> DownloadProgress::getPiecesStatused(const DownloadStatus status) {
+    std::lock_guard<std::mutex> guard(mut);
     vector<PieceProgress> pieces;
 
     for (const auto &piece: this->pieces) {
@@ -123,6 +145,7 @@ vector<PieceProgress> DownloadProgress::getPiecesStatused(const DownloadStatus s
 }
 
 vector<PieceProgress> DownloadProgress::getBlocksStatused(DownloadStatus status) const {
+    std::lock_guard<std::mutex> guard(mut);
     vector<PieceProgress> res;
     res.reserve(this->pieces.size());
     for (const auto &piece: this->pieces) {
@@ -131,9 +154,19 @@ vector<PieceProgress> DownloadProgress::getBlocksStatused(DownloadStatus status)
     return res;
 }
 
+PieceProgress DownloadProgress::getPiece(const uint32_t index) const {
+    std::lock_guard<mutex> guard(mut);
+
+    if (piece >= pieces.size())
+        throw std::out_of_range("No piece #" + piece);
+    return pieces[index];
+}
+
+
 void DownloadProgress::init(const MetaDataFile &metaData) {
     using namespace Utils;
     fileName = metaData.getFileName();
+    creator = metaData.getCreator();
     startTime = time(nullptr);
     lastTime = startTime;
     fileSize = metaData.getFileSize();
@@ -197,17 +230,20 @@ BlockInfo BlockInfo::deserialize(const vector<uint8_t> &data, size_t &offset) {
     return block;
 }
 
-uint16_t PieceProgress::downloadedBlock(uint16_t block) {
-    if (block > blocks.size()) {
+uint16_t PieceProgress::downloadedBlock(const uint16_t block) {
+    if (block >= blocks.size()) {
         throw std::out_of_range("No block # " + block);
     }
-    blocks[block]
-            .status = DownloadStatus::Downloaded;
+    // Update last access time
+    lastAccess = time(nullptr);
+
+    blocks[block].status = DownloadStatus::Downloaded;
     if (allBlocksDownloaded()) {
         status = DownloadStatus::Downloaded;
     }
     return blocks[block].size;
 }
+
 
 bool PieceProgress::allBlocksDownloaded() const {
     for (auto &&i: blocks) {
@@ -219,14 +255,35 @@ bool PieceProgress::allBlocksDownloaded() const {
     return true;
 }
 
-void PieceProgress::setStatus(DownloadStatus status) {
+void PieceProgress::setStatus(const DownloadStatus status) {
+    // Update last access time
+    lastAccess = time(nullptr);
+
     this->status = status;
+    if (status != DownloadStatus::Downloading) {
+        for (auto &&i: blocks) {
+            i.status = status;
+        }
+    }
 }
 
-void PieceProgress::updateBlockStatus(uint16_t block, DownloadStatus status) {
+void PieceProgress::updateBlockStatus(const uint16_t block, const DownloadStatus status) {
     if (block >= blocks.size())
         throw std::out_of_range("No block #" + block);
+
+    // Update last access time
+    lastAccess = time(nullptr);
+
     blocks[block].status = status;
+    if (status == DownloadStatus::Downloaded && allBlocksDownloaded()) {
+        this->status = DownloadStatus::Downloaded;
+    }
+}
+
+BlockInfo PieceProgress::getBlockInfo(const uint16_t block) const {
+    if (block >= blocks.size())
+        throw std::out_of_range("No block #" + block);
+    return blocks[block];
 }
 
 PieceProgress PieceProgress::getBlocksStatused(const DownloadStatus status) const {

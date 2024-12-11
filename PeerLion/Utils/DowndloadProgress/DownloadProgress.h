@@ -9,7 +9,6 @@ enum class DownloadStatus {
     Downloading, ///< Download is in progress
     Downloaded, ///< Data has been completely downloaded
     Verified, ///< Downloaded data has been verified
-    Invalid ///< Downloaded data is invalid or corrupted
 };
 
 /// @brief Represents information about a block within a piece of the download
@@ -66,6 +65,8 @@ struct PieceProgress {
     /// @throw std::out_of_range if block index is invalid
     void updateBlockStatus(uint16_t block, DownloadStatus status);
 
+    [[nodiscard]] BlockInfo getBlockInfo(uint16_t block) const;
+
     [[nodiscard]] PieceProgress getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
 
 
@@ -104,13 +105,13 @@ public:
 
     /// @brief Calculates the current download progress as a percentage
     /// @return Progress value between 0.0 and 1.0
-    [[nodiscard]] double progress();
+    [[nodiscard]] double progress() const;
 
     /// @brief Updates progress when a block is downloaded
     /// @param piece Index of the piece containing the block
     /// @param block Index of the downloaded block within the piece
     /// @throw std::out_of_range if piece or block index is invalid
-    void downloadedBlock(uint32_t piece, uint16_t block);
+    bool downloadedBlock(uint32_t piece, uint16_t block);
 
     /// @brief Updates the status of a specific piece
     /// @param piece Index of the piece to update
@@ -129,12 +130,15 @@ public:
 
     [[nodiscard]] vector<PieceProgress> getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
 
+    [[nodiscard]] PieceProgress getPiece(uint32_t index) const;
+
 private:
     /// @brief Initializes the download progress tracker with metadata
     /// @param metaData Metadata of the file being downloaded
     void init(const MetaDataFile &metaData);
 
     string fileName; ///< Name of the file being downloaded
+    string creator; ///< Name of the creator of file being downloaded
     HashResult fileHash{}; ///< Hash of the complete file
     bool completed{}; ///< Indicates if download is complete
     uint64_t totalDownloadBytes{}; ///< Total bytes downloaded so far
@@ -142,7 +146,7 @@ private:
     time_t startTime{}; ///< Time when download started
     time_t lastTime{}; ///< Time of last download activity
     vector<PieceProgress> pieces; ///< List of all pieces in the download
-    std::mutex mut;
+    mutable std::mutex mut;
 };
 
 #endif
