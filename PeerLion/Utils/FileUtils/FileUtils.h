@@ -55,7 +55,8 @@ namespace Utils {
         /// @param size Size of the piece
         /// @param hash Expected hash value
         /// @return true if piece matches hash, false otherwise
-        static bool verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size, const HashResult &hash);
+        static bool verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size,
+                                const HashResult &hash);
 
         static bool fileExists(const std::string &filePath);
 
