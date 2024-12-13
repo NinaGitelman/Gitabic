@@ -1,5 +1,7 @@
 #include "FileUtils.h"
 
+#include "../ThreadSafeCout.h"
+
 using namespace Utils;
 
 std::vector<uint8_t> FileUtils::readFileToVector(const std::string &filePath) {
@@ -77,8 +79,8 @@ void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_
     }
 
     // Allocate a buffer to write in chunks
-    const size_t bufferSize = 4 * 1024; // 4 KB buffer
-    std::vector<char> buffer(bufferSize, '0'); // Fill buffer with zeros
+    constexpr size_t bufferSize = 4 * 1024; // 4 KB buffer
+    const std::vector<char> buffer(bufferSize, '0'); // Fill buffer with zeros
 
     uint64_t bytesWritten = 0;
     while (bytesWritten < size) {
@@ -95,8 +97,9 @@ void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_
     file.close();
 }
 
-bool FileUtils::verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size, HashResult hash) {
-    auto data = readFileChunk(filePath, offset, size);
+bool FileUtils::verifyPiece(const std::string &filePath, const uint64_t offset, const uint64_t size,
+                            const HashResult &hash) {
+    const auto data = readFileChunk(filePath, offset, size);
     return hash == SHA256::toHashSha256(data);
 }
 
@@ -104,7 +107,36 @@ bool FileUtils::fileExists(const std::string &filePath) {
     return std::filesystem::exists(filePath);
 }
 
-std::array<uint8_t, 16> Conversions::cutArray(HashResult &from) {
+bool FileUtils::dirExists(const std::string &filePath) {
+    return std::filesystem::is_directory(filePath);
+}
+
+std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName) {
+    std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;
+    std::filesystem::create_directories(hashFolder);
+
+    // Create a symbolic link with the friendly name
+    const std::filesystem::path symlink = "~/Gitabic/" + friendlyName;
+    std::filesystem::create_symlink(hashFolder, symlink);
+
+    return hashFolder;
+}
+
+vector<std::string> FileUtils::listDirectories(const std::string &path) {
+    vector<std::string> directories;
+    try {
+        for (const auto &entry: std::filesystem::directory_iterator(path)) {
+            if (entry.is_directory()) {
+                directories.push_back(entry.path().filename().string());
+            }
+        }
+    } catch (const std::filesystem::filesystem_error &e) {
+        ThreadSafeCout::cout(std::string("Error accessing directory: ") + e.what());
+    }
+    return directories;
+}
+
+std::array<uint8_t, 16> Conversions::cutArray(const HashResult &from) {
     std::array<uint8_t, 16> result{};
     memcpy(result.data(), from.data(), result.size());
     return result;
@@ -122,9 +154,9 @@ std::vector<uint8_t> Utils::Conversions::toVector(array<uint8_t, 16> aesKey) {
     return result;
 }
 
-array<uint8_t, 16> Utils::Conversions::toKey(std::vector<uint8_t> vec) {
+array<uint8_t, 16> Utils::Conversions::toKey(const std::vector<uint8_t> &vec) {
     array<uint8_t, 16> result;
-    memcpy(result.data(), vec.data(), std::min(16, (int) vec.size()));
+    memcpy(result.data(), vec.data(), std::min(16, static_cast<int>(vec.size())));
     return result;
 }
 

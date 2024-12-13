@@ -5,13 +5,11 @@
 #include "../MetaDataFile/MetaDataFile.h"
 #include "../DowndloadProgress/DownloadProgress.h"
 
-enum FileMode { Download, Seed, Hybrid };
+enum FileMode { Download, Seed, Hybrid, Default };
 
 class FileHandler {
-private:
-	string dirPath;
+	static constexpr string dirPath = "~/Gitabic/.filesFolders/";
 	string fileName;
-	MetaDataFile metaDataFile;
 	FileMode mode;
 	DownloadProgress downloadProgress;
 	size_t pieceSize;
@@ -20,6 +18,8 @@ private:
 	[[nodiscard]] size_t getOffset(uint32_t pieceIndex, uint16_t blockIndex = 0) const;
 
 public:
+	void initNew(const MetaDataFile &metaData);
+
 	[[nodiscard]] string getFileName() const {
 		return fileName;
 	}
@@ -44,7 +44,9 @@ private:
 	std::mutex mut;
 
 public:
-	FileHandler(const string &path, string name, FileMode mode);
+	explicit FileHandler(string hash);
+
+	explicit FileHandler(const MetaDataFile &metaData);
 
 	~FileHandler() = default;
 
@@ -75,6 +77,8 @@ public:
 	 * @return The loaded piece data
 	 */
 	[[nodiscard]] vector<uint8_t> loadBlock(uint32_t pieceIndex, uint32_t blockIndex) const;
+
+	static vector<FileHandler> getAllHandlers();
 };
 
 

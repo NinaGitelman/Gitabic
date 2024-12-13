@@ -1,7 +1,12 @@
 #include "DownloadProgress.h"
 
-DownloadProgress::DownloadProgress(MetaDataFile &metaData) {
+DownloadProgress::DownloadProgress(const MetaDataFile &metaData) {
     init(metaData);
+}
+
+DownloadProgress &DownloadProgress::operator=(const MetaDataFile &meta) {
+    init(meta);
+    return *this;
 }
 
 DownloadProgress::DownloadProgress(const vector<uint8_t> &data) {
@@ -157,8 +162,8 @@ vector<PieceProgress> DownloadProgress::getBlocksStatused(DownloadStatus status)
 PieceProgress DownloadProgress::getPiece(const uint32_t index) const {
     std::lock_guard<mutex> guard(mut);
 
-    if (piece >= pieces.size())
-        throw std::out_of_range("No piece #" + piece);
+    if (index >= pieces.size())
+        throw std::out_of_range("No piece #" + index);
     return pieces[index];
 }
 
