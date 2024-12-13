@@ -84,9 +84,45 @@ struct PieceProgress {
 /// @brief Manages and tracks the progress of a file download
 class DownloadProgress {
 public:
+    [[nodiscard]] const string &get_file_name() const {
+        return fileName;
+    }
+
+    [[nodiscard]] const string &get_creator() const {
+        return creator;
+    }
+
+    [[nodiscard]] const HashResult &get_file_hash() const {
+        return fileHash;
+    }
+
+    [[nodiscard]] bool is_completed() const {
+        return completed;
+    }
+
+    [[nodiscard]] uint64_t get_total_download_bytes() const {
+        return totalDownloadBytes;
+    }
+
+    [[nodiscard]] uint64_t get_file_size() const {
+        return fileSize;
+    }
+
+    [[nodiscard]] time_t get_start_time() const {
+        return startTime;
+    }
+
+    [[nodiscard]] time_t get_last_time() const {
+        return lastTime;
+    }
+
     /// @brief Constructs a new download progress tracker from metadata
     /// @param metaData Metadata of the file being downloaded
-    explicit DownloadProgress(MetaDataFile &metaData);
+    explicit DownloadProgress(const MetaDataFile &metaData);
+
+    DownloadProgress() = default;
+
+    DownloadProgress &operator=(const MetaDataFile &meta);
 
     /// @brief Constructs a download progress tracker from serialized data
     /// @param data Vector containing serialized download progress data

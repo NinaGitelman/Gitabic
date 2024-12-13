@@ -55,9 +55,15 @@ namespace Utils {
         /// @param size Size of the piece
         /// @param hash Expected hash value
         /// @return true if piece matches hash, false otherwise
-        static bool verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size, HashResult hash);
+        static bool verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size, const HashResult &hash);
 
         static bool fileExists(const std::string &filePath);
+
+        static bool dirExists(const std::string &filePath);
+
+        static std::filesystem::path createDownloadFolder(const std::string &fileHash, const std::string &friendlyName);
+
+        static vector<std::string> listDirectories(const std::string &path);
     };
 
     /// @brief Class handling file splitting logic
@@ -79,7 +85,7 @@ namespace Utils {
         /// @brief Extracts first 16 bytes from a hash
         /// @param from Source hash
         /// @return Array containing first 16 bytes
-        static std::array<uint8_t, 16> cutArray(HashResult &from);
+        static std::array<uint8_t, 16> cutArray(const HashResult &from);
 
         /// @brief Converts a hash to a byte vector
         /// @param hash Hash to convert
@@ -94,6 +100,6 @@ namespace Utils {
         /// @brief Converts a vector to a 16-byte array
         /// @param vec Vector to convert
         /// @return 16-byte array (truncated if vector is larger)
-        static array<uint8_t, 16> toKey(std::vector<uint8_t> vec);
+        static array<uint8_t, 16> toKey(const std::vector<uint8_t> &vec);
     };
 }

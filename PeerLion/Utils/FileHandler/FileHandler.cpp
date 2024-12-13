@@ -4,22 +4,47 @@
 
 #include "FileHandler.h"
 
-#include <utility>
+
+#include "../ThreadSafeCout.h"
 #include "../FileUtils/FileUtils.h"
+
+using Utils::FileUtils;
+using Utils::FileSplitter;
 
 size_t FileHandler::getOffset(const uint32_t pieceIndex, const uint16_t blockIndex) const {
     return pieceSize * pieceIndex + blockIndex * Utils::FileSplitter::BLOCK_SIZE;
 }
 
-FileHandler::FileHandler(const string &path, string name, const FileMode mode)
-    : dirPath(path),
-      fileName(std::move(name)),
-      metaDataFile(path + "/" + fileName + ".gitabic"),
-      mode(mode),
-      downloadProgress(Utils::FileUtils::fileExists(path + "/" + fileName + ".prog")
-                           ? DownloadProgress(Utils::FileUtils::readFileToVector(path + "/" + fileName + ".prog"))
-                           : DownloadProgress(metaDataFile)),
-      pieceSize(Utils::FileSplitter::pieceSize(metaDataFile.getFileSize())) {
+void FileHandler::initNew(const MetaDataFile &metaData) {
+    const auto fileHash = string(metaData.getFileHash().begin(), metaData.getFileHash().end());
+    auto path = FileUtils::createDownloadFolder(fileHash,
+                                                metaData.getCreator() + " - " +
+                                                std::filesystem::path(metaData.getFileName()).stem().string().append(
+                                                    "/"));
+    try {
+        FileUtils::createFilePlaceHolder(path.append(metaData.getFileName()), metaData.getFileSize());
+    } catch ([[maybe_unused]] const std::exception &e) {
+        throw std::runtime_error("Not enough storage space to create file");
+    }
+    downloadProgress = metaData;
+    FileUtils::writeVectorToFile(downloadProgress.serialize(),
+                                 path.append(
+                                     "." + string(metaData.getFileHash().begin(), metaData.getFileHash().end()) +
+                                     ".gitabic"));
+}
+
+FileHandler::FileHandler(string hash)
+    : mode(FileMode::Default),
+      downloadProgress(DownloadProgress(FileUtils::readFileToVector(dirPath + "." + fileName + ".gitabic"))),
+      pieceSize(FileSplitter::pieceSize(downloadProgress.get_file_size())) {
+    fileName = downloadProgress.get_file_name();
+}
+
+FileHandler::FileHandler(const MetaDataFile &metaData) {
+    initNew(metaData);
+    this->mode = FileMode::Default;
+    fileName = downloadProgress.get_file_name();
+    pieceSize = FileSplitter::pieceSize(downloadProgress.get_file_size());
 }
 
 void FileHandler::savePiece(const uint32_t pieceIndex, const vector<uint8_t> &pieceData) {
@@ -43,7 +68,7 @@ void FileHandler::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex
     }
 }
 
-vector<uint8_t> FileHandler::loadPiece(const uint32_t pieceIndex) const{
+vector<uint8_t> FileHandler::loadPiece(const uint32_t pieceIndex) const {
     std::lock_guard<std::mutex> lock(mutex_);
     return Utils::FileUtils::readFileChunk(dirPath + "/" + fileName, getOffset(pieceIndex), pieceSize);
 }
@@ -52,4 +77,12 @@ vector<uint8_t> FileHandler::loadBlock(const uint32_t pieceIndex, const uint32_t
     std::lock_guard<std::mutex> lock(mutex_);
     return Utils::FileUtils::readFileChunk(dirPath + "/" + fileName, getOffset(pieceIndex, blockIndex),
                                            Utils::FileSplitter::BLOCK_SIZE);
+}
+
+vector<FileHandler> FileHandler::getAllHandlers() {
+    vector<FileHandler> handlers;
+    for (const auto &dir: FileUtils::listDirectories(dirPath)) {
+        handlers.push_back(FileHandler(dir));
+    }
+    return handlers;
 }
