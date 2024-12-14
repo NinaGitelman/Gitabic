@@ -22,11 +22,10 @@ class MultiThreadedServer
 
 public:
     // friend class PacketHandler;
-
     MultiThreadedServer() : _running(true)
     {
         messageHandler = &MessageHandler::getInstance();
-    };
+    }
 
     ~MultiThreadedServer();
 
@@ -60,6 +59,8 @@ private:
     // helper only for debugging...
     void printDataAsASCII(vector<uint8_t> data);
 
+    // closes socket anf unbinds port
+    void cleanupSocket();
     ID generateRandomId();
     MessageHandler *messageHandler;
 };
