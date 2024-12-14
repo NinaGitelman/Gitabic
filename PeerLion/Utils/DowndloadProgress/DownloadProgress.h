@@ -120,9 +120,16 @@ public:
     /// @param metaData Metadata of the file being downloaded
     explicit DownloadProgress(const MetaDataFile &metaData);
 
+    DownloadProgress(const DownloadProgress &downloadProgress);
+
     DownloadProgress() = default;
 
     DownloadProgress &operator=(const MetaDataFile &meta);
+
+    DownloadProgress &operator=(DownloadProgress other);
+
+    // Swap function
+    friend void swap(DownloadProgress &first, DownloadProgress &second) noexcept;
 
     /// @brief Constructs a download progress tracker from serialized data
     /// @param data Vector containing serialized download progress data

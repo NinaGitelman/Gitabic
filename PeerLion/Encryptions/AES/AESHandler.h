@@ -146,7 +146,7 @@ private:
     Matrix4x4 &convertToMat(uint8_t *dataStart);
 
     /// @brief Expanded round keys.
-    std::array<std::array<uint8_t, BLOCK>, R + 1> keys;
+    std::array<AESKey, R + 1> keys;
 
     /// Lookup table for x • 2 in GF(2^8)
     static const array<uint8_t, 256> mul2;

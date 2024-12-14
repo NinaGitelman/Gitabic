@@ -4,9 +4,39 @@ DownloadProgress::DownloadProgress(const MetaDataFile &metaData) {
     init(metaData);
 }
 
+DownloadProgress::DownloadProgress(const DownloadProgress &downloadProgress) : fileName(downloadProgress.fileName),
+                                                                               creator(downloadProgress.creator),
+                                                                               fileHash(downloadProgress.fileHash),
+                                                                               completed(downloadProgress.completed),
+                                                                               totalDownloadBytes(
+                                                                                   downloadProgress.totalDownloadBytes),
+                                                                               fileSize(downloadProgress.fileSize),
+                                                                               startTime(downloadProgress.startTime),
+                                                                               lastTime(downloadProgress.lastTime),
+                                                                               pieces(downloadProgress.pieces) {
+}
+
 DownloadProgress &DownloadProgress::operator=(const MetaDataFile &meta) {
     init(meta);
     return *this;
+}
+
+DownloadProgress &DownloadProgress::operator=(DownloadProgress other) {
+    swap(*this, other); // Reuse the swap function
+    return *this;
+}
+
+void swap(DownloadProgress &first, DownloadProgress &second) noexcept {
+    using std::swap;
+    swap(first.fileName, second.fileName);
+    swap(first.creator, second.creator);
+    swap(first.fileHash, second.fileHash);
+    swap(first.completed, second.completed);
+    swap(first.totalDownloadBytes, second.totalDownloadBytes);
+    swap(first.fileSize, second.fileSize);
+    swap(first.startTime, second.startTime);
+    swap(first.lastTime, second.lastTime);
+    swap(first.pieces, second.pieces);
 }
 
 DownloadProgress::DownloadProgress(const vector<uint8_t> &data) {

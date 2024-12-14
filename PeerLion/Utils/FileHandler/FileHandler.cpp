@@ -11,8 +11,53 @@
 using Utils::FileUtils;
 using Utils::FileSplitter;
 
+const std::string FileHandler::dirPath = FileHandler::getExpandedPath("~/Gitabic/.filesFolders/");
+
+// Swap function definition
+void swap(FileHandler &first, FileHandler &second) noexcept {
+    using std::swap;
+    swap(first.fileName, second.fileName);
+    swap(first.mode, second.mode);
+    swap(first.downloadProgress, second.downloadProgress);
+    swap(first.pieceSize, second.pieceSize);
+    // `std::mutex` is not swappable, so it remains as is for both objects
+}
+
+// Copy constructor
+FileHandler::FileHandler(const FileHandler &other)
+    : fileName(other.fileName),
+      mode(other.mode),
+      downloadProgress(other.downloadProgress),
+      pieceSize(other.pieceSize) {
+    // Note: `std::mutex` is not copied
+}
+
+// Move constructor
+FileHandler::FileHandler(FileHandler &&other) noexcept
+    : fileName(std::move(other.fileName)),
+      mode(other.mode),
+      downloadProgress(std::move(other.downloadProgress)),
+      pieceSize(other.pieceSize) {
+    // `std::mutex` remains default-initialized in the moved-from object
+}
+
+// Assignment operator (copy-and-swap)
+FileHandler &FileHandler::operator=(FileHandler other) {
+    swap(*this, other); // Reuse the swap function
+    return *this;
+}
+
 size_t FileHandler::getOffset(const uint32_t pieceIndex, const uint16_t blockIndex) const {
     return pieceSize * pieceIndex + blockIndex * Utils::FileSplitter::BLOCK_SIZE;
+}
+
+std::string FileHandler::getExpandedPath(const std::string &path) {
+    if (!path.empty() && path[0] == '~') {
+        if (const char *home = std::getenv("HOME")) {
+            return std::string(home) + path.substr(1); // Replace '~' with HOME
+        }
+    }
+    return path; // Return unchanged if no '~' at the beginning
 }
 
 void FileHandler::initNew(const MetaDataFile &metaData) {
@@ -33,7 +78,7 @@ void FileHandler::initNew(const MetaDataFile &metaData) {
                                      ".gitabic"));
 }
 
-FileHandler::FileHandler(string hash)
+FileHandler::FileHandler(const string &hash)
     : mode(FileMode::Default),
       downloadProgress(DownloadProgress(FileUtils::readFileToVector(dirPath + "." + fileName + ".gitabic"))),
       pieceSize(FileSplitter::pieceSize(downloadProgress.get_file_size())) {
@@ -82,7 +127,7 @@ vector<uint8_t> FileHandler::loadBlock(const uint32_t pieceIndex, const uint32_t
 vector<FileHandler> FileHandler::getAllHandlers() {
     vector<FileHandler> handlers;
     for (const auto &dir: FileUtils::listDirectories(dirPath)) {
-        handlers.push_back(FileHandler(dir));
+        handlers.emplace_back(dir);
     }
     return handlers;
 }
