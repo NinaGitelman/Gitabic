@@ -8,7 +8,7 @@
 enum FileMode { Download, Seed, Hybrid, Default };
 
 class FileHandler {
-	static constexpr string dirPath = "~/Gitabic/.filesFolders/";
+	static const std::string dirPath;
 	string fileName;
 	FileMode mode;
 	DownloadProgress downloadProgress;
@@ -17,15 +17,21 @@ class FileHandler {
 
 	[[nodiscard]] size_t getOffset(uint32_t pieceIndex, uint16_t blockIndex = 0) const;
 
+	static std::string getExpandedPath(const std::string &path);
+
 public:
+	// Rule of five
+	FileHandler(const FileHandler &other); // Copy constructor
+	FileHandler(FileHandler &&other) noexcept; // Move constructor
+	FileHandler &operator=(FileHandler other); // Unified assignment operator
+	~FileHandler() = default; // Destructor
+	// Swap function
+	friend void swap(FileHandler &first, FileHandler &second) noexcept;
+
 	void initNew(const MetaDataFile &metaData);
 
 	[[nodiscard]] string getFileName() const {
 		return fileName;
-	}
-
-	[[nodiscard]] MetaDataFile &getMetaData() {
-		return metaDataFile;
 	}
 
 	[[nodiscard]] FileMode getMode() const {
@@ -40,15 +46,9 @@ public:
 		this->mode = mode;
 	}
 
-private:
-	std::mutex mut;
-
-public:
-	explicit FileHandler(string hash);
+	explicit FileHandler(const string &hash);
 
 	explicit FileHandler(const MetaDataFile &metaData);
-
-	~FileHandler() = default;
 
 	/**
 	 *

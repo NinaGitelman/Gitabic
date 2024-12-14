@@ -13,24 +13,20 @@
 #include "Utils/VectorUint8Utils.h"
 
 /// @brief  Heper function to pritn the DATA
-void printDataAsASCII(vector<uint8_t> data)
-{
-  for (const auto &byte : data)
-  {
-    if (std::isprint(byte))
-    {
+void printDataAsASCII(vector<uint8_t> data) {
+  for (const auto &byte: data) {
+    if (std::isprint(byte)) {
       std::cout << static_cast<char>(byte); // Printable characters
-    }
-    else
-    {
+    } else {
       std::cout << '.'; // Replace non-printable characters with '.'
     }
   }
   std::cout << std::endl;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+  auto a = SHA256::toHashSha256(vector<uint8_t>{});
+  SHA256::printHashAsString(a);
   //   int connect = 1;
   //  // First handler negotiation
   //   ICEConnection handler1(connect);
@@ -54,21 +50,17 @@ int main(int argc, char *argv[])
   Address serverAdd = Address("0.0.0.0", 4787);
   TCPSocket socket = TCPSocket(serverAdd);
 
-  ServerResponseNewId newId(socket.receive([](uint8_t code)
-                                           { return code == ServerResponseCodes::NewID; }));
+  ServerResponseNewId newId(socket.receive([](uint8_t code) { return code == ServerResponseCodes::NewID; }));
 
   ID id = newId.id;
 
   if (argc >= 2) // if there is cmd arg then this will start the connection
   {
-
-    ServerResponseNewId otherNewId(socket.receive([](uint8_t code)
-                                                  { return code == ServerResponseCodes::NewID; }));
+    ServerResponseNewId otherNewId(socket.receive([](uint8_t code) { return code == ServerResponseCodes::NewID; }));
 
     ID otherId = otherNewId.id;
 
-    std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
-    {
+    std::function<bool(uint8_t)> isRelevant = [](uint8_t code) {
       return code == ServerResponseCodes::UserAuthorizedICEData;
     };
 
@@ -92,36 +84,28 @@ int main(int argc, char *argv[])
     printDataAsASCII(response.iceCandidateInfo);
     std::cout << "\n\n";
 
-    try
-    {
-      std::thread peerThread([&handler1, &response]()
-                             { handler1.connectToPeer(response.iceCandidateInfo); });
+    try {
+      std::thread peerThread([&handler1, &response]() { handler1.connectToPeer(response.iceCandidateInfo); });
       peerThread.detach();
       sleep(2);
-      while (handler1.receivedMessagesCount() > 0)
-      {
+      while (handler1.receivedMessagesCount() > 0) {
         MessageBaseReceived newMessage = handler1.receiveMessage();
-        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
-        {
+        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage) {
           DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
           recvMessage.printDataAsASCII();
         }
       }
-    }
-    catch (const std::exception &e)
-    {
+    } catch (const std::exception &e) {
       std::cout << e.what() << " in main.cpp";
     }
-  }
-  else
-  {
-
+  } else {
     std::cout << "This peer is receiveing the connection request\n\n";
 
     connect = 0;
 
-    ServerRequestAuthorizeICEConnection authIceReq(socket.receive([](uint8_t code)
-                                                                  { return code == ServerRequestCodes::AuthorizeICEConnection; }));
+    ServerRequestAuthorizeICEConnection authIceReq(socket.receive([](uint8_t code) {
+      return code == ServerRequestCodes::AuthorizeICEConnection;
+    }));
 
     std::cout << "Received connection request from another peer: \n";
     printDataAsASCII(authIceReq.iceCandidateInfo);
@@ -134,25 +118,19 @@ int main(int argc, char *argv[])
 
     ClientResponseAuthorizedICEConnection connectionResponse(myIceData, authIceReq.requestId);
     socket.sendRequest(connectionResponse);
-    try
-    {
-      std::thread peerThread([&handler1, &authIceReq]()
-                             { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
+    try {
+      std::thread peerThread([&handler1, &authIceReq]() { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
       peerThread.detach();
       sleep(2);
 
-      while (handler1.receivedMessagesCount() > 0)
-      {
+      while (handler1.receivedMessagesCount() > 0) {
         MessageBaseReceived newMessage = handler1.receiveMessage();
-        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
-        {
+        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage) {
           DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
           recvMessage.printDataAsASCII();
         }
       }
-    }
-    catch (const std::exception &e)
-    {
+    } catch (const std::exception &e) {
       std::cout << e.what() << " in main.cpp";
     }
   }
