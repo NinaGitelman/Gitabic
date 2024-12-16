@@ -81,7 +81,7 @@ private:
 
 
     mutex _mutexMessagesToSend; // mutex for the messages to send queue
-    queue<MessageBaseToSend> _messagesToSend; // queue for the messages to send
+    queue<MessageBaseToSend*> _messagesToSend; // queue for the messages to send
     condition_variable _cvHasNewMessageToSend;
     std::thread _messagesSenderThread;
 
@@ -181,7 +181,7 @@ public:
     /// @brief Function to send a message to the connected peer
     /// @message the message to send
     /// in practice, this function will just add to the messages queue and its the sendMessagesThread that will manage the messages sending...
-    void sendMessage(MessageBaseToSend message);
+    void sendMessage(MessageBaseToSend* message);
 
     /// @brief Function that will be send the messages
     /// @param connection the ICE connection object that it will send from

@@ -97,14 +97,25 @@ int main(int argc, char *argv[])
       std::thread peerThread([&handler1, &response]()
                              { handler1.connectToPeer(response.iceCandidateInfo); });
       peerThread.detach();
-      sleep(2);
-      while (handler1.receivedMessagesCount() > 0)
+
+      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world from terminal");
+      DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend("Hello world from terminal");
+      DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend("Hello world from terminal");
+      handler1.sendMessage(&debuggingStringMessage);
+      handler1.sendMessage(&debuggingStringMessage2);
+      handler1.sendMessage(&debuggingStringMessage3);
+
+      while (true)
       {
-        MessageBaseReceived newMessage = handler1.receiveMessage();
-        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
+        sleep(1);
+        while (handler1.receivedMessagesCount() > 0)
         {
-          DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
-          recvMessage.printDataAsASCII();
+           MessageBaseReceived newMessage = handler1.receiveMessage();
+          if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
+          {
+            DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
+            recvMessage.printDataAsASCII();
+          }
         }
       }
     }
@@ -140,19 +151,26 @@ int main(int argc, char *argv[])
                              { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
       peerThread.detach();
 
-      sleep(2);
-      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world");
-      handler1.sendMessage(debuggingStringMessage);
-      //handler1.sendMessage(debuggingStringMessage);
-      handler1.sendMessage(debuggingStringMessage);
+     /// TODO the problem is that it isnt sending the message content right...
+      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world from clion");
+      DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend("Hello world from clion");
+      DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend("Hello world from clion");
+      handler1.sendMessage(&debuggingStringMessage);
+      handler1.sendMessage(&debuggingStringMessage2);
+      handler1.sendMessage(&debuggingStringMessage3);
      // handler1.sendMessage(debuggingStringMessage);
-      while (handler1.receivedMessagesCount() > 0)
+      while (true)
       {
-        MessageBaseReceived newMessage = handler1.receiveMessage();
-        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
+        sleep(1);
+        while (handler1.receivedMessagesCount() > 0)
         {
-          DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
-          recvMessage.printDataAsASCII();
+          MessageBaseReceived newMessage = handler1.receiveMessage();
+          if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
+          {
+            DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
+            recvMessage.printDataAsASCII();
+
+          }
         }
       }
     }
