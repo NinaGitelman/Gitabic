@@ -12,6 +12,7 @@ ICEConnection::ICEConnection(const bool isControlling)
     _context = g_main_context_new();
 
     // Create loop with our context (not NULL)
+    // Create loop with our context (not NULL)
     _gloop = g_main_loop_new(_context, FALSE);
 
     _agent = nice_agent_new(_context, NICE_COMPATIBILITY_RFC5245);
@@ -28,7 +29,7 @@ ICEConnection::ICEConnection(const bool isControlling)
         // Enable verbose logging
         g_object_set(_agent, "stun-max-retransmissions", 3, NULL);
         g_object_set(_agent, "stun-initial-timeout", 500, NULL);
-        nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 1024, 65535);
+        nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 10244, 65535);
         _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
 
         if (_streamId == 0)
@@ -46,6 +47,7 @@ ICEConnection::ICEConnection(const bool isControlling)
 
 ICEConnection::~ICEConnection()
 {
+
     if (_gloop)
         g_main_loop_unref(_gloop);
     if (_context)
@@ -101,8 +103,9 @@ void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint c
     {
         if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr) // if the connection finished
         {
-
+            std::cout << "quit";
             iceConnection->_isConnected.store(false);
+
             g_main_loop_quit(iceConnection->_gloop);
         }
         else
@@ -435,6 +438,7 @@ end:
 */
 void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint streamId, guint componentId, guint state, gpointer data)
 {
+    std::cout << "state changed: " << state << "\n\n";
     ICEConnection* iceConnection = static_cast<ICEConnection*>(data);
 
     if (iceConnection)
@@ -464,6 +468,8 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint strea
                     iceConnection->_messagesSenderThread = std::thread(&ICEConnection::messageSendingThread, iceConnection, iceConnection);
                     iceConnection->_messagesSenderThread.detach();
 
+
+
                 }
                 catch (std::exception &e)
                 {
@@ -492,6 +498,12 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint strea
             }
             throw std::runtime_error("Negotiation failed");
         }
+        else if (state == NICE_COMPONENT_STATE_DISCONNECTED)
+        {
+            iceConnection->_isConnected.store(false);
+            std::cout << "Disconnected state" << std::endl;
+        }
+
     }
     else
     {
@@ -521,7 +533,7 @@ void ICEConnection::sendMessage(MessageBaseToSend* message)
         _messagesToSend.push(message);
     }
 
-    // Notify outside of the locked section
+    // notify
     _cvHasNewMessageToSend.notify_one();
 }
 
@@ -530,13 +542,18 @@ void ICEConnection::messageSendingThread(ICEConnection *connection)
 
     while (true)
     {
-        std::unique_lock<mutex> lock(connection->_mutexMessagesToSend);
 
+        std::unique_lock<mutex> lock(connection->_mutexMessagesToSend); // lock messages to send mutex
+
+        // the mutex will only be locked after the wait...
+        // condition var that will wait for the connection to end or for a new message to send
         connection->_cvHasNewMessageToSend.wait(lock, [ connection]
         {
            return !connection->_isConnected.load() || !connection->_messagesToSend.empty();
         });
 
+
+        // if ended the connection - break
         if (!connection->_isConnected.load())
         {
             break;
@@ -581,98 +598,4 @@ void ICEConnection::messageSendingThread(ICEConnection *connection)
 
     }
 
-    //
-    // while (true)
-    // {
-    //     std::cout<< "Sending message..." << std::endl;
-    //     std::unique_lock<std::mutex> lock(connection->_mutexMessagesToSend);
-    //
-    //     if (!connection->_messagesToSend.empty())
-    //     {
-    //         while (!connection->_messagesToSend.empty())
-    //         {
-    //             // Serialize message
-    //             MessageBaseToSend message = connection->_messagesToSend.front();
-    //             connection->_messagesToSend.pop();
-    //             std::vector<uint8_t> messageInVector = message.serialize();
-    //
-    //             // Send the message
-    //             gint result = nice_agent_send(
-    //                 connection->_agent,
-    //                 connection->_streamId,
-    //                 COMPONENT_ID_RTP,  // Use defined constant
-    //                 messageInVector.size(),
-    //                 reinterpret_cast<const gchar*>(messageInVector.data())
-    //             );
-    //
-    //             lock.unlock();
-    //
-    //
-    //             // Check send result
-    //             if (result < 0)
-    //             {
-    //                 g_critical("Failed to send message via nice_agent_send");
-    //             }
-    //             lock.unlock();
-    //         }
-    //         continue;
-    //     }
-    //
-    //
-    //
-    //
-    //         // Wait for messages or connection status
-    //         connection->_cvHasNewMessageToSend.wait(lock, [connection] {
-    //             return !connection->_messagesToSend.empty() || ! connection->_isConnected;
-    //         });
-    //
-    //         if (!connection->_isConnected)
-    //         {
-    //             continue;
-    //         }
-    //         else if (connection->_messagesToSend.empty())
-    //         {
-    //             continue;
-    //         }
-    //         else // will ge to here if there is a new message
-    //         {
-    //             MessageBaseToSend message = connection->_messagesToSend.front();
-    //             connection->_messagesToSend.pop();
-    //
-    //
-    //             std::vector<uint8_t> messageInVector = message.serialize();
-    //
-    //             try
-    //             {
-    //                 // Serialize message
-    //                 std::vector<uint8_t> messageInVector = message.serialize();
-    //
-    //                 // Send the message
-    //                 gint result = nice_agent_send(
-    //                     connection->_agent,
-    //                     connection->_streamId,
-    //                     COMPONENT_ID_RTP,  // Use defined constant
-    //                     messageInVector.size(),
-    //                     reinterpret_cast<const gchar*>(messageInVector.data())
-    //                 );
-    //
-    //                 lock.unlock();
-    //
-    //
-    //                 // Check send result
-    //                 if (result < 0)
-    //                 {
-    //                     g_critical("Failed to send message via nice_agent_send");
-    //                 }
-    //             }
-    //             catch (const std::exception& e)
-    //             {
-    //                 g_critical("Exception in message sending: %s", e.what());
-    //             }
-    //         }
-    //
-    //
-    //
-    // }
-    // g_message("Messge sending thread quit");
 }
