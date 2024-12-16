@@ -12,6 +12,7 @@
 #include <string>
 #include <thread>
 #include <map>
+#include <atomic>
 #include "../Utils/ThreadSafeCout.h"
 #include "../Utils/VectorUint8Utils.h"
 #include "../NetworkUnit/ServerComm/Messages.h"
@@ -36,6 +37,7 @@ using std::map;
 using std::mutex;
 using std::queue;
 using std::vector;
+using std::atomic;
 
 extern "C"
 {
@@ -65,14 +67,19 @@ private:
     gboolean _isControlling;          // if this conneciton is controllling or being controlled
     GMainContext *_context;           // this connections context
     GMainLoop *_gloop;                // a blocking loop only for this connection
-    guint _streamId;                  // Add this
+    guint _streamId; // the nice stream id of this connection
+
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
+
+    atomic<bool> _isConnected{false};
 
     mutex _mutexReceivedMessages;                 // mutex to lock the received messages queue
     queue<MessageBaseReceived> _receivedMessages; // queue where all received messages will be
 
-    mutex _mutexIsConnectedBool; // mutex for the is connected bool
-    bool _isConnected;           // bool to set if its conencted and receiveing messages
+
+    mutex _mutexMessagesToSend; // mutex for the messages to send queue
+    queue<MessageBaseToSend> _messagesToSend; // queue for the messages to send
+
 
     // turn constants
     const gchar *turnUsername = TURN_USERNAME;
@@ -81,8 +88,7 @@ private:
     /// @brief Helper function to get the candidate data and put it into the given buffer
     /// @param localDataBuffer The buffer in which the localData will be put (empty null buffer, malloc will be dealt on this function)
     /// @return If it gathered the data right
-    int
-    getCandidateData(char **localDataBuffer);
+    int getCandidateData(char **localDataBuffer);
 
     /// @brief Callbis ack to handle if the candidate gathering is done
     static void callbackCandidateGatheringDone(NiceAgent *agent, guint streamId, gpointer userData);
@@ -106,9 +112,16 @@ private:
     static void callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data);
 
     /// @brief Function to transform received data as a vector into a MessageBaseReceived object
-    /// @param messageData the message data
+    /// @param buf the message data
     /// @param len the message data length
     static MessageBaseReceived deserializeMessage(gchar *buf, guint len);
+
+    /// @brief Function that will be send the messages
+    /// @param connection the ICE connection object that it will send from
+    /// In practice, it keeps checking if there are new messages on the send messages queue and send them if so
+    void messageSendingThread(ICEConnection *connection);
+
+
 
 public:
     // constexpr means constant expression
@@ -135,9 +148,20 @@ public:
     /// @return if it was successful or not
     /// it is a thread so it gotta be called as a thread (because of main gloop)
     /*
+     *
+     * How to call this function:
        std::thread peerThread([&handler1, &authIceReq]()
                              { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
       peerThread.detach();
+    */
+    /// @brief Fucntion to be called to connect to a peer
+    /// @remoteData the remote data received from the peer that wants to connect
+    /// show be called like this:
+    /*
+    *
+     *  std::thread peerThread([&handler1, &authIceReq]()
+                        { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
+    *  peerThread.detach();
     */
     int connectToPeer(const vector<uint8_t> &remoteData);
 
@@ -152,4 +176,11 @@ public:
     /// @brief Function gets the amount of messages in the received messages queue
     /// @return amount of received messages
     int receivedMessagesCount();
-};
+
+
+    /// @brief Function to send a message to the connected peer
+    /// @message the message to send
+    /// in practice, this function will just add to the messages queue and its the sendMessagesThread that will manage the messages sending...
+    void sendMessage(MessageBaseToSend message);
+
+    };
