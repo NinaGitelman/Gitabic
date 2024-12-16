@@ -139,8 +139,13 @@ int main(int argc, char *argv[])
       std::thread peerThread([&handler1, &authIceReq]()
                              { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
       peerThread.detach();
-      sleep(2);
 
+      sleep(2);
+      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world");
+      handler1.sendMessage(debuggingStringMessage);
+      //handler1.sendMessage(debuggingStringMessage);
+      handler1.sendMessage(debuggingStringMessage);
+     // handler1.sendMessage(debuggingStringMessage);
       while (handler1.receivedMessagesCount() > 0)
       {
         MessageBaseReceived newMessage = handler1.receiveMessage();

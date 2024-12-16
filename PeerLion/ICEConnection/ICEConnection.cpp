@@ -430,10 +430,10 @@ end:
 // check if the negotiation is complete and handle it
 // This function also gets the input to send to remote and calls another function to handle it
 */
-void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint streamId, guint componentId, guint state,
-                                                  gpointer data)
+void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint streamId, guint componentId, guint state, gpointer data)
 {
     ICEConnection* iceConnection = static_cast<ICEConnection*>(data);
+
     if (iceConnection)
     {
         if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
@@ -455,19 +455,30 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint strea
                 // set connection as connected
                 iceConnection->_isConnected.store(true);
 
+                try
+                {
+                    // // start the messages sending thread;
+                    iceConnection->_messagesSenderThread = std::thread(&ICEConnection::messageSendingThread, iceConnection, iceConnection);
+                    iceConnection->_messagesSenderThread.detach();
+
+                }
+                catch (std::exception &e)
+                {
+                    std::cout << "Exception: " << e.what() << std::endl;
+                }
                 // TODO this is temporary sending messages hardcoded
                 DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world");
-                std::vector<uint8_t> messageInVector = debuggingStringMessage.serialize();
-
-                // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
+                 std::vector<uint8_t> messageInVector = debuggingStringMessage.serialize();
+                //
+                // // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
                 nice_agent_send(_agent, streamId, 1, messageInVector.size(),
-                                reinterpret_cast<const gchar*>(messageInVector.data()));
-                nice_agent_send(_agent, streamId, 1, messageInVector.size(),
-                                reinterpret_cast<const gchar*>(messageInVector.data()));
-                nice_agent_send(_agent, streamId, 1, messageInVector.size(),
-                                reinterpret_cast<const gchar*>(messageInVector.data()));
-                nice_agent_send(_agent, streamId, 1, messageInVector.size(),
-                                reinterpret_cast<const gchar*>(messageInVector.data()));
+                                 reinterpret_cast<const gchar*>(messageInVector.data()));
+                // nice_agent_send(_agent, streamId, 1, messageInVector.size(),
+                //                 reinterpret_cast<const gchar*>(messageInVector.data()));
+                // nice_agent_send(_agent, streamId, 1, messageInVector.size(),
+                //                 reinterpret_cast<const gchar*>(messageInVector.data()));
+                // nice_agent_send(_agent, streamId, 1, messageInVector.size(),
+                //                 reinterpret_cast<const gchar*>(messageInVector.data()));
             }
         }
         else if (state == NICE_COMPONENT_STATE_FAILED)
@@ -490,4 +501,103 @@ void ICEConnection::sendMessage(MessageBaseToSend message)
     std::unique_lock<mutex> lock(_mutexMessagesToSend);
     _messagesToSend.push(message);
 
+    if (_isConnected.load())
+    {
+        _cvHasNewMessageToSend.notify_one();
+
+    }
+}
+
+void ICEConnection::messageSendingThread(ICEConnection *connection)
+{
+
+    while (true)
+    {
+        std::cout<< "Sending message..." << std::endl;
+        std::unique_lock<std::mutex> lock(connection->_mutexMessagesToSend);
+
+        if (!connection->_messagesToSend.empty())
+        {
+            while (!connection->_messagesToSend.empty())
+            {
+                // Serialize message
+                MessageBaseToSend message = connection->_messagesToSend.front();
+                connection->_messagesToSend.pop();
+
+                std::vector<uint8_t> messageInVector = message.serialize();
+
+                // Send the message
+                gint result = nice_agent_send(
+                    connection->_agent,
+                    connection->_streamId,
+                    COMPONENT_ID_RTP,  // Use defined constant
+                    messageInVector.size(),
+                    reinterpret_cast<const gchar*>(messageInVector.data())
+                );
+
+                // Check send result
+                if (result < 0)
+                {
+                    g_critical("Failed to send message via nice_agent_send");
+                }
+                lock.unlock();
+            }
+            continue;
+        }
+
+
+
+
+            // Wait for messages or connection status
+            connection->_cvHasNewMessageToSend.wait(lock, [connection] {
+                return !connection->_messagesToSend.empty() || ! connection->_isConnected;
+            });
+
+            if (!connection->_isConnected)
+            {
+                continue;
+            }
+            else if (connection->_messagesToSend.empty())
+            {
+                continue;
+            }
+            else // will ge to here if there is a new message
+            {
+                MessageBaseToSend message = connection->_messagesToSend.front();
+                connection->_messagesToSend.pop();
+
+                lock.unlock();
+
+                std::vector<uint8_t> messageInVector = message.serialize();
+
+                try
+                {
+                    // Serialize message
+                    std::vector<uint8_t> messageInVector = message.serialize();
+
+                    // Send the message
+                    gint result = nice_agent_send(
+                        connection->_agent,
+                        connection->_streamId,
+                        COMPONENT_ID_RTP,  // Use defined constant
+                        messageInVector.size(),
+                        reinterpret_cast<const gchar*>(messageInVector.data())
+                    );
+
+                    // Check send result
+                    if (result < 0)
+                    {
+                        g_critical("Failed to send message via nice_agent_send");
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    g_critical("Exception in message sending: %s", e.what());
+                }
+            }
+
+
+
+    }
+    g_message("Messge sending thread quit");
 }

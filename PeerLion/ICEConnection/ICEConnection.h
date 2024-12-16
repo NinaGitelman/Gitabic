@@ -12,6 +12,8 @@
 #include <string>
 #include <thread>
 #include <map>
+
+#include <condition_variable>
 #include <atomic>
 #include "../Utils/ThreadSafeCout.h"
 #include "../Utils/VectorUint8Utils.h"
@@ -38,6 +40,7 @@ using std::mutex;
 using std::queue;
 using std::vector;
 using std::atomic;
+using std::condition_variable;
 
 extern "C"
 {
@@ -71,7 +74,7 @@ private:
 
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
 
-    atomic<bool> _isConnected{false};
+    atomic<bool> _isConnected{false};  // bool to track if is connected to the other peer
 
     mutex _mutexReceivedMessages;                 // mutex to lock the received messages queue
     queue<MessageBaseReceived> _receivedMessages; // queue where all received messages will be
@@ -79,7 +82,8 @@ private:
 
     mutex _mutexMessagesToSend; // mutex for the messages to send queue
     queue<MessageBaseToSend> _messagesToSend; // queue for the messages to send
-
+    condition_variable _cvHasNewMessageToSend;
+    std::thread _messagesSenderThread;
 
     // turn constants
     const gchar *turnUsername = TURN_USERNAME;
@@ -116,10 +120,6 @@ private:
     /// @param len the message data length
     static MessageBaseReceived deserializeMessage(gchar *buf, guint len);
 
-    /// @brief Function that will be send the messages
-    /// @param connection the ICE connection object that it will send from
-    /// In practice, it keeps checking if there are new messages on the send messages queue and send them if so
-    void messageSendingThread(ICEConnection *connection);
 
 
 
@@ -183,4 +183,9 @@ public:
     /// in practice, this function will just add to the messages queue and its the sendMessagesThread that will manage the messages sending...
     void sendMessage(MessageBaseToSend message);
 
-    };
+    /// @brief Function that will be send the messages
+    /// @param connection the ICE connection object that it will send from
+    /// In practice, it keeps checking if there are new messages on the send messages queue and send them if so
+    void messageSendingThread(ICEConnection *connection);
+
+};
