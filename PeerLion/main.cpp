@@ -120,7 +120,6 @@ int main(int argc, char *argv[])
           }
         }
       }
-      handler1.disconnect();
     }
     catch (const std::exception &e)
     {
@@ -167,6 +166,7 @@ int main(int argc, char *argv[])
         sleep(1);
         while (handler1.receivedMessagesCount() > 0)
         {
+
           MessageBaseReceived newMessage = handler1.receiveMessage();
           if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
           {

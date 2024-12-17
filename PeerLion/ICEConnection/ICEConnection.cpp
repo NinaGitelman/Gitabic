@@ -50,30 +50,60 @@ ICEConnection::~ICEConnection()
       disconnect();
 
 }
+void ICEConnection::callbackAgentCloseDone(GObject* source_object, GAsyncResult* res, gpointer userData)
+{
+    GMainLoop* agentCloseLoop = static_cast<GMainLoop*>(userData);
+
+    // Simply quit the main loop
+    g_main_loop_quit(agentCloseLoop);
+}
 
 void ICEConnection::disconnect()
 {
-    std::cout << "Disconnecting from ICEConnection" << std::endl;
 
-    _isConnected.store(false); // NEEDS to be before as the threads will check if it is connected before using gloop, agent, context
+    if (_isConnected) // in case called twice by accident...
+    {
+        std::cout << "Disconnecting from ICEConnection" << std::endl;
 
-    // set as nullptr after using as it is already unuseful and memory freed
-    if (_gloop)
-    {
-        g_main_loop_quit(_gloop);
-        g_main_loop_unref(_gloop);
-        _gloop = nullptr;
-    }
-    if (_agent)
-    {
-        nice_agent_close_async(_agent, NULL, NULL);
-        g_object_unref(_agent);
-        _agent = nullptr;
-    }
-    if (_context)
-    {
-        g_main_context_unref(_context);
-        _context = nullptr;
+        // send a disconnect message
+        MessageBaseToSend disconnectMessage = MessageBaseToSend(ICEConnectionCodes::Disconnect);
+        systemSendMessage(this, &disconnectMessage);
+
+        _isConnected.store(false); // NEEDS to be before as the threads will check if it is connected before using gloop, agent, context
+
+        if (_agent)
+        {
+            // Create a GMainLoop to wait for completion
+            GMainLoop *waitingForCloseAsync = g_main_loop_new(NULL, FALSE);
+
+
+            // Call nice_agent_close_async with the callback
+            nice_agent_close_async(_agent, callbackAgentCloseDone, waitingForCloseAsync);
+
+            // Run the loop to wait for the callback to signal completion
+            g_main_loop_run(waitingForCloseAsync);
+
+            // Free the loop after it completes
+            g_main_loop_unref(waitingForCloseAsync);
+
+
+            g_object_unref(_agent);
+            _agent = nullptr;
+        }
+        // set as nullptr after using as it is already unuseful and memory freed
+        if (_gloop)
+        {
+            g_main_loop_quit(_gloop);
+            g_main_loop_unref(_gloop);
+            _gloop = nullptr;
+        }
+        if (_context)
+        {
+            g_main_context_unref(_context);
+            _context = nullptr;
+        }
+
+        g_message("Ice connection disconnected");
     }
 }
 
@@ -88,10 +118,7 @@ MessageBaseReceived ICEConnection::receiveMessage()
 {
     MessageBaseReceived receivedMessage;
 
-    if (_isConnected.load())
-    {
-
-        std::unique_lock<std::mutex> lock(_mutexReceivedMessages);
+    std::unique_lock<std::mutex> lock(_mutexReceivedMessages);
 
         // check if there is
         if (_receivedMessages.size() > 0)
@@ -105,11 +132,7 @@ MessageBaseReceived ICEConnection::receiveMessage()
         }
         return receivedMessage;
 
-    }
-    else
-    {
-        throw std::runtime_error("Disconnected");
-    }
+
 }
 
 bool ICEConnection::isConnected()
@@ -118,21 +141,20 @@ bool ICEConnection::isConnected()
 }
 
 // TODO - by now it deals with a debugging string message
-void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint component_id, guint len, gchar* buf,
-                                    gpointer data)
+void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint component_id, guint len, gchar* buf,gpointer data)
 {
 
     //debug
-    // g_message("received a message \n");
+   // g_message("received a message \n");
     ICEConnection* iceConnection = static_cast<ICEConnection*>(data);
     if (iceConnection )
     {
         if (iceConnection->_isConnected) // if did not disconnect...
         {
-            if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr) // if the connection finished
+            if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr) // if the connection finished this is what libnice should send (it didnt by now but leaving it...)
             {
-                std::cout << "quit";
-                iceConnection->_isConnected.store(false);
+                g_message("Other peer disconnected");
+                iceConnection->disconnect();
             }
             else
             {
@@ -140,9 +162,18 @@ void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint c
                 {
                     MessageBaseReceived newMessage = deserializeMessage(buf, len);
 
-                    // add the new received message to the messages queue
-                    std::unique_lock<std::mutex> lock(iceConnection->_mutexReceivedMessages);
-                    (iceConnection->_receivedMessages).push(newMessage);
+                    if (newMessage.code == ICEConnectionCodes::Disconnect) // if other user prettily asked to disconnect - disconnect
+                    {
+                        g_message("Other peer disconnected");
+                        iceConnection->disconnect();
+                    }
+                    else
+                    {
+                        // add the new received message to the messages queue
+                        std::unique_lock<std::mutex> lock(iceConnection->_mutexReceivedMessages);
+                        (iceConnection->_receivedMessages).push(newMessage);
+
+                    }
 
                 }
                 catch (const std::exception& e)
@@ -153,7 +184,7 @@ void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint c
         }
         else
         {
-            g_message("Disconnected - quitting receive messages thread");
+            //g_message("Disconnected - quitting receive messages thread");
 
         }
     }
@@ -236,7 +267,7 @@ void ICEConnection::callbackCandidateGatheringDone(NiceAgent* _agent, guint stre
 
     if (handler && handler->_gloop)
     {
-        g_message("Candidate gathering done for stream ID: %u", streamId);
+       // g_message("Candidate gathering done for stream ID: %u", streamId);
         g_main_loop_quit(handler->_gloop);
     }
     else
@@ -399,8 +430,8 @@ int ICEConnection::addRemoteCandidates(char* remoteData)
         goto end;
     }
     else
-    {
-        g_message("success setting remote cand");
+    {   // debug
+        //g_message("success setting remote cand");
     }
 
     result = EXIT_SUCCESS;
@@ -470,7 +501,7 @@ end:
 */
 void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint streamId, guint componentId, guint state, gpointer data)
 {
-    std::cout << "state changed: " << state << "\n\n";
+    //std::cout << "state changed: " << state << "\n\n";
     ICEConnection* iceConnection = static_cast<ICEConnection*>(data);
 
     if (iceConnection)
@@ -486,10 +517,10 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint strea
                 gchar ipaddr[INET6_ADDRSTRLEN];
 
                 nice_address_to_string(&local->addr, ipaddr);
-                g_message("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
+               // g_message("\nNegotiation complete: ([%s]:%d,", ipaddr, nice_address_get_port(&local->addr));
 
-                nice_address_to_string(&remote->addr, ipaddr);
-                g_message(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
+                //nice_address_to_string(&remote->addr, ipaddr);
+                //(" [%s]:%d)\n", ipaddr, nice_address_get_port(&remote->addr));
 
                 // set connection as connected
                 iceConnection->_isConnected.store(true);
@@ -507,19 +538,7 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint strea
                 {
                     std::cout << "Exception: " << e.what() << std::endl;
                 }
-                // TODO this is temporary sending messages hardcoded
-                // DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world");
-                //  std::vector<uint8_t> messageInVector = debuggingStringMessage.serialize();
-                // //
-                // // function used to send somethin to remote client (TODO - make a function that calls this and does tthat....)
-                // nice_agent_send(_agent, streamId, 1, messageInVector.size(),
-                //                  reinterpret_cast<const gchar*>(messageInVector.data()));
-                // // nice_agent_send(_agent, streamId, 1, messageInVector.size(),
-                //                 reinterpret_cast<const gchar*>(messageInVector.data()));
-                // nice_agent_send(_agent, streamId, 1, messageInVector.size(),
-                //                 reinterpret_cast<const gchar*>(messageInVector.data()));
-                // nice_agent_send(_agent, streamId, 1, messageInVector.size(),
-                //                 reinterpret_cast<const gchar*>(messageInVector.data()));
+
             }
         }
         else if (state == NICE_COMPONENT_STATE_FAILED)
@@ -532,8 +551,9 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint strea
         }
         else if (state == NICE_COMPONENT_STATE_DISCONNECTED)
         {
-            iceConnection->_isConnected.store(false);
+            iceConnection->disconnect();
             std::cout << "Disconnected state" << std::endl;
+
         }
 
     }
@@ -569,6 +589,24 @@ void ICEConnection::sendMessage(MessageBaseToSend* message)
     _cvHasNewMessageToSend.notify_one();
 }
 
+
+void ICEConnection::systemSendMessage(ICEConnection* connection, MessageBaseToSend* message)
+{
+    std::vector<uint8_t> messageInVector = message->serialize();
+
+    gint result = nice_agent_send(connection->_agent,
+        connection->_streamId,
+        COMPONENT_ID_RTP,
+        messageInVector.size(),
+        reinterpret_cast<const gchar*>(messageInVector.data())
+    );
+
+    // Check send result
+    if (result < 0)
+    {
+        g_critical("Failed to send message via nice_agent_send");
+    }
+}
 void ICEConnection::messageSendingThread(ICEConnection *connection)
 {
 
@@ -604,23 +642,12 @@ void ICEConnection::messageSendingThread(ICEConnection *connection)
                 lock.unlock();
 
                 // Serialize and send message
-                std::vector<uint8_t> messageInVector = message->serialize();
-                gint result = nice_agent_send(
-                    connection->_agent,
-                    connection->_streamId,
-                    COMPONENT_ID_RTP,
-                    messageInVector.size(),
-                    reinterpret_cast<const gchar*>(messageInVector.data())
-                );
+                systemSendMessage(connection, message);
 
                 // Relock mutex after sending
                 lock.lock();
 
-                // Check send result
-                if (result < 0)
-                {
-                    g_critical("Failed to send message via nice_agent_send");
-                }
+
             }
             catch (const std::exception& e)
             {
@@ -630,6 +657,6 @@ void ICEConnection::messageSendingThread(ICEConnection *connection)
 
     }
 
-    g_message("Disconnected - quiting sendign thread\n");
+
 
 }

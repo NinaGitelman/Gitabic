@@ -32,7 +32,7 @@ namespace std // Hash method for ID to allow hash map key usage
 }
 
 // Codes fro protocol
-enum ClientRequestCodes
+enum ClientRequestCodes // 0 - 20 // 255
 {
     // no message received
     NoMessageReceived = 0,
@@ -48,7 +48,7 @@ enum ClientRequestCodes
     DebuggingStringMessage = 255
 };
 
-enum ClientResponseCodes
+enum ClientResponseCodes // 30 - 40
 {
     // signaling
     AuthorizedICEConnection = 30
@@ -70,6 +70,11 @@ enum ServerResponseCodes
     StoreSuccess = 221,
     StoreFailure,
     UserListRes
+};
+
+enum ICEConnectionCodes // codes used by ice p2p connection  60-65
+{
+    Disconnect = 60
 };
 
 /// @brief A base struct for the messages sent

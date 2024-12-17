@@ -19,6 +19,7 @@
 #include "../Utils/VectorUint8Utils.h"
 #include "../NetworkUnit/ServerComm/Messages.h"
 
+
 #define COMPONENT_ID_RTP 1
 
 /// TURN configs
@@ -42,6 +43,7 @@ using std::vector;
 using std::atomic;
 using std::condition_variable;
 
+
 extern "C"
 {
 #include <stdlib.h>
@@ -57,6 +59,8 @@ extern "C"
 // OBS:
 // There is an isConnected function. this is how we can know if its still conected or not. maybe we will need to check it every few minutes or something...
 
+// OBS:
+// when disconnected pretty will send a disconnect message to the other peer and receiveMessage from the other peer will handle that message and know it disconnected
 class ICEConnection
 {
     // comment to change for commit
@@ -121,6 +125,17 @@ private:
     static MessageBaseReceived deserializeMessage(gchar *buf, guint len);
 
 
+    /// @brief funciton that will actually call nice_send and send the message
+    /// @param connection the connection to send from
+    /// @param message the message to send
+    static void systemSendMessage(ICEConnection* connection, MessageBaseToSend* message);
+
+
+    /// @brief Callback for when the agent is closed (in disconnect())
+    /// Closes the loop that waits for the agent to close
+    /// @param userData the GMainLoop that is "locking" disconnect function in order for it to wait before unrefing the agent
+    /// The other params are only relevant to GLib - we dont send them
+    static void callbackAgentCloseDone(GObject* source_object, GAsyncResult* res, gpointer userData);
 
 
 public:
@@ -189,4 +204,6 @@ public:
     void messageSendingThread(ICEConnection *connection);
 
     void disconnect();
+
+
 };
