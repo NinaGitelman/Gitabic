@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   // working example with server for 2 diferent peers
 
   int connect = 1;
-  Address serverAdd = Address("0.0.0.0", 4787);
+  Address serverAdd = Address("3.80.37.75", 4787);
   TCPSocket socket = TCPSocket(serverAdd);
 
   ServerResponseNewId newId(socket.receive([](uint8_t code)
