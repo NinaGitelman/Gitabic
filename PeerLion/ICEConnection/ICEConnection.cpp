@@ -47,15 +47,33 @@ ICEConnection::ICEConnection(const bool isControlling)
 
 ICEConnection::~ICEConnection()
 {
+      disconnect();
 
+}
+
+void ICEConnection::disconnect()
+{
+    std::cout << "Disconnecting from ICEConnection" << std::endl;
+
+    _isConnected.store(false); // NEEDS to be before as the threads will check if it is connected before using gloop, agent, context
+
+    // set as nullptr after using as it is already unuseful and memory freed
     if (_gloop)
+    {
+        g_main_loop_quit(_gloop);
         g_main_loop_unref(_gloop);
-    if (_context)
-        g_main_context_unref(_context);
+        _gloop = nullptr;
+    }
     if (_agent)
     {
         nice_agent_close_async(_agent, NULL, NULL);
         g_object_unref(_agent);
+        _agent = nullptr;
+    }
+    if (_context)
+    {
+        g_main_context_unref(_context);
+        _context = nullptr;
     }
 }
 
@@ -70,20 +88,28 @@ MessageBaseReceived ICEConnection::receiveMessage()
 {
     MessageBaseReceived receivedMessage;
 
-    std::unique_lock<std::mutex> lock(_mutexReceivedMessages);
-
-    // check if there is
-    if (_receivedMessages.size() > 0)
+    if (_isConnected.load())
     {
-        receivedMessage = _receivedMessages.front();
-        _receivedMessages.pop();
+
+        std::unique_lock<std::mutex> lock(_mutexReceivedMessages);
+
+        // check if there is
+        if (_receivedMessages.size() > 0)
+        {
+            receivedMessage = _receivedMessages.front();
+            _receivedMessages.pop();
+        }
+        else
+        {
+            receivedMessage = MessageBaseReceived(CODE_NO_MESSAGES_RECEIVED, vector<uint8_t>());
+        }
+        return receivedMessage;
+
     }
     else
     {
-        receivedMessage = MessageBaseReceived(CODE_NO_MESSAGES_RECEIVED, vector<uint8_t>());
+        throw std::runtime_error("Disconnected");
     }
-
-    return receivedMessage;
 }
 
 bool ICEConnection::isConnected()
@@ -99,30 +125,36 @@ void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint c
     //debug
     // g_message("received a message \n");
     ICEConnection* iceConnection = static_cast<ICEConnection*>(data);
-    if (iceConnection)
+    if (iceConnection )
     {
-        if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr) // if the connection finished
+        if (iceConnection->_isConnected) // if did not disconnect...
         {
-            std::cout << "quit";
-            iceConnection->_isConnected.store(false);
+            if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr) // if the connection finished
+            {
+                std::cout << "quit";
+                iceConnection->_isConnected.store(false);
+            }
+            else
+            {
+                try
+                {
+                    MessageBaseReceived newMessage = deserializeMessage(buf, len);
 
-            g_main_loop_quit(iceConnection->_gloop);
+                    // add the new received message to the messages queue
+                    std::unique_lock<std::mutex> lock(iceConnection->_mutexReceivedMessages);
+                    (iceConnection->_receivedMessages).push(newMessage);
+
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << '\n';
+                }
+            }
         }
         else
         {
-            try
-            {
-                MessageBaseReceived newMessage = deserializeMessage(buf, len);
+            g_message("Disconnected - quitting receive messages thread");
 
-                // add the new received message to the messages queue
-                std::unique_lock<std::mutex> lock(iceConnection->_mutexReceivedMessages);
-                (iceConnection->_receivedMessages).push(newMessage);
-
-            }
-            catch (const std::exception& e)
-            {
-                std::cerr << e.what() << '\n';
-            }
         }
     }
     else
@@ -540,7 +572,7 @@ void ICEConnection::sendMessage(MessageBaseToSend* message)
 void ICEConnection::messageSendingThread(ICEConnection *connection)
 {
 
-    while (true)
+    while (connection->_isConnected.load())
     {
 
         std::unique_lock<mutex> lock(connection->_mutexMessagesToSend); // lock messages to send mutex
@@ -597,5 +629,7 @@ void ICEConnection::messageSendingThread(ICEConnection *connection)
         }
 
     }
+
+    g_message("Disconnected - quiting sendign thread\n");
 
 }

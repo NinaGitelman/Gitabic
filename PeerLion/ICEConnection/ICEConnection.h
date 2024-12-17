@@ -188,4 +188,5 @@ public:
     /// In practice, it keeps checking if there are new messages on the send messages queue and send them if so
     void messageSendingThread(ICEConnection *connection);
 
+    void disconnect();
 };

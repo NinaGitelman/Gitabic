@@ -105,19 +105,22 @@ int main(int argc, char *argv[])
       handler1.sendMessage(&debuggingStringMessage2);
       handler1.sendMessage(&debuggingStringMessage3);
 
-      while (true)
+      int count =0;
+      while (count <3)
       {
-        sleep(1);
+        sleep(0.2);
         while (handler1.receivedMessagesCount() > 0)
         {
            MessageBaseReceived newMessage = handler1.receiveMessage();
           if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
           {
+            count++;
             DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
             recvMessage.printDataAsASCII();
           }
         }
       }
+      handler1.disconnect();
     }
     catch (const std::exception &e)
     {
