@@ -5,7 +5,6 @@
 
 #include "../../ICEConnection/ICEConnection.h"
 
-
 // technically the same as addres but im leaving it under a different name in case we want to add more things...
 struct PeerTorrent
 {
