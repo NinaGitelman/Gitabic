@@ -10,7 +10,6 @@ struct PeerTorrent
 {
     ID id;
 
-
     bool operator==(const PeerTorrent &other) const
     {
       bool isEqual = false;

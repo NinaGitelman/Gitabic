@@ -77,6 +77,17 @@ enum ICEConnectionCodes // codes used by ice p2p connection  60-65
     Disconnect = 60
 };
 
+
+struct GeneralRecieve
+{
+    ID from{};
+
+    explicit GeneralRecieve(const ID &from) {
+        this->from = from;
+    }
+};
+
+
 /// @brief A base struct for the messages sent
 struct MessageBaseToSend
 {
@@ -228,8 +239,9 @@ struct StoreRequest : MessageBaseToSend
 /// @brief A base struct to store a response Packet. good for status response
 struct MessageBaseReceived
 {
-    vector<uint8_t> data;
     uint8_t code;
+    vector<uint8_t> data;
+    ID from;
     MessageBaseReceived() {}
 
     MessageBaseReceived(uint8_t code, vector<uint8_t> data)
@@ -238,6 +250,7 @@ struct MessageBaseReceived
         this->data = data;
     }
 };
+
 
 struct DebuggingStringMessageReceived
 {
