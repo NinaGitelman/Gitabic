@@ -4,26 +4,38 @@
 #pragma once
 
 #include "../../ICEConnection/ICEConnection.h"
+#include "../FileHandler/TorrentFileHandler.h"
+#include <unordered_map>
 
-// technically the same as addres but im leaving it under a different name in case we want to add more things...
-struct PeerTorrent
+using PeerTorrent = ID; // to be pretty :)
+using FileID = ID; // to be pretty :)
+
+using std::unordered_map;
+
+class ConnectionManager
 {
-    ID id;
+  public:
 
-    bool operator==(const PeerTorrent &other) const
-    {
-      bool isEqual = false;
-      // this works as the arrays of the id are of equal size
-      if(this->id.size() == other.id.size())
-      {
-          isEqual =  this->id == other.id;
-      }
+	 static ConnectionManager &getInstance();
+     ~ConnectionManager();
 
-      return isEqual;
-    }
+     void addPeer(PeerTorrent& peer, FileID fileID);
 
-};
-class ConnectionManager {
+     void removePeer(PeerTorrent& peer, FileID fileID);
+
+     void sendMessage(PeerTorrent& peer, vector<uint8_t>& message);
+
+  private:
+
+	ConnectionManager();
+
+	static mutex mutexInstance;
+    static std::unique_ptr<ConnectionManager> instance;
+
+	unordered_map<PeerTorrent, vector<FileID>> _registeredPeersFiles;
+	unordered_map<PeerTorrent, ICEConnection> _peerConnections;
+	unordered_map<FileID, TorrentFileHandler> _fileHandlers;
+
 
 };
 
