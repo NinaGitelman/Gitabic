@@ -41,6 +41,7 @@ void TCPSocket::sendRequest(const MessageBaseToSend& msg)
 
 MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
 {
+    std::cout << "in receive function";
     auto start_time = std::chrono::high_resolution_clock::now();
     while (true)
     {

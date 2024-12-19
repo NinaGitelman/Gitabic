@@ -1,5 +1,6 @@
 #include "ICEConnection.h"
 
+
 ICEConnection::ICEConnection(const bool isControlling)
 {
     // Initialize networking
@@ -171,8 +172,13 @@ void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint c
                     {
                         // debugging peers connection manager
                         if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
-                            // add the new received message to the messages queue
-                            std::unique_lock<std::mutex> lock(iceConnection->_mutexReceivedMessages);
+                        {
+                            DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
+                            std::cout << "Received in callback receive: " << recvMessage.data << std::endl;
+                        }
+
+                        // add the new received message to the messages queue
+                        std::unique_lock<std::mutex> lock(iceConnection->_mutexReceivedMessages);
                         (iceConnection->_receivedMessages).push(newMessage);
                     }
                 }
@@ -339,8 +345,9 @@ end:
     return result;
 }
 
-int ICEConnection::connectToPeer(const vector<uint8_t>& remoteDataVec)
+int ICEConnection::connectToPeer(const vector<uint8_t> remoteDataVec)
 {
+    std::cout << "In connect to peer";
     char* remoteData = nullptr;
     int result = false;
     VectorUint8Utils::vectorUint8ToCharArray(remoteDataVec, &remoteData);
@@ -557,22 +564,6 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint strea
     {
         throw std::runtime_error("No ice connection object provided in callback state changed");
     }
-}
-
-static void printDataAsASCII(vector<uint8_t> data)
-{
-    for (const auto& byte : data)
-    {
-        if (std::isprint(byte))
-        {
-            std::cout << static_cast<char>(byte); // Printable characters
-        }
-        else
-        {
-            std::cout << '.'; // Replace non-printable characters with '.'
-        }
-    }
-    std::cout << std::endl;
 }
 
 void ICEConnection::sendMessage(MessageBaseToSend* message)

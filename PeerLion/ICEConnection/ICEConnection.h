@@ -36,6 +36,8 @@
 #define STUN_PORT 3478
 #define STUN_ADDR "stun.stunprotocol.org" // TODO - make it a list and do many tries in case this does not work (out of service../)
 
+
+
 using std::map;
 using std::mutex;
 using std::queue;
@@ -44,8 +46,7 @@ using std::atomic;
 using std::condition_variable;
 
 
-extern "C"
-{
+extern "C" {
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -67,20 +68,20 @@ class ICEConnection
 private:
     // glib is thread safe so no need for mutex for everything used in threads
     // variables needed for the nice connection
-    NiceAgent *_agent; // the ncie agent that will be used for this connection
-    const gchar *_stunAddr = STUN_ADDR;
+    NiceAgent* _agent; // the ncie agent that will be used for this connection
+    const gchar* _stunAddr = STUN_ADDR;
     const guint _stunPort = STUN_PORT;
 
-    gboolean _isControlling;          // if this conneciton is controllling or being controlled
-    GMainContext *_context;           // this connections context
-    GMainLoop *_gloop;                // a blocking loop only for this connection
+    gboolean _isControlling; // if this conneciton is controllling or being controlled
+    GMainContext* _context; // this connections context
+    GMainLoop* _gloop; // a blocking loop only for this connection
     guint _streamId; // the nice stream id of this connection
 
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
 
-    atomic<bool> _isConnected{false};  // bool to track if is connected to the other peer
+    atomic<bool> _isConnected{false}; // bool to track if is connected to the other peer
 
-    mutex _mutexReceivedMessages;                 // mutex to lock the received messages queue
+    mutex _mutexReceivedMessages; // mutex to lock the received messages queue
     queue<MessageBaseReceived> _receivedMessages; // queue where all received messages will be
 
 
@@ -90,39 +91,41 @@ private:
     std::thread _messagesSenderThread;
 
     // turn constants
-    const gchar *turnUsername = TURN_USERNAME;
-    const gchar *turnPassword = TURN_PASSWORD;
+    const gchar* turnUsername = TURN_USERNAME;
+    const gchar* turnPassword = TURN_PASSWORD;
 
     /// @brief Helper function to get the candidate data and put it into the given buffer
     /// @param localDataBuffer The buffer in which the localData will be put (empty null buffer, malloc will be dealt on this function)
     /// @return If it gathered the data right
-    int getCandidateData(char **localDataBuffer);
+    int getCandidateData(char** localDataBuffer);
 
     /// @brief Callbis ack to handle if the candidate gathering is done
-    static void callbackCandidateGatheringDone(NiceAgent *agent, guint streamId, gpointer userData);
+    static void callbackCandidateGatheringDone(NiceAgent* agent, guint streamId, gpointer userData);
 
     /// @brief Helper function to add the candidates from the remote data
     /// @param remoteData the remote data received from the client (called from connect ot peer)
     /// @return If it was successful or not
-    int addRemoteCandidates(char *remoteData);
+    int addRemoteCandidates(char* remoteData);
 
     /// @brief Helper function to parse each candidate (called by addRemoteCandidates)
     /// @param scand The candidate
     /// @return A NiceCandidate object from it
-    NiceCandidate *parseCandidate(char *scand);
+    NiceCandidate* parseCandidate(char* scand);
 
     /// @brief Callback function to notify when a component state is changed -> only used for printing the state...
     //   has to have those inputs because libnice expects it  even if we only use one of them...
-    static void callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data);
+    static void callbackComponentStateChanged(NiceAgent* agent, guint streamId, guint componentId, guint state,
+                                              gpointer data);
 
     /// @brief Callback that will handle the received messages and out it into the messages queue of the IceConnection object passed in the data
     /// @param data The ice connection that calls it
-    static void callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data);
+    static void callbackReceive(NiceAgent* agent, guint _stream_id, guint component_id, guint len, gchar* buf,
+                                gpointer data);
 
     /// @brief Function to transform received data as a vector into a MessageBaseReceived object
     /// @param buf the message data
     /// @param len the message data length
-    static MessageBaseReceived deserializeMessage(gchar *buf, guint len);
+    static MessageBaseReceived deserializeMessage(gchar* buf, guint len);
 
 
     /// @brief funciton that will actually call nice_send and send the message
@@ -137,13 +140,12 @@ private:
     /// The other params are only relevant to GLib - we dont send them
     static void callbackAgentCloseDone(GObject* source_object, GAsyncResult* res, gpointer userData);
 
-
 public:
     // constexpr means constant expression
     // The nice agent will be only one for the class and then for each object will add a stream
     // used because this variables will be computed at compile time instead of run time, it helps program run faster and use less memory.
-    static constexpr const gchar *candidateTypeName[4] = {"host", "srflx", "prflx", "relay"};
-    static constexpr const gchar *stateName[4] = {"disconnected", "gathering", "connecting", "connected"};
+    static constexpr const gchar* candidateTypeName[4] = {"host", "srflx", "prflx", "relay"};
+    static constexpr const gchar* stateName[4] = {"disconnected", "gathering", "connecting", "connected"};
 
     /// OBS: the consructor throws exceptions so put it in a try catch when creating object...
     /// @brief constructor that intializes the object
@@ -178,7 +180,7 @@ public:
                         { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
     *  peerThread.detach();
     */
-    int connectToPeer(const vector<uint8_t> &remoteData);
+    int connectToPeer(const vector<uint8_t> remoteData);
 
     /// @brief Thread safe function to check if the ice connection is still valid
     /// @return if the connection is still valid
@@ -201,9 +203,7 @@ public:
     /// @brief Function that will be send the messages
     /// @param connection the ICE connection object that it will send from
     /// In practice, it keeps checking if there are new messages on the send messages queue and send them if so
-    void messageSendingThread(ICEConnection *connection);
+    void messageSendingThread(ICEConnection* connection);
 
     void disconnect();
-
-
 };

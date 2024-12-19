@@ -226,6 +226,30 @@ NetworkUnit/PseudoTCP/TCPConnection.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/NetworkUnit/PseudoTCP/TCPConnection.cpp.s
 .PHONY : NetworkUnit/PseudoTCP/TCPConnection.cpp.s
 
+NetworkUnit/ServerComm/BitTorrentMessages.o: NetworkUnit/ServerComm/BitTorrentMessages.cpp.o
+.PHONY : NetworkUnit/ServerComm/BitTorrentMessages.o
+
+# target to build an object file
+NetworkUnit/ServerComm/BitTorrentMessages.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/NetworkUnit/ServerComm/BitTorrentMessages.cpp.o
+.PHONY : NetworkUnit/ServerComm/BitTorrentMessages.cpp.o
+
+NetworkUnit/ServerComm/BitTorrentMessages.i: NetworkUnit/ServerComm/BitTorrentMessages.cpp.i
+.PHONY : NetworkUnit/ServerComm/BitTorrentMessages.i
+
+# target to preprocess a source file
+NetworkUnit/ServerComm/BitTorrentMessages.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/NetworkUnit/ServerComm/BitTorrentMessages.cpp.i
+.PHONY : NetworkUnit/ServerComm/BitTorrentMessages.cpp.i
+
+NetworkUnit/ServerComm/BitTorrentMessages.s: NetworkUnit/ServerComm/BitTorrentMessages.cpp.s
+.PHONY : NetworkUnit/ServerComm/BitTorrentMessages.s
+
+# target to generate assembly for a file
+NetworkUnit/ServerComm/BitTorrentMessages.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/NetworkUnit/ServerComm/BitTorrentMessages.cpp.s
+.PHONY : NetworkUnit/ServerComm/BitTorrentMessages.cpp.s
+
 NetworkUnit/ServerComm/DataRepublish/DataRepublish.o: NetworkUnit/ServerComm/DataRepublish/DataRepublish.cpp.o
 .PHONY : NetworkUnit/ServerComm/DataRepublish/DataRepublish.o
 
@@ -297,6 +321,54 @@ NetworkUnit/SocketHandler/SocketHandler.s: NetworkUnit/SocketHandler/SocketHandl
 NetworkUnit/SocketHandler/SocketHandler.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/NetworkUnit/SocketHandler/SocketHandler.cpp.s
 .PHONY : NetworkUnit/SocketHandler/SocketHandler.cpp.s
+
+Torrent/FileHandler/TorrentFileHandler.o: Torrent/FileHandler/TorrentFileHandler.cpp.o
+.PHONY : Torrent/FileHandler/TorrentFileHandler.o
+
+# target to build an object file
+Torrent/FileHandler/TorrentFileHandler.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o
+.PHONY : Torrent/FileHandler/TorrentFileHandler.cpp.o
+
+Torrent/FileHandler/TorrentFileHandler.i: Torrent/FileHandler/TorrentFileHandler.cpp.i
+.PHONY : Torrent/FileHandler/TorrentFileHandler.i
+
+# target to preprocess a source file
+Torrent/FileHandler/TorrentFileHandler.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.i
+.PHONY : Torrent/FileHandler/TorrentFileHandler.cpp.i
+
+Torrent/FileHandler/TorrentFileHandler.s: Torrent/FileHandler/TorrentFileHandler.cpp.s
+.PHONY : Torrent/FileHandler/TorrentFileHandler.s
+
+# target to generate assembly for a file
+Torrent/FileHandler/TorrentFileHandler.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.s
+.PHONY : Torrent/FileHandler/TorrentFileHandler.cpp.s
+
+Torrent/PeersConnectionManager/PeersConnectionManager.o: Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o
+.PHONY : Torrent/PeersConnectionManager/PeersConnectionManager.o
+
+# target to build an object file
+Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o
+.PHONY : Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o
+
+Torrent/PeersConnectionManager/PeersConnectionManager.i: Torrent/PeersConnectionManager/PeersConnectionManager.cpp.i
+.PHONY : Torrent/PeersConnectionManager/PeersConnectionManager.i
+
+# target to preprocess a source file
+Torrent/PeersConnectionManager/PeersConnectionManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.i
+.PHONY : Torrent/PeersConnectionManager/PeersConnectionManager.cpp.i
+
+Torrent/PeersConnectionManager/PeersConnectionManager.s: Torrent/PeersConnectionManager/PeersConnectionManager.cpp.s
+.PHONY : Torrent/PeersConnectionManager/PeersConnectionManager.s
+
+# target to generate assembly for a file
+Torrent/PeersConnectionManager/PeersConnectionManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.s
+.PHONY : Torrent/PeersConnectionManager/PeersConnectionManager.cpp.s
 
 Utils/DowndloadProgress/DownloadProgress.o: Utils/DowndloadProgress/DownloadProgress.cpp.o
 .PHONY : Utils/DowndloadProgress/DownloadProgress.o
@@ -487,6 +559,9 @@ help:
 	@echo "... NetworkUnit/PseudoTCP/TCPConnection.o"
 	@echo "... NetworkUnit/PseudoTCP/TCPConnection.i"
 	@echo "... NetworkUnit/PseudoTCP/TCPConnection.s"
+	@echo "... NetworkUnit/ServerComm/BitTorrentMessages.o"
+	@echo "... NetworkUnit/ServerComm/BitTorrentMessages.i"
+	@echo "... NetworkUnit/ServerComm/BitTorrentMessages.s"
 	@echo "... NetworkUnit/ServerComm/DataRepublish/DataRepublish.o"
 	@echo "... NetworkUnit/ServerComm/DataRepublish/DataRepublish.i"
 	@echo "... NetworkUnit/ServerComm/DataRepublish/DataRepublish.s"
@@ -496,6 +571,12 @@ help:
 	@echo "... NetworkUnit/SocketHandler/SocketHandler.o"
 	@echo "... NetworkUnit/SocketHandler/SocketHandler.i"
 	@echo "... NetworkUnit/SocketHandler/SocketHandler.s"
+	@echo "... Torrent/FileHandler/TorrentFileHandler.o"
+	@echo "... Torrent/FileHandler/TorrentFileHandler.i"
+	@echo "... Torrent/FileHandler/TorrentFileHandler.s"
+	@echo "... Torrent/PeersConnectionManager/PeersConnectionManager.o"
+	@echo "... Torrent/PeersConnectionManager/PeersConnectionManager.i"
+	@echo "... Torrent/PeersConnectionManager/PeersConnectionManager.s"
 	@echo "... Utils/DowndloadProgress/DownloadProgress.o"
 	@echo "... Utils/DowndloadProgress/DownloadProgress.i"
 	@echo "... Utils/DowndloadProgress/DownloadProgress.s"

@@ -18,10 +18,6 @@ using std::unordered_set;
 class PeersConnectionManager
 {
 public:
-
-
-     PeersConnectionManager();
-
     // If the peer already exists, add the fileID
 
     /// @brief Function adds the given fileID to the connected peer list
@@ -36,15 +32,14 @@ public:
     /// if there is only this file, it will disconnect the peer
     /// @param fileID the fileId to remove
     /// @param peer the peer to remove from
-    void removeFileFromPeer( FileID fileID, PeerID& peer);
+    void removeFileFromPeer(FileID fileID, PeerID& peer);
 
     void sendMessage(PeerID& peer, MessageBaseToSend* message);
 
-    static PeersConnectionManager& getInstance(std::unique_ptr<TCPSocket> socket = nullptr);
+    static PeersConnectionManager& getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
 
 private:
-
-    explicit PeersConnectionManager(std::unique_ptr<TCPSocket> socket = nullptr);
+    explicit PeersConnectionManager(std::shared_ptr<TCPSocket> socket = nullptr);
     static mutex mutexInstance;
     static std::unique_ptr<PeersConnectionManager> instance;
 
@@ -52,7 +47,7 @@ private:
     PeersConnectionManager(const PeersConnectionManager&) = delete;
     PeersConnectionManager& operator=(const PeersConnectionManager&) = delete;
 
-    std::unique_ptr<TCPSocket> _serverSocket;
+    std::shared_ptr<TCPSocket> _serverSocket;
 
     std::mutex _mutexRegisteredPeersFiles;
     unordered_map<PeerID, unordered_set<FileID>> _registeredPeersFiles;
@@ -61,5 +56,4 @@ private:
     unordered_map<PeerID, std::shared_ptr<ICEConnection>> _peerConnections;
 
     unordered_map<FileID, TorrentFileHandler> _fileHandlers;
-
 };
