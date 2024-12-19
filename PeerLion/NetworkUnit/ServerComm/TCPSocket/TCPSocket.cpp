@@ -1,6 +1,6 @@
 #include "TCPSocket.h"
 
-TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1)
+TCPSocket::TCPSocket(const Address& serverAddress) : sockfd(-1)
 {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1)
@@ -14,7 +14,7 @@ TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1)
     {
         connectToServer(addrIn);
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
@@ -31,7 +31,7 @@ TCPSocket::~TCPSocket()
     }
 }
 
-void TCPSocket::sendRequest(const MessageBaseToSend &msg)
+void TCPSocket::sendRequest(const MessageBaseToSend& msg)
 {
     std::lock_guard<mutex> guard(socketMut); // Lock the resource
 
@@ -46,14 +46,13 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
     {
         auto now = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = now - start_time;
-        // if (elapsed >= std::chrono::seconds(5)) // If no relevant packet for 5 seconds - stop trying
-        // {
-        //     break;
-        // }
-        { // If there is a relevant message already recieved - return it.
+        {
+            // If there is a relevant message already recieved - return it.
             std::lock_guard<mutex> guard(socketMut);
-            auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const MessageBaseReceived &msg)
-                                    { return isRelevant(msg.code); });
+            auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const MessageBaseReceived& msg)
+            {
+                return isRelevant(msg.code);
+            });
             if (msg != messages.end())
             {
                 auto res = *msg;
@@ -96,13 +95,13 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant)
     throw std::runtime_error("No relevant packets");
 }
 
-void TCPSocket::connectToServer(sockaddr_in &serverAddress)
+void TCPSocket::connectToServer(sockaddr_in& serverAddress)
 {
     // this doesnt even print even if debugger tells me it gets here
     std::cout << "In connect to server...";
     std::cout << inet_ntoa(serverAddress.sin_addr);
     std::lock_guard<mutex> guard(socketMut);
-    if (connect(sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1)
+    if (connect(sockfd, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
     {
         std::cerr << "Connection failed. Error: " << strerror(errno) << std::endl;
         throw std::runtime_error("Failed to connect to server");
