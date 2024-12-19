@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+#include <unordered_set>
 #include "../../ICEConnection/ICEConnection.h"
 #include "../FileHandler/TorrentFileHandler.h"
 #include "../../NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
@@ -7,27 +9,42 @@
 
 // technically the same as addres but im leaving it under a different name in case we want to add more things...
 
-using PeerTorrent = ID; // to be pretty :)
+using PeerID = ID; // to be pretty :)
 using FileID = ID; // to be pretty :)
 
 using std::unordered_map;
+using std::unordered_set;
 
 class PeersConnectionManager
 {
 public:
 
-    void addPeer(PeerTorrent& peer, FileID fileID);
 
-    void removePeer(PeerTorrent& peer, FileID fileID);
+     PeersConnectionManager();
 
-    void sendMessage(PeerTorrent& peer, vector<uint8_t>& message);
+    // If the peer already exists, add the fileID
 
-    PeersConnectionManager& getInstance(std::unique_ptr<TCPSocket> socket = nullptr);
+    /// @brief Function adds the given fileID to the connected peer list
+    /// if the peer alreadt exists, adds only the file ID to its list
+    /// if not, creates its ice connectionsa dn the vector of fileIds with the file id for it
+    /// @param peer  the peerID
+    /// @param fileID the fileID of the file to get from it
+    void addFileForPeer(FileID fileID, PeerID& peer);
+
+
+    /// @brief function removes given file form given peer
+    /// if there is only this file, it will disconnect the peer
+    /// @param fileID the fileId to remove
+    /// @param peer the peer to remove from
+    void removeFileFromPeer( FileID fileID, PeerID& peer);
+
+    void sendMessage(PeerID& peer, MessageBaseToSend* message);
+
+    static PeersConnectionManager& getInstance(std::unique_ptr<TCPSocket> socket = nullptr);
 
 private:
 
     explicit PeersConnectionManager(std::unique_ptr<TCPSocket> socket = nullptr);
-
     static mutex mutexInstance;
     static std::unique_ptr<PeersConnectionManager> instance;
 
@@ -37,8 +54,12 @@ private:
 
     std::unique_ptr<TCPSocket> _serverSocket;
 
-    unordered_map<PeerTorrent, vector<FileID>> _registeredPeersFiles;
-    unordered_map<PeerTorrent, ICEConnection> _peerConnections;
+    std::mutex _mutexRegisteredPeersFiles;
+    unordered_map<PeerID, unordered_set<FileID>> _registeredPeersFiles;
+
+    std::mutex _mutexPeerConnections;
+    unordered_map<PeerID, std::shared_ptr<ICEConnection>> _peerConnections;
+
     unordered_map<FileID, TorrentFileHandler> _fileHandlers;
 
 };
