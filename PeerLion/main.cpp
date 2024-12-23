@@ -81,17 +81,22 @@ int main(int argc, char* argv[])
 
 
     // connection start
-    connectionManager.addFileForPeer(fileID, otherId);
-
+    // by now using this just to check for if added the file
+    bool connected = connectionManager.addFileForPeer(fileID, otherId);
+    sleep(1);
     try
     {
-      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world from terminal");
-      DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend("Hello world from terminal");
-      DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend("Hello world from terminal");
+      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend(
+        "Hello world from connection manager");
+      DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend(
+        "Hello world from connection manager");
+      DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend(
+        "Hello world from connection manager");
 
       connectionManager.sendMessage(otherId, &debuggingStringMessage);
       connectionManager.sendMessage(otherId, &debuggingStringMessage);
       connectionManager.sendMessage(otherId, &debuggingStringMessage);
+      sleep(5);
     }
     catch (const std::exception& e)
     {
@@ -130,16 +135,15 @@ int main(int argc, char* argv[])
       peerThread.detach();
 
       /// TODO the problem is that it isnt sending the message content right...
-      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world from clion");
-      DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend("Hello world from clion");
-      DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend("Hello world from clion");
+      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world from main");
+      DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend("Hello world from main");
+      DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend("Hello world from main");
       handler1.sendMessage(&debuggingStringMessage);
       handler1.sendMessage(&debuggingStringMessage2);
       handler1.sendMessage(&debuggingStringMessage3);
       // handler1.sendMessage(debuggingStringMessage);
       while (true)
       {
-        sleep(1);
         while (handler1.receivedMessagesCount() > 0)
         {
           MessageBaseReceived newMessage = handler1.receiveMessage();

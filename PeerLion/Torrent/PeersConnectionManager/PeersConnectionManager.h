@@ -25,7 +25,7 @@ public:
     /// if not, creates its ice connectionsa dn the vector of fileIds with the file id for it
     /// @param peer  the peerID
     /// @param fileID the fileID of the file to get from it
-    void addFileForPeer(FileID fileID, PeerID& peer);
+    bool addFileForPeer(FileID fileID, PeerID& peer);
 
 
     /// @brief function removes given file form given peer

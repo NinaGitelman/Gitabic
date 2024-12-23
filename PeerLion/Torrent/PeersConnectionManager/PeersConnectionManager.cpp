@@ -45,9 +45,10 @@ static void printDataAsASCII(vector<uint8_t> data)
     std::cout << std::endl;
 }
 
-void PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
+// TODO divide this into smaller functions maybe...
+bool PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
 {
-
+    bool addedFile = false;
     std::cout << "Debug Peers Connection Manager add peer" << std::endl;
 
     std::unique_lock<std::mutex> peersConectionLock(_mutexPeerConnections);
@@ -84,7 +85,7 @@ void PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
 
          if(connected)
          {
-
+            addedFile = connected;
             std::cout << "SUCESSFULLY CONNECTED to peer in add file for peer" << std::endl;
 
              _peerConnections.insert(std::pair<PeerID,std::shared_ptr<ICEConnection>>(peer, std::move(peerConnection)));
@@ -101,15 +102,16 @@ void PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
         else
         {
             std::cout << "failed connecting to peer in add file for peer" << std::endl;
-
+            addedFile = false;
         }
     }
     // if the file is not present in the peer files list, add it
     else if(_registeredPeersFiles[peer].find(fileID) == _registeredPeersFiles[peer].end() )
     {
         _registeredPeersFiles[peer].insert(fileID);
+        addedFile = true;
     }
-
+    return addedFile;
 
 }
 
@@ -169,7 +171,7 @@ void PeersConnectionManager::removeFileFromPeer( FileID fileID, PeerID& peer)
 
 void PeersConnectionManager::sendMessage(PeerID& peer, MessageBaseToSend* message)
 {
-   std::cout << "in send message";
+    std::cout << "in send message\n\n";
     std::unique_lock<std::mutex> registeredPeersLock(_mutexPeerConnections);
 
     auto itPeerConnection = _peerConnections.find(peer);
@@ -180,6 +182,8 @@ void PeersConnectionManager::sendMessage(PeerID& peer, MessageBaseToSend* messag
     }
     else
     {
+        std::cout << "peer not found\n\n";
+
         throw std::runtime_error("Peer not found");
     }
 }

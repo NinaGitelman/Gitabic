@@ -146,7 +146,7 @@ void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint c
                                     gpointer data)
 {
     //debug
-    // g_message("received a message \n");
+    g_message("received a message \n");
     ICEConnection* iceConnection = static_cast<ICEConnection*>(data);
     if (iceConnection)
     {
@@ -176,7 +176,8 @@ void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint c
                         if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
                         {
                             DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
-                            std::cout << "Received in callback receive: " << recvMessage.data << std::endl;
+                            g_message("Received in callback receive: ");
+                            g_message(recvMessage.data.c_str());
                         }
 
                         // add the new received message to the messages queue
@@ -607,6 +608,7 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent* _agent, guint strea
 
 void ICEConnection::sendMessage(MessageBaseToSend* message)
 {
+    std::cout << "ICEConnection sending message" << std::endl;
     {
         std::lock_guard<std::mutex> lock(_mutexMessagesToSend);
         _messagesToSend.push(message);
