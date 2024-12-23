@@ -245,8 +245,15 @@ struct MessageBaseReceived
     }
 };
 
-struct DebuggingStringMessageReceived
-{
+struct GeneralRecieve {
+    ID from{};
+
+    explicit GeneralRecieve(const ID &from) {
+        this->from = from;
+    }
+};
+
+struct DebuggingStringMessageReceived {
     std::string data;
 
     DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived) {

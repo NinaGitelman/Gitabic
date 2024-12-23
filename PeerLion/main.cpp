@@ -28,8 +28,9 @@ void printDataAsASCII(vector<uint8_t> data)
   std::cout << std::endl;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+  auto a = SHA256::toHashSha256(vector<uint8_t>{});
+  SHA256::printHashAsString(a);
   //   int connect = 1;
   //  // First handler negotiation
   //   ICEConnection handler1(connect);
