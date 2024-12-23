@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <vector>
 #include <array>
+#include <cstdint>
 #include <cstring>
 
 /*
@@ -37,7 +38,7 @@ protected:
     typedef unsigned long long uint64;
 
     const static uint32 sha256_k[];
-    static const unsigned int SHA224_256_BLOCK_SIZE = (512 / 8);
+    static constexpr unsigned int SHA224_256_BLOCK_SIZE = (512 / 8);
 
 public:
     void init();
