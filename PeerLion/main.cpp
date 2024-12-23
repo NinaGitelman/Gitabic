@@ -25,7 +25,7 @@ void printDataAsASCII(vector<uint8_t> data) {
 }
 
 int main(int argc, char *argv[]) {
-  auto a = SHA256::toHashSha256(vector<uint8_t>{});
+  auto a = SHA256::toHashSha256(vector<uint8_t>{1});
   SHA256::printHashAsString(a);
   //   int connect = 1;
   //  // First handler negotiation

@@ -239,6 +239,8 @@ struct GeneralRecieve {
     explicit GeneralRecieve(const ID &from) {
         this->from = from;
     }
+
+    GeneralRecieve() = default;
 };
 
 struct DebuggingStringMessageReceived {
