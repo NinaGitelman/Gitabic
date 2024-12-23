@@ -44,6 +44,7 @@ static void printDataAsASCII(vector<uint8_t> data)
     }
     std::cout << std::endl;
 }
+
 void PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
 {
 
@@ -77,21 +78,30 @@ void PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
 
         // TODO - problem with the thread. find way to know it is done even without the join and get return of okay or not if connected
         //  TODO - maybe change the thread to return something instead.... wait for is connected or sth...
-        std::thread peerThread([&peerConnection, response]()
-                           { peerConnection->connectToPeer(response.iceCandidateInfo); });
-        peerThread.join();
+        // TODO -  make wrapper to just call connect to peer and wait for response
+        /// TODO - later sprint make it prettier
+         bool connected = peerConnection->connectToPeer(response.iceCandidateInfo);
 
-        std::cout << "after peer thread";
+         if(connected)
+         {
 
-        _peerConnections.insert(std::pair<PeerID,std::shared_ptr<ICEConnection>>(peer, std::move(peerConnection)));
+            std::cout << "SUCESSFULLY CONNECTED to peer in add file for peer" << std::endl;
 
-        peersConectionLock.unlock();
+             _peerConnections.insert(std::pair<PeerID,std::shared_ptr<ICEConnection>>(peer, std::move(peerConnection)));
 
+            peersConectionLock.unlock();
+
+            {
+                // create registered peer files for this peer
+                std::unique_lock<std::mutex> lock(_mutexRegisteredPeersFiles);
+
+                _registeredPeersFiles.insert(std::pair<PeerID, unordered_set<FileID>>(peer, unordered_set{fileID}));
+            }
+        }
+        else
         {
-            // create registered peer files for this peer
-            std::unique_lock<std::mutex> lock(_mutexRegisteredPeersFiles);
+            std::cout << "failed connecting to peer in add file for peer" << std::endl;
 
-            _registeredPeersFiles.insert(std::pair<PeerID, unordered_set<FileID>>(peer, unordered_set{fileID}));
         }
     }
     // if the file is not present in the peer files list, add it

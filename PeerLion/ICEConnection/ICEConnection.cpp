@@ -1,5 +1,7 @@
 #include "ICEConnection.h"
 
+#include <future>
+
 
 ICEConnection::ICEConnection(const bool isControlling)
 {
@@ -345,7 +347,44 @@ end:
     return result;
 }
 
-int ICEConnection::connectToPeer(const vector<uint8_t> remoteDataVec)
+bool ICEConnection::connectToPeer(const vector<uint8_t> remoteDataVec)
+{
+    // call thread
+    std::thread peerThread([this, remoteDataVec]()
+    {
+        connectToPeerThread(remoteDataVec);
+    });
+    peerThread.detach();
+
+    // wait for connection to change and then return
+
+    // Constants for timing
+    const std::chrono::milliseconds checkInterval(500); // 0.5 seconds
+    const std::chrono::seconds timeout(60); // 1 minute
+    auto startTime = std::chrono::steady_clock::now();
+    // Check if we've exceeded the timeout
+    auto currentTime = std::chrono::steady_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime);
+
+    // Check connection status every 0.5 seconds for up to 1 minute
+    while (elapsedTime <= timeout)
+    {
+        // reset current time and timeout
+        currentTime = std::chrono::steady_clock::now();
+        elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime);
+
+        // Check if peer is connected
+        if (_isConnected.load())
+        {
+            return true; // Successfully connected
+        }
+
+        // Wait for the next check interval
+        std::this_thread::sleep_for(checkInterval);
+    }
+}
+
+int ICEConnection::connectToPeerThread(const vector<uint8_t> remoteDataVec)
 {
     std::cout << "In connect to peer";
     char* remoteData = nullptr;

@@ -180,7 +180,9 @@ public:
                         { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
     *  peerThread.detach();
     */
-    int connectToPeer(const vector<uint8_t> remoteData);
+    bool connectToPeer(const vector<uint8_t> remoteDataVec);
+
+    int connectToPeerThread(vector<uint8_t> remoteDataVec);
 
     /// @brief Thread safe function to check if the ice connection is still valid
     /// @return if the connection is still valid
