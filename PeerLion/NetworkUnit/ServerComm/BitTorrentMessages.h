@@ -42,10 +42,10 @@ enum BitTorrentResponseCodes {
  * @brief Base structure for BitTorrent messages.
  */
 struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
-	ID fileId{};
-	HashResult hash{};
-	AESKey initVector{};
-	static constexpr uint SIZE = SHA256_SIZE * 2 + BLOCK;
+ ID fileId{}; ///< File ID.
+ HashResult hash{}; ///< Hash result.
+ AESKey initVector{}; ///< AES initialization vector.
+ static constexpr uint SIZE = SHA256_SIZE * 2 + BLOCK; ///< Size of the message.
 
  /**
   * @brief Constructor with file ID and initialization vector.
@@ -54,48 +54,72 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   * @param code The message code.
   */
  TorrentMessageBase(const ID &fileId, const AESKey &initVector, const uint8_t code) : MessageBaseToSend(
-   code), GeneralRecieve(),
-  fileId(fileId), initVector(initVector) {
+                                                                                       code), GeneralRecieve(),
+                                                                                      fileId(fileId),
+                                                                                      initVector(initVector) {
  }
 
+ /**
+  * @brief Constructor with received message.
+  * @param msg The received message.
+  * @param code The message code.
+  * @param isDeserialized Flag indicating if the message is deserialized.
+  */
+ TorrentMessageBase(const MessageBaseReceived &msg, const uint8_t code,
+                    const bool isDeserialized = false) : GeneralRecieve(
+  msg.from) {
+  if (!isDeserialized) {
+   TorrentMessageBase::deserialize(msg.data);
+  }
+ }
 
-	TorrentMessageBase(const MessageBaseReceived &msg, const uint8_t code,
-	                   const bool isDeserialized = false) : GeneralRecieve(
-		msg.from) {
-		if (!isDeserialized) {
-			TorrentMessageBase::deserialize(msg.data);
-		}
-	}
+ /**
+  * @brief Serialize the message.
+  * @param PreviousSize The previous size.
+  * @return The serialized message.
+  */
+ [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
+  auto baseSerialized = MessageBaseToSend::serialize(PreviousSize + SIZE);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, fileId);
+  SerializeDeserializeUtils::addToEnd(baseSerialized, hash);
+  SerializeDeserializeUtils::addToEnd(baseSerialized, initVector);
 
-	[[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
-		auto baseSerialized = MessageBaseToSend::serialize(PreviousSize + SIZE);
-		SerializeDeserializeUtils::addToEnd(baseSerialized, fileId);
-		SerializeDeserializeUtils::addToEnd(baseSerialized, hash);
-		SerializeDeserializeUtils::addToEnd(baseSerialized, initVector);
+  return baseSerialized;
+ }
 
-		return baseSerialized;
-	}
+ /**
+  * @brief Deserialize the message.
+  * @param data The data to deserialize.
+  * @return The size of the deserialized data.
+  */
+ virtual uint deserialize(const vector<uint8_t> &data) {
+  memcpy(fileId.data(), data.data(), SHA256_SIZE);
+  memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
+  memcpy(initVector.data(), data.data() + SIZE - initVector.size(), initVector.size());
+  return SIZE;
+ }
 
+ /**
+  * @brief Update the hash with the given data.
+  * @param fullData The full data to update the hash with.
+  */
+ static void UpdateHash(const vector<uint8_t> &fullData) {
+  const vector<uint8_t> data(fullData.begin() + SIZE, fullData.end());
+  auto hash = SHA256::toHashSha256(data);
+  memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
+ }
 
-	virtual uint deserialize(const vector<uint8_t> &data) {
-		memcpy(fileId.data(), data.data(), SHA256_SIZE);
-		memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
-		memcpy(initVector.data(), data.data() + SIZE - initVector.size(), initVector.size());
-		return SIZE;
-	}
-
-	static void UpdateHash(const vector<uint8_t> &fullData) {
-		const vector<uint8_t> data(fullData.begin() + SIZE, fullData.end());
-		auto hash = SHA256::toHashSha256(data);
-		memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
-	}
-
-	bool verifyHash(const vector<uint8_t> &fullData) {
-		const vector<uint8_t> data(fullData.begin() + SIZE, fullData.end());
-		const HashResult computedhash = SHA256::toHashSha256(data);
-		memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
-		return hash == computedhash;
-	}
+ /**
+  * @brief Verify the hash with the given data.
+  * @param fullData The full data to verify the hash with.
+  * @return True if the hash is verified, false otherwise.
+  */
+ bool verifyHash(const vector<uint8_t> &fullData) {
+  const vector<uint8_t> data(fullData.begin() + SIZE, fullData.end());
+  const HashResult computedhash = SHA256::toHashSha256(data);
+  memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
+  return hash == computedhash;
+ }
 };
 
 //////////////////////////////////////////////
@@ -143,9 +167,9 @@ struct DataRequest : TorrentMessageBase {
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(
    PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + sizeof(blocksCount));
-  SerializeDeserializeUtils::addToEnd(baseSerialized, pieceIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blockIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blocksCount);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blockIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blocksCount);
 
   return baseSerialized;
  }
@@ -206,9 +230,9 @@ struct CancelDataRequest : TorrentMessageBase {
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(
    PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + sizeof(blocksCount));
-  SerializeDeserializeUtils::addToEnd(baseSerialized, pieceIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blockIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blocksCount);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blockIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blocksCount);
 
   return baseSerialized;
  }
@@ -266,7 +290,7 @@ struct PieceOwnershopUpdate : TorrentMessageBase {
   */
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(PreviousSize + sizeof(pieceIndex));
-  SerializeDeserializeUtils::addToEnd(baseSerialized, pieceIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
 
   return baseSerialized;
  }
@@ -330,9 +354,9 @@ struct BlockResponse : TorrentMessageBase {
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(
    PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + sizeof(uint) + block.size());
-  SerializeDeserializeUtils::addToEnd(baseSerialized, pieceIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blockIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, static_cast<uint>(block.size()));
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blockIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, static_cast<uint>(block.size()));
   SerializeDeserializeUtils::addToEnd(baseSerialized, block);
 
   return baseSerialized;

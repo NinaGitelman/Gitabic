@@ -35,11 +35,11 @@ public:
 
    static void addToEnd(vector<uint8_t> &to, const vector<uint8_t> &from);
 
-   template<SafeToCopy T>
-   static void addToFront(vector<uint8_t> to, T from);
+   template<typename T>
+   static void copyToFront(vector<uint8_t> to, T from);
 
-   template<SafeToCopy T>
-   static void addToEnd(vector<uint8_t> to, T from);
+   template<typename T>
+   static void copyToEnd(vector<uint8_t> to, T from);
 
    template<size_t N>
    static void addToFront(std::vector<uint8_t> &to, const std::array<uint8_t, N> &from) {
