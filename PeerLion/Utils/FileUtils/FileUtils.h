@@ -65,6 +65,8 @@ namespace Utils {
         static std::filesystem::path createDownloadFolder(const std::string &fileHash, const std::string &friendlyName);
 
         static vector<std::string> listDirectories(const std::string &path);
+
+        static std::string getExpandedPath(const std::string &path);
     };
 
     /// @brief Class handling file splitting logic

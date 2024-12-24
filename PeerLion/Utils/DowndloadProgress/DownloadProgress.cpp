@@ -154,7 +154,7 @@ void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadSta
     // Update last access time
     lastTime = time(nullptr);
 
-    pieces[piece].setStatus(status);
+    totalDownloadBytes -= pieces[piece].setStatus(status);
 }
 
 void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t block, const DownloadStatus status) {
@@ -220,7 +220,8 @@ void DownloadProgress::init(const MetaDataFile &metaData) {
 }
 
 PieceProgress::PieceProgress(const uint64_t offset, const uint32_t size, const HashResult &hash) : offset(offset),
-    size(size), hash(hash) {
+                                                                                                   size(size),
+                                                                                                   hash(hash) {
     {
         this->bytesDownloaded = 0;
         lastAccess = time(nullptr);
@@ -290,16 +291,22 @@ bool PieceProgress::allBlocksDownloaded() const {
     return true;
 }
 
-void PieceProgress::setStatus(const DownloadStatus status) {
+uint32_t PieceProgress::setStatus(const DownloadStatus status) {
+    uint32_t sizeRemoved = 0;
+    const bool toRemove = status == DownloadStatus::Empty && this->status != DownloadStatus::Empty;
     // Update last access time
     lastAccess = time(nullptr);
 
     this->status = status;
     if (status != DownloadStatus::Downloading) {
         for (auto &&i: blocks) {
+            if (toRemove && i.status == DownloadStatus::Downloaded) {
+                sizeRemoved += i.size;
+            }
             i.status = status;
         }
     }
+    return sizeRemoved;
 }
 
 void PieceProgress::updateBlockStatus(const uint16_t block, const DownloadStatus status) {

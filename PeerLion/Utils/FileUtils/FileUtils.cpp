@@ -111,15 +111,37 @@ bool FileUtils::dirExists(const std::string &filePath) {
     return std::filesystem::is_directory(filePath);
 }
 
+std::string FileUtils::getExpandedPath(const std::string &path) {
+    if (!path.empty() && path[0] == '~') {
+        if (const char *home = std::getenv("HOME")) {
+            return std::string(home) + path.substr(1); // Replace '~' with HOME
+        }
+    }
+    return path; // Return unchanged if no '~' at the beginning
+}
+
 std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName) {
     std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;
-    std::filesystem::create_directories(hashFolder);
+    std::filesystem::path expandedHashFolder = std::filesystem::absolute(
+        getExpandedPath(hashFolder.string()));
+
+    // Ensure the directory exists
+    if (!std::filesystem::exists(expandedHashFolder)) {
+        std::filesystem::create_directories(expandedHashFolder);
+    }
 
     // Create a symbolic link with the friendly name
     const std::filesystem::path symlink = "~/Gitabic/" + friendlyName;
-    std::filesystem::create_symlink(hashFolder, symlink);
+    std::filesystem::path expandedSymlink = std::filesystem::absolute(getExpandedPath(symlink.string()));
 
-    return hashFolder;
+    // Remove existing symlink if it exists
+    if (std::filesystem::exists(expandedSymlink)) {
+        std::filesystem::remove(expandedSymlink);
+    }
+
+    std::filesystem::create_symlink(expandedHashFolder, expandedSymlink);
+
+    return expandedHashFolder;
 }
 
 vector<std::string> FileUtils::listDirectories(const std::string &path) {
