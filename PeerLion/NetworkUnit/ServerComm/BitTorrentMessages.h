@@ -4,6 +4,8 @@
 
 #ifndef BITTORRENTMESSAGES_H
 #define BITTORRENTMESSAGES_H
+#include <bitset>
+
 #include "Messages.h"
 #include "../../Encryptions/AES/AESHandler.h"
 
@@ -52,8 +54,9 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   * @param code The message code.
   */
  TorrentMessageBase(const ID &fileId, const AESKey &initVector, const uint8_t code) : MessageBaseToSend(
-   code), GeneralRecieve(),
-  fileId(fileId), initVector(initVector) {
+                                                                                       code), GeneralRecieve(),
+                                                                                      fileId(fileId),
+                                                                                      initVector(initVector) {
  }
 
  /**
@@ -249,6 +252,63 @@ struct CancelDataRequest : TorrentMessageBase {
  }
 };
 
+
+/**
+ * @struct PieceOwnershopUpdate
+ * @brief Structure for BitTorrent has piece update, missing requested piece and lost piece update messages.
+ */
+struct PieceOwnershopUpdate : TorrentMessageBase {
+ uint32_t pieceIndex{}; ///< Piece index.
+
+ /**
+  * @brief Constructor with received message.
+  * @param msg The received message.
+  */
+ explicit PieceOwnershopUpdate(const MessageBaseReceived &msg) : TorrentMessageBase(msg, true) {
+  PieceOwnershopUpdate::deserialize(msg.data);
+ }
+
+ /**
+  * @brief Constructor with file ID, initialization vector, and piece index.
+  * @param fileId The file ID.
+  * @param initVector The AES initialization vector.
+  * @param pieceIndex The piece index.
+  * @param code The message code.
+  */
+ PieceOwnershopUpdate(const ID &fileId, const AESKey &initVector, const uint32_t pieceIndex,
+                      const uint8_t code = BitTorrentRequestCodes::hasPieceUpdate) : TorrentMessageBase(
+  fileId,
+  initVector,
+  code) {
+  PieceOwnershopUpdate::pieceIndex = pieceIndex;
+ }
+
+ /**
+  * @brief Serialize the has piece update message.
+  * @param PreviousSize The previous size.
+  * @return The serialized message.
+  */
+ [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
+  auto baseSerialized = TorrentMessageBase::serialize(PreviousSize + sizeof(pieceIndex));
+  SerializeDeserializeUtils::addToEnd(baseSerialized, pieceIndex);
+
+  return baseSerialized;
+ }
+
+ /**
+  * @brief Deserialize the has piece update message.
+  * @param data The data to deserialize.
+  * @return The size of the deserialized data.
+  */
+ uint deserialize(const vector<uint8_t> &data) override {
+  const auto offset = TorrentMessageBase::deserialize(data);
+  memcpy(&pieceIndex, data.data() + offset, sizeof(pieceIndex));
+
+  return offset + sizeof(pieceIndex);
+ }
+};
+
+
 //////////////////////////////////////////////
 ///	BitTorrent responses //////////////////////
 //////////////////////////////////////////////
@@ -316,6 +376,37 @@ struct BlockResponse : TorrentMessageBase {
   block = vector<uint8_t>(data.begin() + offset + sizeof(pieceIndex) + sizeof(blockIndex),
                           data.begin() + offset + sizeof(pieceIndex) + sizeof(blockIndex) + blockSize);
   return offset + sizeof(pieceIndex) + sizeof(blockIndex) + blockSize;
+ }
+};
+
+struct FileBitField : TorrentMessageBase {
+ vector<std::bitset<8> > field{}; ///< Bit field.
+
+ explicit FileBitField(const MessageBaseReceived &msg) : TorrentMessageBase(msg, true) {
+  FileBitField::deserialize(msg.data);
+ }
+
+ FileBitField(const ID &fileID, const AESKey &initVector, const vector<std::bitset<8> > &field) : TorrentMessageBase(
+  fileID, initVector, BitTorrentResponseCodes::bitField) {
+  FileBitField::field = field;
+ }
+
+ [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
+  auto baseSerialized = TorrentMessageBase::serialize(PreviousSize + field.size());
+  for (const auto &byte: field) {
+   baseSerialized.push_back(byte.to_ulong());
+  }
+
+  return baseSerialized;
+ }
+
+ uint deserialize(const vector<uint8_t> &data) override {
+  const auto offset = TorrentMessageBase::deserialize(data);
+  for (size_t i = 0; i < field.size(); ++i) {
+   field[i] = std::bitset<8>(data[offset + i]);
+  }
+
+  return offset + field.size();
  }
 };
 
