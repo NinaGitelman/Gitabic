@@ -80,7 +80,7 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   */
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = MessageBaseToSend::serialize(PreviousSize + SIZE);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, fileId);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, fileId);
   SerializeDeserializeUtils::addToEnd(baseSerialized, hash);
   SerializeDeserializeUtils::addToEnd(baseSerialized, initVector);
 
@@ -167,9 +167,9 @@ struct DataRequest : TorrentMessageBase {
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(
    PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + sizeof(blocksCount));
-  SerializeDeserializeUtils::addToEnd(baseSerialized, pieceIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blockIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blocksCount);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blockIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blocksCount);
 
   return baseSerialized;
  }
@@ -230,9 +230,9 @@ struct CancelDataRequest : TorrentMessageBase {
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(
    PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + sizeof(blocksCount));
-  SerializeDeserializeUtils::addToEnd(baseSerialized, pieceIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blockIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blocksCount);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blockIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blocksCount);
 
   return baseSerialized;
  }
@@ -290,7 +290,7 @@ struct PieceOwnershopUpdate : TorrentMessageBase {
   */
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(PreviousSize + sizeof(pieceIndex));
-  SerializeDeserializeUtils::addToEnd(baseSerialized, pieceIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
 
   return baseSerialized;
  }
@@ -354,9 +354,9 @@ struct BlockResponse : TorrentMessageBase {
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(
    PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + sizeof(uint) + block.size());
-  SerializeDeserializeUtils::addToEnd(baseSerialized, pieceIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, blockIndex);
-  SerializeDeserializeUtils::addToEnd(baseSerialized, static_cast<uint>(block.size()));
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, blockIndex);
+  SerializeDeserializeUtils::copyToEnd(baseSerialized, static_cast<uint>(block.size()));
   SerializeDeserializeUtils::addToEnd(baseSerialized, block);
 
   return baseSerialized;

@@ -2,8 +2,8 @@
 #include "SerializeDeserializeUtils.h"
 
 
-template<SafeToCopy T>
-void SerializeDeserializeUtils::addToFront(vector<uint8_t> to, T from) {
+template<typename T>
+void SerializeDeserializeUtils::copyToFront(vector<uint8_t> to, T from) {
     to.resize(to.size() + sizeof(T));
     for (size_t i = sizeof(T); i < to.size(); ++i) {
         to[i] = to[i - (to.size() - sizeof(T))];
@@ -11,8 +11,8 @@ void SerializeDeserializeUtils::addToFront(vector<uint8_t> to, T from) {
     memcpy(to.data(), &from, sizeof(T));
 }
 
-template<SafeToCopy T>
-void SerializeDeserializeUtils::addToEnd(vector<uint8_t> to, T from) {
+template<typename T>
+void SerializeDeserializeUtils::copyToEnd(vector<uint8_t> to, T from) {
     to.resize(to.size() + sizeof(T));
     memcpy(to.data() + to.size() - sizeof(T), &from, sizeof(T));
 }
