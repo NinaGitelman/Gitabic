@@ -11,7 +11,7 @@
 using Utils::FileUtils;
 using Utils::FileSplitter;
 
-const std::string FileHandler::dirPath = FileHandler::getExpandedPath("~/Gitabic/.filesFolders/");
+const std::string FileHandler::dirPath = FileUtils::getExpandedPath("~/Gitabic/.filesFolders/");
 
 // Swap function definition
 void swap(FileHandler &first, FileHandler &second) noexcept {
@@ -51,14 +51,6 @@ size_t FileHandler::getOffset(const uint32_t pieceIndex, const uint16_t blockInd
     return pieceSize * pieceIndex + blockIndex * Utils::FileSplitter::BLOCK_SIZE;
 }
 
-std::string FileHandler::getExpandedPath(const std::string &path) {
-    if (!path.empty() && path[0] == '~') {
-        if (const char *home = std::getenv("HOME")) {
-            return std::string(home) + path.substr(1); // Replace '~' with HOME
-        }
-    }
-    return path; // Return unchanged if no '~' at the beginning
-}
 
 void FileHandler::initNew(const MetaDataFile &metaData) {
     const auto fileHash = string(metaData.getFileHash().begin(), metaData.getFileHash().end());

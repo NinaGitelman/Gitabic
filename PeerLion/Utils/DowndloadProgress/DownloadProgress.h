@@ -57,7 +57,7 @@ struct PieceProgress {
 
     /// @brief Updates the download status of the piece
     /// @param status New status to set
-    void setStatus(DownloadStatus status);
+    uint32_t setStatus(DownloadStatus status);
 
     /// @brief Updates the status of a specific block
     /// @param block Index of the block to update
