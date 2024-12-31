@@ -88,10 +88,9 @@ bool PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
             addedFile = connected;
             std::cout << "SUCESSFULLY CONNECTED to peer in add file for peer" << std::endl;
 
-             _peerConnections.insert(std::pair<PeerID,std::shared_ptr<ICEConnection>>(peer, std::move(peerConnection)));
+             _peerConnections.emplace(peer, PeerConnectionAndMutex(peerConnection));
 
-            peersConectionLock.unlock();
-
+             peersConectionLock.unlock();
             {
                 // create registered peer files for this peer
                 std::unique_lock<std::mutex> lock(_mutexRegisteredPeersFiles);
@@ -142,7 +141,7 @@ void PeersConnectionManager::removeFileFromPeer( FileID fileID, PeerID& peer)
                         if(itPeerConnection != _peerConnections.end())
                         {
                           // disconnect the ice connection
-                          (itPeerConnection->second)->disconnect();
+                          (itPeerConnection->second).connection->disconnect();
 
                           // take it out from the map
 
@@ -177,7 +176,7 @@ void PeersConnectionManager::sendMessage(PeerID& peer, MessageBaseToSend* messag
 
     if (itPeerConnection  != _peerConnections.end() ) // if finds the peer
     {
-      (itPeerConnection->second)->sendMessage(message);
+      (itPeerConnection->second).connection->sendMessage(message);
     }
     else
     {
@@ -185,8 +184,29 @@ void PeersConnectionManager::sendMessage(PeerID& peer, MessageBaseToSend* messag
     }
 }
 
-void routePackets()
+void PeersConnectionManager::routePackets(atomic<bool>& isRunning)
 {
+      while(isRunning.load())
+      {
+          std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+        // goes through connected peers and receive every few minutes
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+            for(auto currPeer = _peerConnections.begin(); currPeer != _peerConnections.end(); currPeer++)
+            {
+
+                int messagesCount = currPeer->second.connection->receivedMessagesCount();
+
+                int currMessage = 0;
+                for(currMessage=0; currMessage < messagesCount; currMessage++)
+                {
+
+                      MessageBaseReceived currMessage = currPeer->second.connection->receiveMessage();
+
+                      // TODO - function to handle the messages when we have the right palces to send them...
+                      //handleMessage(currMessage);
+                }
+            }
+    }
 }
