@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+.idea/
+cmake-build-*/  # CLion's build output folders
+*.iml           # Module files for IntelliJ-based IDEs
+*.ipr
+*.iws
+*/cmake-build-debug/*

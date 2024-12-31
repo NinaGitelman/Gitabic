@@ -1,5 +1,6 @@
 #include <iostream>
 #include "NetworkUnit/ServerComm/DataRepublish/DataRepublish.h"
+#include "../../Peer/src/NetworkUnit/ServerComm/Messages.h"
 #include "Encryptions/SHA256/sha256.h"
 #include "Encryptions/AES/AESHandler.h"
 #include <stdlib.h>
@@ -9,6 +10,11 @@
 #include <vector>
 #include <cstdint>
 #include "Utils/VectorUint8Utils.h"
+#include <iostream>
+#include <unistd.h>
+#include "NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
+#include "NetworkUnit/SocketHandler/SocketHandler.h"
+#include "NetworkUnit/ServerComm/Messages.h"
 #include <iostream>
 #include <unistd.h>
 #include "NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
@@ -34,21 +40,39 @@ void printDataAsASCII(vector<uint8_t> data)
 
 void main1()
 {
-  Address serverAdd = Address("0.0.0.0", 4789);
+  //   int connect = 1;
+  //  // First handler negotiation
+  //   ICEConnection handler1(connect);
+  //   std::vector<uint8_t> data1 = handler1.getLocalICEData();
+  //   VectorUint8Utils::printVectorUint8(data1);
+  //   std::cout << "\n\n\n";
+  //   std::vector<uint8_t> remoteData1 = VectorUint8Utils::readFromCin();
+
+  //   try
+  //   {
+  //     handler1.connectToPeer(remoteData1);
+  //   }
+  //   catch (const std::exception &e)
+  //   {
+  //     std::cout << e.what() << " in main.cpp";
+  //   }
+
+  // working example with server for 2 diferent peers
+
+  int connect = 1;
+  Address serverAdd = Address("3.90.184.187", 4787);
   TCPSocket socket = TCPSocket(serverAdd);
 
   ServerResponseNewId newId(socket.receive([](uint8_t code)
                                            { return code == ServerResponseCodes::NewID; }));
 
   ID id = newId.id;
-  // ServerResponseNewId otherNewId(socket.receive([](uint8_t code)
-  //                                               { return code == ServerResponseCodes::NewID; }));
 
-  // ID otherId = otherNewId.id;
+  ServerResponseNewId otherNewId(socket.receive([](uint8_t code)
+                                                { return code == ServerResponseCodes::NewID; }));
 
-  DataRepublish &dataRepublish = DataRepublish::getInstance(&socket);
-  dataRepublish.saveData(ID(), id);
-  std::this_thread::sleep_for(std::chrono::seconds(60));
+  ID otherId = otherNewId.id;
+
   std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
   {
     return code == ServerResponseCodes::UserAuthorizedICEData;

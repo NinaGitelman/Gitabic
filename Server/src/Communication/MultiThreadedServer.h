@@ -15,18 +15,17 @@ using std::map;
 using std::mutex;
 using std::shared_ptr;
 
-#define SERVER_PORT 4789
+#define SERVER_PORT 4787
 
 class MultiThreadedServer
 {
 
 public:
     // friend class PacketHandler;
-
     MultiThreadedServer() : _running(true)
     {
         messageHandler = &MessageHandler::getInstance();
-    };
+    }
 
     ~MultiThreadedServer();
 
@@ -60,6 +59,8 @@ private:
     // helper only for debugging...
     void printDataAsASCII(vector<uint8_t> data);
 
+    // closes socket anf unbinds port
+    void cleanupSocket();
     ID generateRandomId();
     MessageHandler *messageHandler;
 };
