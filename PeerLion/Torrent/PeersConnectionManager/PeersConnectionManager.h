@@ -6,6 +6,7 @@
 #include "../FileHandler/TorrentFileHandler.h"
 #include "../../NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
 #include <unordered_map>
+#include "../../Utils/ThreadSafeCout.h"
 
 // technically the same as addres but im leaving it under a different name in case we want to add more things...
 
@@ -47,7 +48,7 @@ struct PeerConnectionAndMutex {
 
 class PeersConnectionManager {
 public:
-    // If the peer already exists, add the fileID
+    virtual ~PeersConnectionManager();
 
     /// @brief Function adds the given fileID to the connected peer list
     /// if the peer alreadt exists, adds only the file ID to its list
@@ -68,7 +69,8 @@ public:
     static PeersConnectionManager &getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
 
 private:
-    atomic<bool> _isRunning{false}; // bool to track if is connected to the other peer
+    std::shared_ptr<atomic<bool> > _isRunning; // bool to track if is connected to the other peer
+    std::thread _routePacketThread; // Store the thread as a member
 
     static mutex mutexInstance;
     static std::unique_ptr<PeersConnectionManager> instance;
@@ -86,10 +88,13 @@ private:
     // Delete copy and assignment to ensure singleton
     PeersConnectionManager(const PeersConnectionManager &) = delete;
 
+    explicit PeersConnectionManager(std::shared_ptr<TCPSocket> socket = nullptr);
+
+
     PeersConnectionManager &operator=(const PeersConnectionManager &) = delete;
 
     // thread that will be called from the constructor
-    void routePackets(atomic<bool> &isRunning);
+    void routePackets(std::shared_ptr<atomic<bool> > isRunning);
 
-    explicit PeersConnectionManager(std::shared_ptr<TCPSocket> socket = nullptr);
+    void handleMessage(MessageBaseReceived &message);
 };

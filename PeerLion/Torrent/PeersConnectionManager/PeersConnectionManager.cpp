@@ -1,7 +1,7 @@
 //
 // Created by user on 12/19/24.
 //
-
+/// TODO - change add file for peers and remove file from peer to use the peer's own mutex...
 #include "PeersConnectionManager.h"
 
 std::mutex PeersConnectionManager::mutexInstance;
@@ -26,7 +26,25 @@ PeersConnectionManager& PeersConnectionManager::getInstance(std::shared_ptr<TCPS
 
 PeersConnectionManager::PeersConnectionManager(std::shared_ptr<TCPSocket> socket): _serverSocket(socket)
 {
+    _isRunning = std::make_shared<std::atomic<bool>>(true);
+
+    _routePacketThread = std::thread([this]() {
+          routePackets(_isRunning);  // Pass the shared_ptr directly
+     });
+
+
 }
+
+PeersConnectionManager::~PeersConnectionManager()
+{
+    if (_isRunning) {
+        *_isRunning = false;  // Signal thread to stop
+    }
+    if (_routePacketThread.joinable()) {
+        _routePacketThread.join();  // Wait for thread to finish
+    }
+}
+
 
 // for debugging...
 static void printDataAsASCII(vector<uint8_t> data)
@@ -77,11 +95,7 @@ bool PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
         printDataAsASCII(response.iceCandidateInfo);
         // create thread that will add the peer
 
-        // TODO - problem with the thread. find way to know it is done even without the join and get return of okay or not if connected
-        //  TODO - maybe change the thread to return something instead.... wait for is connected or sth...
-        // TODO -  make wrapper to just call connect to peer and wait for response
-        /// TODO - later sprint make it prettier
-         bool connected = peerConnection->connectToPeer(response.iceCandidateInfo);
+        bool connected = peerConnection->connectToPeer(response.iceCandidateInfo);
 
          if(connected)
          {
@@ -184,17 +198,18 @@ void PeersConnectionManager::sendMessage(PeerID& peer, MessageBaseToSend* messag
     }
 }
 
-void PeersConnectionManager::routePackets(atomic<bool>& isRunning)
+void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool>> isRunning)
 {
-      while(isRunning.load())
+      while(isRunning->load())
       {
-          std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        // goes through connected peers and receive every few minutes
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            std::unique_lock<std::mutex> peersConnectionsLock(_mutexPeerConnections);
 
             for(auto currPeer = _peerConnections.begin(); currPeer != _peerConnections.end(); currPeer++)
             {
+                std::unique_lock<std::mutex> currPeerLock(currPeer->second.mutex);
+
+                peersConnectionsLock.unlock();
 
                 int messagesCount = currPeer->second.connection->receivedMessagesCount();
 
@@ -204,9 +219,25 @@ void PeersConnectionManager::routePackets(atomic<bool>& isRunning)
 
                       MessageBaseReceived currMessage = currPeer->second.connection->receiveMessage();
 
-                      // TODO - function to handle the messages when we have the right palces to send them...
-                      //handleMessage(currMessage);
+                      handleMessage(currMessage);
                 }
+
+                peersConnectionsLock.lock();
+
             }
     }
+}
+
+// TODO - add the rest of it for each handler created...
+void PeersConnectionManager::handleMessage(MessageBaseReceived& message)
+{
+
+  if(message.code == DEBUGGING_STRING_MESSAGE)
+  {
+      DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(message);
+         ThreadSafeCout::cout("Peers Connection Manager received: " + recvMessage.data + "\n\n");
+         g_message(recvMessage.data.c_str());
+
+  }
+
 }
