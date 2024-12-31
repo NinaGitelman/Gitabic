@@ -11,6 +11,9 @@ using std::vector;
 using ID = HashResult;
 using std::string;
 
+// if a message with this code is received it means there isnt any message received by the ICE Connection
+#define CODE_NO_MESSAGES_RECEIVED 255
+
 namespace std // Hash method for ID to allow hash map key usage
 {
     template <>
@@ -42,7 +45,7 @@ enum ClientRequestCodes
     UserListReq = 23,
 
     // debugging
-    DebuggingStringMessageToSend = 255
+    DebuggingStringMessage = 255
 };
 
 enum ClientResponseCodes
@@ -69,7 +72,7 @@ enum ServerResponseCodes
     UserListRes
 };
 
-/// @brief A base struct to send over the internet. Good for status messages, can be inherited for more data
+/// @brief A base struct for the messages sent
 struct MessageBaseToSend
 {
     uint8_t code;
@@ -166,7 +169,7 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
 
     std::string message;
 
-    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessageToSend) {}
+    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessage) {}
 
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
@@ -220,14 +223,46 @@ struct StoreRequest : MessageBaseToSend
 /// @brief A base struct to store a response Packet. good for status response
 struct MessageBaseReceived
 {
-    uint8_t code;
     vector<uint8_t> data;
+    uint8_t code;
     MessageBaseReceived() {}
 
     MessageBaseReceived(uint8_t code, vector<uint8_t> data)
     {
         this->code = code;
         this->data = data;
+    }
+};
+
+struct DebuggingStringMessageReceived
+{
+    std::string data;
+
+    DebuggingStringMessageReceived(MessageBaseReceived messageBaseReceived)
+    {
+        deserialize(messageBaseReceived.data);
+    }
+
+    void deserialize(const std::vector<uint8_t> &buffer)
+    {
+        data = string(buffer.begin(), buffer.end());
+    }
+
+    /// @brief  Heper function to pritn the DATA
+    void printDataAsASCII() const
+    {
+        for (const auto &byte : data)
+        {
+            if (std::isprint(byte))
+            {
+                std::cout << static_cast<char>(byte); // Printable characters
+            }
+            else
+            {
+                std::cout << '.'; // Replace non-printable characters with '.'
+            }
+        }
+        std::cout << std::endl;
     }
 };
 
