@@ -12,12 +12,9 @@
 
 #define KB 1024UL
 
-namespace Utils
-{
-
+namespace Utils {
     /// @brief Class providing file manipulation utilities
-    class FileUtils
-    {
+    class FileUtils {
     public:
         /// @brief Reads entire file into a byte vector
         /// @param filePath Path to the file to read
@@ -58,16 +55,26 @@ namespace Utils
         /// @param size Size of the piece
         /// @param hash Expected hash value
         /// @return true if piece matches hash, false otherwise
-        static bool verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size, HashResult hash);
+        static bool verifyPiece(const std::string &filePath, uint64_t offset, const uint64_t size,
+                                const HashResult &hash);
+
+        static bool fileExists(const std::string &filePath);
+
+        static bool dirExists(const std::string &filePath);
+
+        static std::filesystem::path createDownloadFolder(const std::string &fileHash, const std::string &friendlyName);
+
+        static vector<std::string> listDirectories(const std::string &path);
+
+        static std::string getExpandedPath(const std::string &path);
     };
 
     /// @brief Class handling file splitting logic
-    class FileSplitter
-    {
+    class FileSplitter {
     public:
-        static constexpr uint64_t MIN_PIECE_SIZE = 256 * KB;    ///< Minimum size of a file piece
+        static constexpr uint64_t MIN_PIECE_SIZE = 256 * KB; ///< Minimum size of a file piece
         static constexpr uint64_t MAX_PIECE_SIZE = 4 * KB * KB; ///< Maximum size of a file piece
-        static constexpr uint16_t BLOCK_SIZE = 16 * KB;         ///< Size of individual blocks
+        static constexpr uint16_t BLOCK_SIZE = 16 * KB; ///< Size of individual blocks
 
         /// @brief Calculates appropriate piece size for a file
         /// @param fileSize Size of the file
@@ -76,13 +83,12 @@ namespace Utils
     };
 
     /// @brief Class providing data conversion utilities
-    class Conversions
-    {
+    class Conversions {
     public:
         /// @brief Extracts first 16 bytes from a hash
         /// @param from Source hash
         /// @return Array containing first 16 bytes
-        static std::array<uint8_t, 16> cutArray(HashResult &from);
+        static std::array<uint8_t, 16> cutArray(const HashResult &from);
 
         /// @brief Converts a hash to a byte vector
         /// @param hash Hash to convert
@@ -97,7 +103,6 @@ namespace Utils
         /// @brief Converts a vector to a 16-byte array
         /// @param vec Vector to convert
         /// @return 16-byte array (truncated if vector is larger)
-        static array<uint8_t, 16> toKey(std::vector<uint8_t> vec);
+        static array<uint8_t, 16> toKey(const std::vector<uint8_t> &vec);
     };
-
 }

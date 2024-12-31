@@ -270,16 +270,18 @@ struct ServerResponseNewId : MessageBaseToSend
 /// @brief A response to a UserListRequest
 struct ServerResponseUserList : MessageBaseToSend
 {
+    ID _fileId;
     vector<ID> userList;
 
-    ServerResponseUserList(vector<ID> userList)
-        : userList(userList), MessageBaseToSend(ServerResponseCodes::UserListRes) {}
+    ServerResponseUserList(const ID &fileID, const vector<ID> &userList)
+        : MessageBaseToSend(ServerResponseCodes::UserListRes), _fileId(fileID), userList(userList) {}
 
     /// @brief Serializes the data to a vector of bytes
     /// @return A byte vector
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
         vector<uint8_t> serialized = MessageBaseToSend::serialize(userList.size() * SHA256_SIZE);
+        SerializeDeserializeUtils::addToEnd(serialized, vector<uint8_t>(_fileId.begin(), _fileId.end()));
         for (const ID &id : userList)
         {
             SerializeDeserializeUtils::addToEnd(serialized, vector<uint8_t>(id.begin(), id.end()));
