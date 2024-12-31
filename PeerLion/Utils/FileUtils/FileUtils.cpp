@@ -121,7 +121,7 @@ std::string FileUtils::getExpandedPath(const std::string &path) {
 }
 
 std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName) {
-    std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;
+    const std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;
     std::filesystem::path expandedHashFolder = std::filesystem::absolute(
         getExpandedPath(hashFolder.string()));
 
@@ -135,8 +135,8 @@ std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHas
     std::filesystem::path expandedSymlink = std::filesystem::absolute(getExpandedPath(symlink.string()));
 
     // Remove existing symlink if it exists
-    if (std::filesystem::exists(expandedSymlink)) {
-        std::filesystem::remove(expandedSymlink);
+    while (std::filesystem::exists(expandedSymlink)) {
+        expandedSymlink += "2";
     }
 
     std::filesystem::create_symlink(expandedHashFolder, expandedSymlink);
