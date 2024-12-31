@@ -276,6 +276,7 @@ struct DebuggingStringMessageReceived {
 /// @brief A list of users that has a file
 struct UserListResponse {
     vector<ID> data;
+    ID fileId;
     /// @brief Construct from a MessageBaseReceived data
     /// @param msg the recieved message
     explicit UserListResponse(const MessageBaseReceived &msg) {
@@ -285,7 +286,8 @@ struct UserListResponse {
     /// @brief Deserializes the data
     /// @param data The data
     void deserialize(vector<uint8_t> data) {
-        for (size_t i = 0; i < data.size(); i += sizeof(ID)) {
+        fileId = *reinterpret_cast<ID *>(data.data());
+        for (size_t i = sizeof(ID); i < data.size(); i += sizeof(ID)) {
             ID currID = *reinterpret_cast<ID *>(data.data() + i);
             this->data.push_back(currID);
         }

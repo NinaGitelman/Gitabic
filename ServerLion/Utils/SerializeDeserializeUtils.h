@@ -6,7 +6,7 @@
 #include <array>
 
 using std::vector;
-
+#include <cstdint>
 class SerializeDeserializeUtils
 {
 public:
