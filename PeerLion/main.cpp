@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
         while (handler1.receivedMessagesCount() > 0)
         {
           MessageBaseReceived newMessage = handler1.receiveMessage();
-          if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
+          if (newMessage.code == ClientRequestCodesToServer::DebuggingStringMessage)
           {
             DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
             recvMessage.printDataAsASCII();

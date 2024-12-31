@@ -38,6 +38,9 @@ public:
 
     static PeersConnectionManager& getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
 
+    // thread that will be called from the constructor
+    void routePackets();
+
 private:
     explicit PeersConnectionManager(std::shared_ptr<TCPSocket> socket = nullptr);
     static mutex mutexInstance;

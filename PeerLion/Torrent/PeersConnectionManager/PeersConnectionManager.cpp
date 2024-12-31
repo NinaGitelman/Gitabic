@@ -171,7 +171,6 @@ void PeersConnectionManager::removeFileFromPeer( FileID fileID, PeerID& peer)
 
 void PeersConnectionManager::sendMessage(PeerID& peer, MessageBaseToSend* message)
 {
-    std::cout << "in send message\n\n";
     std::unique_lock<std::mutex> registeredPeersLock(_mutexPeerConnections);
 
     auto itPeerConnection = _peerConnections.find(peer);
@@ -182,8 +181,12 @@ void PeersConnectionManager::sendMessage(PeerID& peer, MessageBaseToSend* messag
     }
     else
     {
-        std::cout << "peer not found\n\n";
-
-        throw std::runtime_error("Peer not found");
+         throw std::runtime_error("Peer not found");
     }
+}
+
+void routePackets()
+{
+
+
 }

@@ -192,17 +192,17 @@ enum ClientRequestCodes
     GetUserICEInfo = 1,
 
     // Bit torrent
-    Store = 21,
-    UserListReq = 23,
+    Store = 5,
+    UserListReq = 6,
 
     // debugging
-    DebuggingStringMessage = 255
+    DebuggingStringMessage = 10
 };
 
 enum ClientResponseCodes
 {
     // signaling
-    AuthorizedICEConnection = 30
+    AuthorizedICEConnection = 11
 };
 
 enum ServerResponseCodes

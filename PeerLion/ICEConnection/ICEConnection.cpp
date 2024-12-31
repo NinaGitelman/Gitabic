@@ -173,7 +173,7 @@ void ICEConnection::callbackReceive(NiceAgent* _agent, guint _stream_id, guint c
                     else
                     {
                         // debugging peers connection manager
-                        if (newMessage.code == ClientRequestCodes::DebuggingStringMessage)
+                        if (newMessage.code == ClientRequestCodesToServer::DebuggingStringMessage)
                         {
                             DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
                             g_message("Received in callback receive: ");

@@ -31,8 +31,8 @@ namespace std // Hash method for ID to allow hash map key usage
     };
 }
 
-// Codes fro protocol
-enum ClientRequestCodes // 0 - 20 // 255
+// Codes from protocol
+enum ClientRequestCodesToServer // 0 - 10
 {
     // no message received
     NoMessageReceived = 0,
@@ -41,23 +41,27 @@ enum ClientRequestCodes // 0 - 20 // 255
     GetUserICEInfo = 1,
 
     // Bit torrent
-    Store = 21,
-    UserListReq = 23,
+    Store = 5,
+    UserListReq = 6,
 
-    // debugging
-    DebuggingStringMessage = 255
+    // debugging - this doesnt go on range as its extra
+    DebuggingStringMessage = 10
 };
 
-enum ClientResponseCodes // 30 - 40
+#define DEBUGGING_STRING_MESSAGE 10
+#define CLIENT_REQUEST_CODES_MIN 0
+#define CLIENT_REQUEST_CODES_MAX 10
+
+
+enum ClientResponseCodesToServer // 11 - 19
 {
     // signaling
-    AuthorizedICEConnection = 30
+    AuthorizedICEConnection = 11
 };
 
-enum ServerRequestCodes
-{
-    AuthorizeICEConnection = 20
-};
+#define CLIENT_RESPONSE_CODES_TO_SERVER_MIN 11
+#define CLIENT_RESPONSE_CODES_TO_SERVER_MAX 19
+
 
 enum ServerResponseCodes
 {
@@ -72,17 +76,26 @@ enum ServerResponseCodes
     UserListRes
 };
 
+
+enum ServerRequestCodes // 20
+{
+    AuthorizeICEConnection = 20
+};
+
+// CODES FOR PEER TO PEER...
 enum ICEConnectionCodes // codes used by ice p2p connection  60-65
 {
     Disconnect = 60
 };
 
+#define ICE_CONNECTION_CODES_MIN 60
+#define ICE_CONNECTION_CODES_MAX 65
 
-struct GeneralRecieve
+struct GeneralReceive
 {
     ID from{};
 
-    explicit GeneralRecieve(const ID& from)
+    explicit GeneralReceive(const ID& from)
     {
         this->from = from;
     }
@@ -131,7 +144,8 @@ struct ClientRequestGetUserICEInfo : MessageBaseToSend
     vector<uint8_t> iceCandidateInfo;
 
     ClientRequestGetUserICEInfo(ID userId, vector<uint8_t> iceCandidateInfo) :
-        MessageBaseToSend(ClientRequestCodes::GetUserICEInfo), userId(userId), iceCandidateInfo(move(iceCandidateInfo))
+        MessageBaseToSend(ClientRequestCodesToServer::GetUserICEInfo), userId(userId),
+        iceCandidateInfo(move(iceCandidateInfo))
     {
     }
 
@@ -160,7 +174,8 @@ struct ClientResponseAuthorizedICEConnection : MessageBaseToSend
     uint16_t requestId;
 
     ClientResponseAuthorizedICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId) :
-        MessageBaseToSend(ClientResponseCodes::AuthorizedICEConnection), iceCandidateInfo(move(iceCandidateInfo)),
+        MessageBaseToSend(ClientResponseCodesToServer::AuthorizedICEConnection),
+        iceCandidateInfo(move(iceCandidateInfo)),
         requestId(requestId)
     {
     }
@@ -196,7 +211,7 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
     std::string message;
 
     DebuggingStringMessageToSend(string message) : message(message),
-                                                   MessageBaseToSend(ClientRequestCodes::DebuggingStringMessage)
+                                                   MessageBaseToSend(ClientRequestCodesToServer::DebuggingStringMessage)
     {
     }
 
@@ -213,7 +228,7 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
 /// @brief A request for user list
 struct UserListRequest : MessageBaseToSend
 {
-    UserListRequest(ID fileId) : fileId(fileId), MessageBaseToSend(ClientRequestCodes::UserListReq)
+    UserListRequest(ID fileId) : fileId(fileId), MessageBaseToSend(ClientRequestCodesToServer::UserListReq)
     {
     }
 
@@ -237,7 +252,7 @@ struct UserListRequest : MessageBaseToSend
 /// @brief A request to anounce you have a file
 struct StoreRequest : MessageBaseToSend
 {
-    StoreRequest(ID fileId, ID myId) : MessageBaseToSend(ClientRequestCodes::Store), myId(myId), fileId(fileId)
+    StoreRequest(ID fileId, ID myId) : MessageBaseToSend(ClientRequestCodesToServer::Store), myId(myId), fileId(fileId)
     {
     }
 
