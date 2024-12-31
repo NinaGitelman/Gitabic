@@ -11,28 +11,22 @@ using std::vector;
 using ID = HashResult;
 using std::string;
 
-// if a message with this code is received it means there isnt any message received by the ICE Connection
+// if a message with this code is received it means there isn't any message received by the ICE Connection
 #define CODE_NO_MESSAGES_RECEIVED 255
 
-namespace std // Hash method for ID to allow hash map key usage
-{
-    template <>
-    struct hash<ID>
-    {
-        size_t operator()(const ID &id) const
-        {
-            size_t res = 0;
-            for (size_t i = 0; i < id.size(); i++) {
-                res ^= hash<uint8_t>()(id[i]) << i;
-            }
-            return res;
+template<>
+struct std::hash<ID> {
+    size_t operator()(const ID &id) const noexcept {
+        size_t res = 0;
+        for (size_t i = 0; i < id.size(); i++) {
+            res ^= hash<uint8_t>()(id[i]) << i;
         }
-    };
-}
+        return res;
+    }
+};
 
 // Codes fro protocol
-enum ClientRequestCodes
-{
+enum ClientRequestCodes {
     // no message received
     NoMessageReceived = 0,
 
@@ -47,8 +41,7 @@ enum ClientRequestCodes
     DebuggingStringMessage = 255
 };
 
-enum ClientResponseCodes
-{
+enum ClientResponseCodes {
     // signaling
     AuthorizedICEConnection = 30
 };
@@ -63,7 +56,7 @@ enum ServerResponseCodes {
 
     NewID = 55,
 
-    // bit torrent
+    // Bit torrent
     StoreSuccess = 221,
     StoreFailure,
     UserListRes
@@ -75,24 +68,16 @@ enum ICEConnectionCodes // codes used by ice p2p connection  60-65
 };
 
 
-struct GeneralRecieve
-{
-    ID from{};
-
-    explicit GeneralRecieve(const ID& from)
-    {
-        this->from = from;
-    }
-};
-
-
 /// @brief A base struct for the messages sent
 struct MessageBaseToSend {
     virtual ~MessageBaseToSend() = default;
 
-    MessageBaseToSend() {}
+    uint8_t code{};
 
-    MessageBaseToSend(uint8_t code) : code(code) {}
+    MessageBaseToSend() = default;
+
+    explicit MessageBaseToSend(const uint8_t code) : code(code) {
+    }
 
     /// @brief Serializes the data to a vector of bytes
     /// @param PreviousSize the previous size already serialized
@@ -100,9 +85,8 @@ struct MessageBaseToSend {
     [[nodiscard]] virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const {
         vector<uint8_t> result;
         result.push_back(code);
-        for (size_t i = 0; i < sizeof(PreviousSize); i++)
-        {
-            result.push_back(((uint8_t *)&PreviousSize)[i]);
+        for (size_t i = 0; i < sizeof(PreviousSize); i++) {
+            result.push_back(reinterpret_cast<uint8_t *>(&PreviousSize)[i]);
         }
         return result;
     }
@@ -120,11 +104,14 @@ struct ClientRequestGetUserICEInfo : MessageBaseToSend {
     ID userId;
     vector<uint8_t> iceCandidateInfo;
 
-    ClientRequestGetUserICEInfo(ID userId, vector<uint8_t> iceCandidateInfo) : MessageBaseToSend(ClientRequestCodes::GetUserICEInfo), userId(userId), iceCandidateInfo(move(iceCandidateInfo)) {}
+    ClientRequestGetUserICEInfo(const ID &userId, vector<uint8_t> iceCandidateInfo) : MessageBaseToSend(
+                                                                                          ClientRequestCodes::GetUserICEInfo),
+                                                                                      userId(userId),
+                                                                                      iceCandidateInfo(
+                                                                                          move(iceCandidateInfo)) {
+    }
 
-    vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
-    {
-
+    [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
         // if (iceCandidateInfo.size() > USHRT_MAX)
         // {
         //     throw std::runtime_error("Ice candidate is too long (max size - 2 bytes)");
@@ -146,13 +133,16 @@ struct ClientResponseAuthorizedICEConnection : MessageBaseToSend {
     vector<uint8_t> iceCandidateInfo;
     uint16_t requestId;
 
-    ClientResponseAuthorizedICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId) : MessageBaseToSend(ClientResponseCodes::AuthorizedICEConnection), iceCandidateInfo(move(iceCandidateInfo)), requestId(requestId) {}
+    ClientResponseAuthorizedICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId) : MessageBaseToSend(
+                                                                                                      ClientResponseCodes::AuthorizedICEConnection),
+                                                                                                  iceCandidateInfo(
+                                                                                                      move(
+                                                                                                          iceCandidateInfo)),
+                                                                                                  requestId(requestId) {
+    }
 
-    vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
-    {
-
-        if (iceCandidateInfo.size() > USHRT_MAX)
-        {
+    vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override {
+        if (iceCandidateInfo.size() > USHRT_MAX) {
             throw std::runtime_error("Ice candidate is too long (max size - 2 bytes)");
         }
 
@@ -175,12 +165,12 @@ struct ClientResponseAuthorizedICEConnection : MessageBaseToSend {
 /////////////////
 
 // just for start debugging, pretify later
-struct DebuggingStringMessageToSend : MessageBaseToSend
-{
-
+struct DebuggingStringMessageToSend : MessageBaseToSend {
     std::string message;
 
-    DebuggingStringMessageToSend(string message) : message(message), MessageBaseToSend(ClientRequestCodes::DebuggingStringMessage) {}
+    DebuggingStringMessageToSend(string message) : message(message),
+                                                   MessageBaseToSend(ClientRequestCodes::DebuggingStringMessage) {
+    }
 
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override {
         vector<uint8_t> thisSerialized(this->message.begin(), this->message.end());
@@ -192,10 +182,13 @@ struct DebuggingStringMessageToSend : MessageBaseToSend
 };
 
 /// @brief A request for user list
-struct UserListRequest : MessageBaseToSend
-{
-    UserListRequest(ID fileId) : fileId(fileId), MessageBaseToSend(ClientRequestCodes::UserListReq) {}
-    UserListRequest(ID fileId, uint8_t code) : fileId(fileId), MessageBaseToSend(code) {}
+struct UserListRequest : MessageBaseToSend {
+    UserListRequest(ID fileId) : fileId(fileId), MessageBaseToSend(ClientRequestCodes::UserListReq) {
+    }
+
+    UserListRequest(ID fileId, uint8_t code) : fileId(fileId), MessageBaseToSend(code) {
+    }
+
     /// @brief The file we want to download
     ID fileId;
 
@@ -209,10 +202,12 @@ struct UserListRequest : MessageBaseToSend
 };
 
 /// @brief A request to anounce you have a file
-struct StoreRequest : MessageBaseToSend
-{
-    StoreRequest(ID fileId, ID myId) : MessageBaseToSend(ClientRequestCodes::Store), myId(myId), fileId(fileId) {}
-    StoreRequest(ID fileId, ID myId, uint8_t code) : MessageBaseToSend(code), myId(myId), fileId(fileId) {}
+struct StoreRequest : MessageBaseToSend {
+    StoreRequest(ID fileId, ID myId) : MessageBaseToSend(ClientRequestCodes::Store), myId(myId), fileId(fileId) {
+    }
+
+    StoreRequest(ID fileId, ID myId, uint8_t code) : MessageBaseToSend(code), myId(myId), fileId(fileId) {
+    }
 
     /// @brief Your encrypted ID
     ID myId;
@@ -231,11 +226,10 @@ struct StoreRequest : MessageBaseToSend
 };
 
 /// @brief A base struct to store a response Packet. good for status response
-struct MessageBaseReceived
-{
+struct MessageBaseReceived {
     vector<uint8_t> data;
-    uint8_t code;
-    MessageBaseReceived() {}
+    ID from{};
+    uint8_t code{};
 
     MessageBaseReceived() = default;
 
@@ -251,6 +245,8 @@ struct GeneralRecieve {
     explicit GeneralRecieve(const ID &from) {
         this->from = from;
     }
+
+    GeneralRecieve() = default;
 };
 
 struct DebuggingStringMessageReceived {
@@ -260,18 +256,14 @@ struct DebuggingStringMessageReceived {
         deserialize(messageBaseReceived.data);
     }
 
-    void deserialize(const std::vector<uint8_t> &buffer)
-    {
+    void deserialize(const std::vector<uint8_t> &buffer) {
         data = string(buffer.begin(), buffer.end());
     }
 
     /// @brief  Heper function to pritn the DATA
-    void printDataAsASCII() const
-    {
-        for (const auto &byte : data)
-        {
-            if (std::isprint(byte))
-            {
+    void printDataAsASCII() const {
+        for (const auto &byte: data) {
+            if (std::isprint(byte)) {
                 std::cout << static_cast<char>(byte); // Printable characters
             } else {
                 std::cout << '.'; // Replace non-printable characters with '.'
@@ -292,11 +284,9 @@ struct UserListResponse {
 
     /// @brief Deserializes the data
     /// @param data The data
-    void deserialize(vector<uint8_t> data)
-    {
-        for (size_t i = 0; i < data.size(); i += sizeof(ID))
-        {
-            ID currID = *(ID *)(data.data() + i);
+    void deserialize(vector<uint8_t> data) {
+        for (size_t i = 0; i < data.size(); i += sizeof(ID)) {
+            ID currID = *reinterpret_cast<ID *>(data.data() + i);
             this->data.push_back(currID);
         }
     }
@@ -310,9 +300,8 @@ struct ServerResponseNewId {
         deserialize(msg.data);
     }
 
-    void deserialize(vector<uint8_t> data)
-    {
-        this->id = *((ID *)data.data());
+    void deserialize(vector<uint8_t> data) {
+        this->id = *reinterpret_cast<ID *>(data.data());
     }
 };
 
@@ -322,17 +311,14 @@ struct ServerResponseNewId {
 struct ServerResponseUserAuthorizedICEData {
     vector<uint8_t> iceCandidateInfo;
 
-    ServerResponseUserAuthorizedICEData(const MessageBaseReceived &receivedMessage)
-    {
+    ServerResponseUserAuthorizedICEData(const MessageBaseReceived &receivedMessage) {
         deserailize(receivedMessage.data);
     }
 
-    void deserailize(const std::vector<uint8_t> &buffer)
-    {
-
+    void deserailize(const std::vector<uint8_t> &buffer) {
         std::cout << "Starting deserialization of ServerResponseUserAuthorizedICEData..." << std::endl;
 
-        iceCandidateInfo = buffer;
+        iceCandidateInfo = std::move(buffer);
     }
 };
 
@@ -342,14 +328,11 @@ struct ServerRequestAuthorizeICEConnection {
     vector<uint8_t> iceCandidateInfo;
     uint16_t requestId;
 
-    ServerRequestAuthorizeICEConnection(const MessageBaseReceived &receivedMessage)
-    {
+    ServerRequestAuthorizeICEConnection(const MessageBaseReceived &receivedMessage) {
         deserailize(receivedMessage.data);
     }
 
-    void deserailize(const std::vector<uint8_t> &buffer)
-    {
-
+    void deserailize(const std::vector<uint8_t> &buffer) {
         std::cout << "Starting deserialization of ServerResponseUserAuthorizedICEData..." << std::endl;
 
         // Extract the length of iceCandidateInfo
