@@ -15,8 +15,7 @@ using FileID = ID; // to be pretty :)
 using std::unordered_map;
 using std::unordered_set;
 
-class PeersConnectionManager
-{
+class PeersConnectionManager {
 public:
     // If the peer already exists, add the fileID
 
@@ -25,35 +24,39 @@ public:
     /// if not, creates its ice connectionsa dn the vector of fileIds with the file id for it
     /// @param peer  the peerID
     /// @param fileID the fileID of the file to get from it
-    void addFileForPeer(FileID fileID, PeerID& peer);
+    void addFileForPeer(FileID fileID, PeerID &peer);
 
 
     /// @brief function removes given file form given peer
     /// if there is only this file, it will disconnect the peer
     /// @param fileID the fileId to remove
     /// @param peer the peer to remove from
-    void removeFileFromPeer(FileID fileID, PeerID& peer);
+    void removeFileFromPeer(const FileID &fileID, const PeerID &peer);
 
-    void sendMessage(PeerID& peer, MessageBaseToSend* message);
+    void sendMessage(const PeerID &peer, MessageBaseToSend *message);
 
-    static PeersConnectionManager& getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
+    bool isConnected(const PeerID &peer);
+
+    static PeersConnectionManager &getInstance(const std::shared_ptr<TCPSocket> &socket = nullptr);
 
 private:
     explicit PeersConnectionManager(std::shared_ptr<TCPSocket> socket = nullptr);
+
     static mutex mutexInstance;
     static std::unique_ptr<PeersConnectionManager> instance;
 
     // Delete copy and assignment to ensure singleton
-    PeersConnectionManager(const PeersConnectionManager&) = delete;
-    PeersConnectionManager& operator=(const PeersConnectionManager&) = delete;
+    PeersConnectionManager(const PeersConnectionManager &) = delete;
+
+    PeersConnectionManager &operator=(const PeersConnectionManager &) = delete;
 
     std::shared_ptr<TCPSocket> _serverSocket;
 
     std::mutex _mutexRegisteredPeersFiles;
-    unordered_map<PeerID, unordered_set<FileID>> _registeredPeersFiles;
+    unordered_map<PeerID, unordered_set<FileID> > _registeredPeersFiles;
 
     std::mutex _mutexPeerConnections;
-    unordered_map<PeerID, std::shared_ptr<ICEConnection>> _peerConnections;
+    unordered_map<PeerID, std::shared_ptr<ICEConnection> > _peerConnections;
 
     unordered_map<FileID, TorrentFileHandler> _fileHandlers;
 };

@@ -19,29 +19,43 @@ struct PeerState {
 };
 
 class PeerManager {
-	unordered_map<PeerID, PeerState> _peerStates;
-	unordered_set<PeerID> _backUpPeers;
-	PeersConnectionManager &_peersConnectionManager;
-	ID _fileId;
-	std::shared_ptr<TCPSocket> _serverSocket;
-	std::thread updateConnectedPeersThread;
-	mutable mutex _mutexPeerStates;
-
 	static unordered_set<UserListResponse> _messagesSet;
 	static mutex _mutexMessagesSet;
 	static condition_variable _cvMessagesSet;
 
-	void updateConnectedPeers();
+	unordered_map<PeerID, PeerState> _peerStates;
+	vector<PeerID> _disconnectedPeers;
+	unordered_set<PeerID> _backUpPeers;
+	PeersConnectionManager &_peersConnectionManager;
+	ID _fileId;
+	std::shared_ptr<TCPSocket> _serverSocket;
+	bool _isSeed;
+	std::thread _updateConnectedPeersThread;
+	mutable mutex _mutexPeerStates;
+
+
+	[[noreturn]] void updateConnectedPeers();
 
 	vector<ID> getNewPeerList() const;
 
 public:
-	PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &serverSocket) : _peersConnectionManager(
-																						PeersConnectionManager::getInstance(
-																							serverSocket)),
-																					_fileId(fileId),
-																					_serverSocket(serverSocket) {
+	PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &serverSocket,
+				const bool isSeed) : _peersConnectionManager(
+										PeersConnectionManager::getInstance(
+											serverSocket)),
+									_fileId(fileId),
+									_serverSocket(serverSocket), _isSeed(isSeed) {
 	}
+
+	void addPeer(PeerID peer);
+
+	void removePeer(const PeerID &peer);
+
+	vector<PeerID> getConnectedPeers() const;
+
+	void updatePeerState(const PeerID &peer, const PeerState &state);
+
+	PeerState &getPeerState(const PeerID &peer);
 };
 
 
