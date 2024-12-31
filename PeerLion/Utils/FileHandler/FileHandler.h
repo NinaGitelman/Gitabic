@@ -17,6 +17,8 @@ class FileHandler {
 
 	[[nodiscard]] size_t getOffset(uint32_t pieceIndex, uint16_t blockIndex = 0) const;
 
+	string getCurrentDirPath() const;
+
 public:
 	// Rule of five
 	FileHandler(const FileHandler &other); // Copy constructor

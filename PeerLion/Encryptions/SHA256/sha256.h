@@ -30,8 +30,7 @@ int main() {
 #define SHA256_SIZE 32
 using HashResult = std::array<uint8_t, SHA256_SIZE>;
 
-class SHA256
-{
+class SHA256 {
 protected:
     typedef unsigned char uint8;
     typedef unsigned int uint32;
@@ -42,21 +41,29 @@ protected:
 
 public:
     void init();
+
     void update(const unsigned char *message, unsigned int len);
+
     void final(unsigned char *digest);
+
     static const unsigned int DIGEST_SIZE = (256 / 8);
 
     // FUNCTION FOR HASHING
 
-    static HashResult toHashSha256(const std::vector<uint8_t> &input); // function takes a string and outputs sha256 of the string in string format
+    static HashResult toHashSha256(const std::vector<uint8_t> &input);
+
+    // function takes a string and outputs sha256 of the string in string format
 
     //  static void toHashSha256(const std::string& input, unsigned char output[32]); // function takes a string and outputs the sha256 of the string in given char[32] format
 
     // HELPER Function for debugging
     static void printHashAsString(const std::array<uint8_t, SHA256::DIGEST_SIZE> &hash);
 
+    static std::string hashToString(const std::array<uint8_t, SHA256::DIGEST_SIZE> &hash);
+
 protected:
     void transform(const unsigned char *message, unsigned int block_nb);
+
     unsigned int m_tot_len;
     unsigned int m_len;
     unsigned char m_block[2 * SHA224_256_BLOCK_SIZE];

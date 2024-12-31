@@ -51,30 +51,42 @@ size_t FileHandler::getOffset(const uint32_t pieceIndex, const uint16_t blockInd
     return pieceSize * pieceIndex + blockIndex * Utils::FileSplitter::BLOCK_SIZE;
 }
 
+string FileHandler::getCurrentDirPath() const {
+    return dirPath + SHA256::hashToString(downloadProgress.get_file_hash()) + '/';
+}
+
 
 void FileHandler::initNew(const MetaDataFile &metaData) {
-    const auto fileHash = string(metaData.getFileHash().begin(), metaData.getFileHash().end());
+    const auto fileHash = SHA256::hashToString(metaData.getFileHash());
     auto path = FileUtils::createDownloadFolder(fileHash,
                                                 metaData.getCreator() + " - " +
-                                                std::filesystem::path(metaData.getFileName()).stem().string().append(
-                                                    "/"));
+                                                std::filesystem::path(metaData.getFileName()).stem().string());
+    auto filePath = path;
+    filePath.append(metaData.getFileName());
     try {
-        FileUtils::createFilePlaceHolder(path.append(metaData.getFileName()), metaData.getFileSize());
+        FileUtils::createFilePlaceHolder(filePath, metaData.getFileSize());
     } catch ([[maybe_unused]] const std::exception &e) {
+        std::cerr << e.what();
         throw std::runtime_error("Not enough storage space to create file");
     }
+
     downloadProgress = metaData;
     FileUtils::writeVectorToFile(downloadProgress.serialize(),
                                  path.append(
-                                     "." + string(metaData.getFileHash().begin(), metaData.getFileHash().end()) +
-                                     ".gitabic"));
+                                     ("." + metaData.getFileName() +
+                                      ".gitabic")));
 }
 
 FileHandler::FileHandler(const string &hash)
     : mode(FileMode::Default),
-      downloadProgress(DownloadProgress(FileUtils::readFileToVector(dirPath + "." + fileName + ".gitabic"))),
       pieceSize(FileSplitter::pieceSize(downloadProgress.get_file_size())) {
-    fileName = downloadProgress.get_file_name();
+    string dir = dirPath + hash + '/';
+    for (const auto &entry: std::filesystem::directory_iterator(dir)) {
+        fileName = entry.path().filename().string();
+        break;
+    }
+    downloadProgress =
+            DownloadProgress(FileUtils::readFileToVector(dirPath + hash + "/." + fileName + ".gitabic"));
 }
 
 FileHandler::FileHandler(const MetaDataFile &metaData) {
@@ -99,7 +111,8 @@ void FileHandler::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex
     std::lock_guard<std::mutex> lock(mutex_);
     Utils::FileUtils::writeChunkToFile(data, fileName, getOffset(pieceIndex, blockIndex));
     if (downloadProgress.downloadedBlock(pieceIndex, blockIndex)) {
-        const bool isGood = Utils::FileUtils::verifyPiece(dirPath + "/" + fileName, getOffset(pieceIndex), pieceSize,
+        const bool isGood = Utils::FileUtils::verifyPiece(getCurrentDirPath() + fileName, getOffset(pieceIndex),
+                                                          pieceSize,
                                                           downloadProgress.getPiece(pieceIndex).hash);
         downloadProgress.updatePieceStatus(pieceIndex, isGood ? DownloadStatus::Verified : DownloadStatus::Empty);
     }
@@ -107,19 +120,20 @@ void FileHandler::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex
 
 vector<uint8_t> FileHandler::loadPiece(const uint32_t pieceIndex) const {
     std::lock_guard<std::mutex> lock(mutex_);
-    return Utils::FileUtils::readFileChunk(dirPath + "/" + fileName, getOffset(pieceIndex), pieceSize);
+    return Utils::FileUtils::readFileChunk(getCurrentDirPath() + fileName, getOffset(pieceIndex), pieceSize);
 }
 
 vector<uint8_t> FileHandler::loadBlock(const uint32_t pieceIndex, const uint32_t blockIndex) const {
     std::lock_guard<std::mutex> lock(mutex_);
-    return Utils::FileUtils::readFileChunk(dirPath + "/" + fileName, getOffset(pieceIndex, blockIndex),
+    return Utils::FileUtils::readFileChunk(getCurrentDirPath() + fileName, getOffset(pieceIndex, blockIndex),
                                            Utils::FileSplitter::BLOCK_SIZE);
 }
 
 vector<FileHandler> FileHandler::getAllHandlers() {
     vector<FileHandler> handlers;
     for (const auto &dir: FileUtils::listDirectories(dirPath)) {
-        handlers.emplace_back(dir);
+        FileHandler handler(dir);
+        handlers.push_back(handler);
     }
     return handlers;
 }
