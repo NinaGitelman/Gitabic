@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <filesystem>
-#include "Utils/FileHandler/FileHandler.h"
+#include "Utils/FileIO/FileIO.h"
 #include "Utils/FileUtils/FileUtils.h"
 #include "Utils/MetaDataFile/MetaDataFile.h"
 
@@ -20,7 +20,7 @@ void TearDown() {
 void InitNewFileHandler() {
     MetaDataFile metaData = MetaDataFile::createMetaData("./test_file.txt", "password", Address("127.0.0.1", 8080),
                                                          "creator");
-    FileHandler fileHandler(metaData);
+    FileIO fileHandler(metaData);
     if (fileHandler.getFileName() == "test_file.txt" && fileHandler.getDownloadProgress().get_file_name() ==
         "test_file.txt") {
         std::cout << "InitNewFileHandler passed" << std::endl;
@@ -32,7 +32,7 @@ void InitNewFileHandler() {
 void SaveAndLoadPiece() {
     MetaDataFile metaData = MetaDataFile::createMetaData("./test_file.txt", "password", Address("127.0.0.1", 8080),
                                                          "creator");
-    FileHandler fileHandler(metaData);
+    FileIO fileHandler(metaData);
     std::vector<uint8_t> pieceData(1024, 'A');
     fileHandler.savePiece(0, pieceData);
 
@@ -47,7 +47,7 @@ void SaveAndLoadPiece() {
 void SaveAndLoadBlock() {
     MetaDataFile metaData = MetaDataFile::createMetaData("./test_file.txt", "password", Address("127.0.0.1", 8080),
                                                          "creator");
-    FileHandler fileHandler(metaData);
+    FileIO fileHandler(metaData);
     std::vector<uint8_t> blockData(512, 'B');
     fileHandler.saveBlock(0, 0, blockData);
 
@@ -62,8 +62,8 @@ void SaveAndLoadBlock() {
 void GetAllHandlers() {
     MetaDataFile metaData = MetaDataFile::createMetaData("./test_file.txt", "password", Address("127.0.0.1", 8080),
                                                          "creator");
-    FileHandler fileHandler(metaData);
-    auto handlers = FileHandler::getAllHandlers();
+    FileIO fileHandler(metaData);
+    auto handlers = FileIO::getAllHandlers();
     if (!handlers.empty()) {
         std::cout << "GetAllHandlers passed" << std::endl;
     } else {
