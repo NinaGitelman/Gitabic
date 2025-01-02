@@ -8,6 +8,7 @@
 
 #include "Messages.h"
 #include "../../Encryptions/AES/AESHandler.h"
+#include <memory>
 
 /**
  * @enum BitTorrentRequestCodes
@@ -120,6 +121,11 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
   return hash == computedhash;
  }
+};
+
+struct ResultMessages {
+ ID to;
+ vector<std::shared_ptr<TorrentMessageBase> > messages;
 };
 
 //////////////////////////////////////////////
@@ -254,18 +260,18 @@ struct CancelDataRequest : TorrentMessageBase {
 
 
 /**
- * @struct PieceOwnershopUpdate
+ * @struct PieceOwnershipUpdate
  * @brief Structure for BitTorrent has piece update, missing requested piece and lost piece update messages.
  */
-struct PieceOwnershopUpdate : TorrentMessageBase {
+struct PieceOwnershipUpdate : TorrentMessageBase {
  uint32_t pieceIndex{}; ///< Piece index.
 
  /**
   * @brief Constructor with received message.
   * @param msg The received message.
   */
- explicit PieceOwnershopUpdate(const MessageBaseReceived &msg) : TorrentMessageBase(msg, true) {
-  PieceOwnershopUpdate::deserialize(msg.data);
+ explicit PieceOwnershipUpdate(const MessageBaseReceived &msg) : TorrentMessageBase(msg, true) {
+  PieceOwnershipUpdate::deserialize(msg.data);
  }
 
  /**
@@ -275,12 +281,12 @@ struct PieceOwnershopUpdate : TorrentMessageBase {
   * @param pieceIndex The piece index.
   * @param code The message code.
   */
- PieceOwnershopUpdate(const ID &fileId, const AESKey &initVector, const uint32_t pieceIndex,
+ PieceOwnershipUpdate(const ID &fileId, const AESKey &initVector, const uint32_t pieceIndex,
                       const uint8_t code = BitTorrentRequestCodes::hasPieceUpdate) : TorrentMessageBase(
   fileId,
   initVector,
   code) {
-  PieceOwnershopUpdate::pieceIndex = pieceIndex;
+  PieceOwnershipUpdate::pieceIndex = pieceIndex;
  }
 
  /**

@@ -3,10 +3,11 @@
 #include <algorithm>
 #include <unordered_set>
 #include "../../ICEConnection/ICEConnection.h"
-#include "../FileHandler/TorrentFileHandler.h"
+#include "../TorrentFileHandler/TorrentFileHandler.h"
 #include "../../NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
 #include <unordered_map>
 
+class TorrentFileHandler; // forward declaration
 // technically the same as addres but im leaving it under a different name in case we want to add more things...
 
 using PeerID = ID; // to be pretty :)

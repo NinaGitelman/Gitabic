@@ -11,11 +11,6 @@ void SerializeDeserializeUtils::copyToFront(vector<uint8_t> to, T from) {
     memcpy(to.data(), &from, sizeof(T));
 }
 
-template<typename T>
-void SerializeDeserializeUtils::copyToEnd(vector<uint8_t> to, T from) {
-    to.resize(to.size() + sizeof(T));
-    memcpy(to.data() + to.size() - sizeof(T), &from, sizeof(T));
-}
 
 void SerializeDeserializeUtils::serializeUint16IntoVector(vector<uint8_t> &buffer, uint16_t num) {
     if (buffer.size() < 2) {

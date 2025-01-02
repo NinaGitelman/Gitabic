@@ -36,7 +36,7 @@ FileIO::FileIO(const FileIO &other)
 FileIO::FileIO(FileIO &&other) noexcept
     : fileName(std::move(other.fileName)),
       mode(other.mode),
-      downloadProgress(std::move(other.downloadProgress)),
+      downloadProgress(other.downloadProgress),
       pieceSize(other.pieceSize) {
     // `std::mutex` remains default-initialized in the moved-from object
 }

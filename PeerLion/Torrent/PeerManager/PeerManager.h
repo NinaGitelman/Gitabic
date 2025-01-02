@@ -18,6 +18,12 @@ struct PeerState {
 	time_t lastUnchokeTime;
 };
 
+class PeersConnectionManager; // Forward declaration
+
+using std::unordered_set;
+
+using PeerID = ID; // to be pretty :)
+
 class PeerManager {
 	static unordered_set<UserListResponse> _messagesSet;
 	static mutex _mutexMessagesSet;
@@ -40,12 +46,7 @@ class PeerManager {
 
 public:
 	PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &serverSocket,
-				const bool isSeed) : _peersConnectionManager(
-										PeersConnectionManager::getInstance(
-											serverSocket)),
-									_fileId(fileId),
-									_serverSocket(serverSocket), _isSeed(isSeed) {
-	}
+				const bool isSeed);
 
 	void addPeer(PeerID peer);
 
@@ -60,3 +61,5 @@ public:
 
 
 #endif //PEERMANAGER_H
+
+

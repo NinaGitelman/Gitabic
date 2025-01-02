@@ -67,6 +67,15 @@ vector<ID> PeerManager::getNewPeerList() const {
 	return {};
 }
 
+PeerManager::PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &serverSocket,
+						const bool isSeed) : _peersConnectionManager(
+												PeersConnectionManager::getInstance(
+													serverSocket)),
+											_fileId(fileId),
+											_serverSocket(serverSocket), _isSeed(isSeed) {
+}
+
+
 void PeerManager::addPeer(PeerID peer) {
 	std::lock_guard guard(_mutexPeerStates);
 	if (_peerStates.size() >= MAX_PEERS) {
