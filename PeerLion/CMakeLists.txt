@@ -19,9 +19,7 @@ file(GLOB_RECURSE SOURCES
 list(FILTER SOURCES EXCLUDE REGEX "CMakeFiles/.*")
 
 # Create the executable
-add_executable(PeerLion ${SOURCES}
-        Torrent/TorrentFileHandler/HandleRequests.cpp
-        Torrent/TorrentFileHandler/HandleRequests.h)
+add_executable(PeerLion ${SOURCES})
 
 # Include directories
 target_include_directories(PeerLion PRIVATE

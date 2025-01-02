@@ -8,8 +8,8 @@
 #include "../FileIO/FileIO.h"
 #include "../PeersConnectionManager/PeersConnectionManager.h"
 #include "../../NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
-#include "HandleRequests.h"
 #include "../PeerManager/PeerManager.h"
+#include "../../NetworkUnit/ServerComm/BitTorrentMessages.h"
 
 class PeerManager; // Forward declaration
 class PeersConnectionManager; // Forward declaration
@@ -29,11 +29,17 @@ private:
 	mutable mutex _mutexReceivedRequests;
 	queue<MessageBaseReceived> _receivedResponses;
 	mutable mutex _mutexReceivedResponses;
-	vector<std::shared_ptr<TorrentMessageBase> > _messagesToSend;
+	vector<std::shared_ptr<MessageBaseToSend> > _messagesToSend;
 	mutable mutex _mutexMessagesToSend;
 	condition_variable _cvMessagesToSend;
 
-	HandleRequests _handleRequests;
+	ResultMessages handle(const DataRequest &request) const;
+
+	ResultMessages handle(const CancelDataRequest &request);
+
+	ResultMessages handle(const PieceOwnershipUpdate &request);
+
+	ResultMessages handle(const TorrentMessageBase &request) const;
 
 	thread _sendMessagesThread;
 	thread _handleRequestsThread;
@@ -43,8 +49,6 @@ private:
 	bool _running;
 
 	AESHandler _aesHandler;
-
-	void cancelDataRequest(const CancelDataRequest &request);
 
 	void handleRequests();
 
