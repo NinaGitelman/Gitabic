@@ -77,7 +77,11 @@ public:
 	 */
 	[[nodiscard]] vector<uint8_t> loadBlock(uint32_t pieceIndex, uint32_t blockIndex) const;
 
-	static vector<FileIO> getAllHandlers();
+	/**
+	 * initiates all files io
+	 * @return
+	 */
+	static vector<FileIO> getAllFileIO();
 };
 
 

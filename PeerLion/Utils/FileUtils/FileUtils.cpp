@@ -183,6 +183,9 @@ array<uint8_t, 16> Utils::Conversions::toKey(const std::vector<uint8_t> &vec) {
 }
 
 uint FileSplitter::pieceSize(const uint64_t fileSize) {
+    if (fileSize <= MIN_PIECE_SIZE) {
+        return fileSize;
+    }
     if (fileSize <= KB * MIN_PIECE_SIZE) {
         return MIN_PIECE_SIZE;
     }

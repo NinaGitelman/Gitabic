@@ -52,7 +52,7 @@ size_t FileIO::getOffset(const uint32_t pieceIndex, const uint16_t blockIndex) c
 }
 
 string FileIO::getCurrentDirPath() const {
-    return dirPath + SHA256::hashToString(downloadProgress.get_file_hash()) + '/';
+    return dirPath + SHA256::hashToString(downloadProgress.getFileHash()) + '/';
 }
 
 
@@ -79,7 +79,7 @@ void FileIO::initNew(const MetaDataFile &metaData) {
 
 FileIO::FileIO(const string &hash)
     : mode(FileMode::Default),
-      pieceSize(FileSplitter::pieceSize(downloadProgress.get_file_size())) {
+      pieceSize(FileSplitter::pieceSize(downloadProgress.getFileSize())) {
     string dir = dirPath + hash + '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
         fileName = entry.path().filename().string();
@@ -92,8 +92,8 @@ FileIO::FileIO(const string &hash)
 FileIO::FileIO(const MetaDataFile &metaData) {
     initNew(metaData);
     this->mode = FileMode::Default;
-    fileName = downloadProgress.get_file_name();
-    pieceSize = FileSplitter::pieceSize(downloadProgress.get_file_size());
+    fileName = downloadProgress.getFileName();
+    pieceSize = FileSplitter::pieceSize(downloadProgress.getFileSize());
 }
 
 void FileIO::savePiece(const uint32_t pieceIndex, const vector<uint8_t> &pieceData) {
@@ -129,7 +129,7 @@ vector<uint8_t> FileIO::loadBlock(const uint32_t pieceIndex, const uint32_t bloc
                                            Utils::FileSplitter::BLOCK_SIZE);
 }
 
-vector<FileIO> FileIO::getAllHandlers() {
+vector<FileIO> FileIO::getAllFileIO() {
     vector<FileIO> handlers;
     for (const auto &dir: FileUtils::listDirectories(dirPath)) {
         FileIO handler(dir);

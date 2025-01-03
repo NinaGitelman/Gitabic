@@ -3,6 +3,8 @@
 //
 #include "RarityTrackerChooser.h"
 
+#include <bits/ranges_algo.h>
+
 void RarityTrackerChooser::addPeerRarity(const vector<std::bitset<8> > &vec) {
 	for (int i = 0; i < _pieceCount; ++i) {
 		_rarity[i] += vec[i / 8].test(i % 8) ? 1 : 0;
@@ -23,10 +25,30 @@ void RarityTrackerChooser::reCalculateRarity() {
 	}
 }
 
+uint16_t RarityTrackerChooser::getPeerWindow(const PeerID &peer) {
+	if (!peerWindows.contains(peer)) {
+		peerWindows[peer] = INITIAL_WINDOW;
+	}
+	return peerWindows[peer];
+}
+
+void RarityTrackerChooser::adjustPeerWindow(const PeerID &peer, bool success) {
+	auto &window = peerWindows[peer];
+	if (success) {
+		window = std::min(window + 1, static_cast<int>(MAX_WINDOW));
+	} else {
+		window = std::max(window - 1, static_cast<int>(MIN_WINDOW));
+	}
+}
+
 RarityTrackerChooser::RarityTrackerChooser(const uint pieceCount,
-											DownloadProgress &downloadProgress): IPieceChooser(
-																					pieceCount, downloadProgress),
-																				_rarity(pieceCount, 0) {
+											DownloadProgress &downloadProgress, const FileID &fileID): IPieceChooser(
+																											pieceCount,
+																											downloadProgress,
+																											fileID),
+																										_rarity(
+																											pieceCount,
+																											0) {
 }
 
 void RarityTrackerChooser::updatePeerBitfield(const PeerID &peer, const vector<std::bitset<8> > &peerBitfield) {
@@ -37,8 +59,13 @@ void RarityTrackerChooser::updatePeerBitfield(const PeerID &peer, const vector<s
 }
 
 void RarityTrackerChooser::removePeer(const PeerID &peer) {
-	removePeerRarity(_peersBitfields[peer]);
-	_peersBitfields.erase(peer);
+	if (_peersBitfields.contains(peer)) {
+		removePeerRarity(_peersBitfields[peer]);
+		_peersBitfields.erase(peer);
+	}
+	activeRequests.erase(peer);
+	peerWindows.erase(peer);
+	lastRequestTimes.erase(peer);
 }
 
 uint8_t RarityTrackerChooser::getRarity(const uint pieceIndex) const {
@@ -65,9 +92,175 @@ vector<uint> RarityTrackerChooser::getTopNRarest(const uint n) const {
 	return res;
 }
 
+bool RarityTrackerChooser::hasPiece(const PeerID &peer, const uint pieceIndex) const {
+	return _peersBitfields.at(peer)[pieceIndex / 8].test(pieceIndex % 8);
+}
+
 vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> peers) {
 	vector<ResultMessages> result;
-	//think about the logic here
-	//use downloadProgress.getPieceStatused(Downloading, Empty)
+	auto now = std::chrono::steady_clock::now();
+
+	// Handle timeouts
+	for (auto &requests: activeRequests | std::views::values) {
+		auto it = std::ranges::remove_if(requests,
+										[now](const RequestTracker &req) {
+											const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+												now - req.requestTime).count();
+											return elapsed > REQUEST_TIMEOUT_MS || req.received;
+										}).begin();
+		requests.erase(it, requests.end());
+	}
+
+	// Get and sort pieces
+	auto downloadingPieces = _downloadProgress.getPiecesStatused(DownloadStatus::Downloading);
+	auto emptyPieces = _downloadProgress.getPiecesStatused(DownloadStatus::Empty);
+
+	//finish download started pieces first, prioritize by complition percentage
+	std::ranges::sort(downloadingPieces.begin(), downloadingPieces.end(),
+					[](const auto &lhs, const auto &rhs) {
+						return lhs.bytesDownloaded > rhs.bytesDownloaded;
+					});
+
+	//if enough peers, start downloading empty pieces, prioritize by rarity
+	std::ranges::sort(emptyPieces.begin(), emptyPieces.end(),
+					[this](const auto &lhs, const auto &rhs) {
+						return getRarity(_downloadProgress.getPieceIndex(lhs.offset)) >
+								getRarity(_downloadProgress.getPieceIndex(rhs.offset));
+					});
+
+	// Process all pieces
+	for (const PeerID &peer: peers) {
+		ResultMessages res;
+		res.to = peer;
+		const uint16_t currentWindow = getPeerWindow(peer);
+
+		// Initialize peer's request tracking if needed
+		if (!activeRequests.contains(peer)) {
+			activeRequests[peer] = {};
+		}
+		uint16_t availableSlots = currentWindow - activeRequests[peer].size();
+
+		if (availableSlots == 0) continue;
+
+		// Fill window from downloading pieces first
+		for (auto &piece: downloadingPieces) {
+			if (availableSlots == 0) break;
+
+			if (!hasPiece(peer, _downloadProgress.getPieceIndex(piece.offset))) continue;
+
+			for (auto missingBlocks = piece.getBlocksStatused(DownloadStatus::Empty).blocks;
+				const auto &block: missingBlocks) {
+				if (availableSlots == 0) break;
+
+				// Check if block is already requested
+				bool alreadyRequested = false;
+				for (const auto &requests: activeRequests | std::views::values) {
+					for (const auto &req: requests) {
+						if (req.pieceIndex == _downloadProgress.getPieceIndex(piece.offset) &&
+							req.blockIndex == piece.getBlockIndex(block.offset)) {
+							alreadyRequested = true;
+							break;
+						}
+					}
+					if (alreadyRequested) break;
+				}
+
+				if (!alreadyRequested) {
+					auto request = std::make_shared<DataRequest>(
+						_fileID,
+						AESKey{},
+						_downloadProgress.getPieceIndex(piece.offset),
+						piece.getBlockIndex(block.offset),
+						1
+					);
+
+					res.messages.push_back(request);
+					activeRequests[peer].push_back({
+						now,
+						_downloadProgress.getPieceIndex(piece.offset),
+						piece.getBlockIndex(block.offset)
+					});
+					availableSlots--;
+				}
+			}
+		}
+
+		// Fill remaining slots with empty pieces
+		for (auto &piece: emptyPieces) {
+			if (availableSlots == 0) break;
+
+			if (!hasPiece(peer, _downloadProgress.getPieceIndex(piece.offset))) continue;
+
+			for (auto emptyBlocks = piece.getBlocksStatused(DownloadStatus::Empty).blocks;
+				const auto &block: emptyBlocks) {
+				if (availableSlots == 0) break;
+
+				auto request = std::make_shared<DataRequest>(
+					_fileID,
+					AESKey{},
+					_downloadProgress.getPieceIndex(piece.offset),
+					piece.getBlockIndex(block.offset),
+					1
+				);
+
+				res.messages.push_back(request);
+				activeRequests[peer].push_back({
+					now,
+					_downloadProgress.getPieceIndex(piece.offset),
+					piece.getBlockIndex(block.offset)
+				});
+				availableSlots--;
+			}
+		}
+
+		if (!res.messages.empty()) {
+			result.push_back(res);
+		}
+	}
+	//optimize requests, join consequent blocks into one request
+	for (auto &[to, messages]: result) {
+		std::ranges::sort(messages, [](const auto &lhs, const auto &rhs) {
+			const auto &lhsReq = *reinterpret_cast<DataRequest *>(&*lhs);
+			const auto &rhsReq = *reinterpret_cast<DataRequest *>(&*rhs);
+			return lhsReq.pieceIndex < rhsReq.pieceIndex || (lhsReq.pieceIndex == rhsReq.pieceIndex &&
+															lhsReq.blockIndex < rhsReq.blockIndex);
+		});
+
+		vector<std::shared_ptr<TorrentMessageBase> > newMessages;
+		for (auto it = messages.begin(); it != messages.end();) {
+			auto &req = *reinterpret_cast<DataRequest *>(&**it);
+			auto nextIt = it + 1;
+			while (nextIt != messages.end()) {
+				if (const auto &nextReq = *reinterpret_cast<DataRequest *>(&**nextIt);
+					req.pieceIndex == nextReq.pieceIndex && req.blockIndex + 1 == nextReq.blockIndex) {
+					req.blocksCount++;
+					++nextIt;
+				} else {
+					break;
+				}
+			}
+			newMessages.push_back(*it);
+			it = nextIt;
+		}
+		messages = newMessages;
+	}
 	return result;
+}
+
+void RarityTrackerChooser::updateBlockReceived(const PeerID &peer, uint32_t pieceIndex, uint16_t blockIndex) {
+	//Something wrong here, need to fix
+	//Probably need to make some kind of avg time, and base on that decide window size
+	if (activeRequests.contains(peer)) {
+		auto &requests = activeRequests[peer];
+		const auto it = std::ranges::find_if(requests,
+											[pieceIndex, blockIndex](const RequestTracker &req) {
+												return req.pieceIndex == pieceIndex && req.blockIndex == blockIndex;
+											});
+
+		if (it != requests.end()) {
+			auto responseTime = std::chrono::steady_clock::now() - it->requestTime;
+			adjustPeerWindow(peer, true);
+			it->received = true;
+		}
+	}
 }
