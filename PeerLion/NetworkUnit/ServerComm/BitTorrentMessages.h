@@ -42,7 +42,7 @@ enum BitTorrentResponseCodes {
  * @struct TorrentMessageBase
  * @brief Base structure for BitTorrent messages.
  */
-struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
+struct TorrentMessageBase : MessageBaseToSend, GeneralReceive {
  ID fileId{}; ///< File ID.
  HashResult hash{}; ///< Hash result.
  AESKey initVector{}; ///< AES initialization vector.
@@ -55,7 +55,7 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   * @param code The message code.
   */
  TorrentMessageBase(const ID &fileId, const AESKey &initVector, const uint8_t code) : MessageBaseToSend(
-                                                                                       code), GeneralRecieve(),
+                                                                                       code), GeneralReceive(),
                                                                                       fileId(fileId),
                                                                                       initVector(initVector) {
  }
@@ -67,7 +67,7 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   * @param isDeserialized Flag indicating if the message is deserialized.
   */
  TorrentMessageBase(const MessageBaseReceived &msg, const uint8_t code,
-                    const bool isDeserialized = false) : GeneralRecieve(
+                    const bool isDeserialized = false) : GeneralReceive(
   msg.from) {
   if (!isDeserialized) {
    TorrentMessageBase::deserialize(msg.data);
@@ -417,3 +417,4 @@ struct FileBitField : TorrentMessageBase {
 };
 
 #endif //BITTORRENTMESSAGES_H
+

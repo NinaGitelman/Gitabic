@@ -93,6 +93,8 @@ struct GeneralReceive {
     explicit GeneralReceive(const ID &from) {
         this->from = from;
     }
+
+    GeneralReceive()=default;
 };
 
 

@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include "../../Utils/ThreadSafeCout.h"
 
+
 // technically the same as addres but im leaving it under a different name in case we want to add more things...
 
 using PeerID = ID; // to be pretty :)
@@ -14,6 +15,7 @@ using FileID = ID; // to be pretty :)
 
 using std::unordered_map;
 using std::unordered_set;
+
 
 // peer connection to manage this peers mutex and the ice connection
 struct PeerConnectionAndMutex {
@@ -54,22 +56,26 @@ public:
     /// if not, creates its ice connectionsa dn the vector of fileIds with the file id for it
     /// @param peer  the peerID
     /// @param fileID the fileID of the file to get from it
-    bool addFileForPeer(FileID fileID, PeerID &peer);
+    bool addFileForPeer(const FileID& fileID,const PeerID &peer);
 
 
     /// @brief function removes given file form given peer
     /// if there is only this file, it will disconnect the peer
     /// @param fileID the fileId to remove
     /// @param peer the peer to remove from
-    void removeFileFromPeer(FileID fileID, PeerID &peer);
+    void removeFileFromPeer(const FileID fileID,const PeerID &peer);
 
-    void sendMessage(PeerID &peer, MessageBaseToSend *message);
+
+    // @brief Function to send the given message to the given peer
+    /// @param PeerId the peer to send message to
+    /// @param MessageBaseToSend the message
+    void sendMessage(const PeerID &peer, MessageBaseToSend *message);
 
     static PeersConnectionManager &getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
 
 
     // Function to check if the given peer is connected
-    bool isConnected(PeerID &peer);
+    bool isConnected(const PeerID& peer);
 
 private:
     std::shared_ptr<atomic<bool> > _isRunning; // bool to track if is connected to the other peer

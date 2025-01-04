@@ -64,7 +64,7 @@ static void printDataAsASCII(vector<uint8_t> data)
 }
 
 // TODO divide this into smaller functions maybe...
-bool PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
+bool PeersConnectionManager::addFileForPeer(const FileID& fileID,const PeerID& peer)
 {
     bool addedFile = false;
     std::cout << "Debug Peers Connection Manager add peer" << std::endl;
@@ -129,7 +129,7 @@ bool PeersConnectionManager::addFileForPeer(FileID fileID, PeerID& peer)
 }
 
 
-void PeersConnectionManager::removeFileFromPeer( FileID fileID, PeerID& peer)
+void PeersConnectionManager::removeFileFromPeer( const FileID fileID,const PeerID& peer)
 {
     std::unique_lock<std::mutex> registeredPeersLock(_mutexRegisteredPeersFiles);
 
@@ -182,7 +182,7 @@ void PeersConnectionManager::removeFileFromPeer( FileID fileID, PeerID& peer)
     }
 }
 
-void PeersConnectionManager::sendMessage(PeerID& peer, MessageBaseToSend* message)
+void PeersConnectionManager::sendMessage(const PeerID& peer, MessageBaseToSend* message)
 {
     std::unique_lock<std::mutex> registeredPeersLock(_mutexPeerConnections);
 
@@ -241,7 +241,7 @@ void PeersConnectionManager::handleMessage(MessageBaseReceived& message)
   }
 }
 
-bool PeersConnectionManager::isConnected(PeerID &peer) {
+bool PeersConnectionManager::isConnected(const PeerID& peer) {
 
     std::unique_lock<std::mutex> peersConnectionsLock(_mutexPeerConnections);
     return _peerConnections.find(peer) != _peerConnections.end();
