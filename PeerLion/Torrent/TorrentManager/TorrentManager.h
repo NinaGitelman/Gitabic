@@ -65,7 +65,7 @@ public:
     static TorrentManager &getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
 
     void addNewFileHandler(FileIO& fileIO);
-  //  void removeFileHandler(const FileID& fileID);
+    void removeFileHandler(const FileID& fileID);
 
 
 };

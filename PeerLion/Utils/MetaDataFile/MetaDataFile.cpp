@@ -90,36 +90,124 @@ vector<uint8_t> MetaDataFile::serialize() {
 
 void MetaDataFile::deserialize(vector<uint8_t> &data) {
     uint i = 0;
+
+    // Check if there is enough data to read 'sizes'
+    if (i + sizeof(sizes) > data.size()) {
+        throw std::out_of_range("Not enough data to read sizes");
+    }
     memcpy(&sizes, data.data(), sizeof(sizes));
     i += sizeof(sizes);
+
     uint size = 0;
+
+    // Check if there is enough data to read 'size'
+    if (i + sizeof(size) > data.size()) {
+        throw std::out_of_range("Not enough data to read fileName size");
+    }
     memcpy(&size, data.data() + i, sizeof(size));
     i += sizeof(size);
+
+    // Check if there is enough data to read the fileName
+    if (i + size > data.size()) {
+        throw std::out_of_range("Not enough data to read fileName");
+    }
     fileName = string(data.data() + i, data.data() + i + size);
     i += size;
+
+    // Repeat for creator
+    if (i + sizeof(size) > data.size()) {
+        throw std::out_of_range("Not enough data to read creator size");
+    }
     memcpy(&size, data.data() + i, sizeof(size));
     i += sizeof(size);
+
+    if (i + size > data.size()) {
+        throw std::out_of_range("Not enough data to read creator");
+    }
     creator = string(data.data() + i, data.data() + i + size);
     i += size;
+
+    // Check fileHash size
+    if (i + fileHash.size() > data.size()) {
+        throw std::out_of_range("Not enough data to read fileHash");
+    }
     memcpy(&fileHash, data.data() + i, fileHash.size());
     i += fileHash.size();
+
+    // Parts hashes
     for (size_t j = 0; j < sizes.partsCount; j++) {
         HashResult hash;
+        if (i + hash.size() > data.size()) {
+            throw std::out_of_range("Not enough data to read part hash");
+        }
         memcpy(&hash, data.data() + i, hash.size());
         i += hash.size();
         partsHashes.push_back(hash);
     }
+
+    // Signaling address IP
+    if (i + signalingAddress.ip.size() > data.size()) {
+        throw std::out_of_range("Not enough data to read signaling address IP");
+    }
     memcpy(signalingAddress.ip.data(), data.data() + i, signalingAddress.ip.size());
     i += signalingAddress.ip.size();
+
+    // Signaling address port
+    if (i + sizeof(signalingAddress.port) > data.size()) {
+        throw std::out_of_range("Not enough data to read signaling address port");
+    }
     memcpy(&signalingAddress.port, data.data() + i, sizeof(signalingAddress.port));
     i += sizeof(signalingAddress.port);
+
+    // Encrypted AES key
+    if (i + encryptedAesKey.size() > data.size()) {
+        throw std::out_of_range("Not enough data to read encrypted AES key");
+    }
     memcpy(encryptedAesKey.data(), data.data() + i, encryptedAesKey.size());
-    i + encryptedAesKey.size();
+    i += encryptedAesKey.size();
+
+    // Optional salt if password is used
     if (sizes.hasPassword) {
+        if (i + salt.size() > data.size()) {
+            throw std::out_of_range("Not enough data to read salt");
+        }
         memcpy(salt.data(), data.data() + i, salt.size());
-        i + salt.size();
+        i += salt.size();
     }
 }
+// old code was giving seg fault
+// void MetaDataFile::deserialize(vector<uint8_t> &data) {
+//     uint i = 0;
+//     memcpy(&sizes, data.data(), sizeof(sizes));
+//     i += sizeof(sizes);
+//     uint size = 0;
+//     memcpy(&size, data.data() + i, sizeof(size));
+//     i += sizeof(size);
+//     fileName = string(data.data() + i, data.data() + i + size);
+//     i += size;
+//     memcpy(&size, data.data() + i, sizeof(size));
+//     i += sizeof(size);
+//     creator = string(data.data() + i, data.data() + i + size);
+//     i += size;
+//     memcpy(&fileHash, data.data() + i, fileHash.size());
+//     i += fileHash.size();
+//     for (size_t j = 0; j < sizes.partsCount; j++) {
+//         HashResult hash;
+//         memcpy(&hash, data.data() + i, hash.size());
+//         i += hash.size();
+//         partsHashes.push_back(hash);
+//     }
+//     memcpy(signalingAddress.ip.data(), data.data() + i, signalingAddress.ip.size());
+//     i += signalingAddress.ip.size();
+//     memcpy(&signalingAddress.port, data.data() + i, sizeof(signalingAddress.port));
+//     i += sizeof(signalingAddress.port);
+//     memcpy(encryptedAesKey.data(), data.data() + i, encryptedAesKey.size());
+//     i + encryptedAesKey.size();
+//     if (sizes.hasPassword) {
+//         memcpy(salt.data(), data.data() + i, salt.size());
+//         i + salt.size();
+//     }
+// }
 
 AESKey MetaDataFile::decryptAesKey(const string &password) const {
     vector<uint8_t> pass;

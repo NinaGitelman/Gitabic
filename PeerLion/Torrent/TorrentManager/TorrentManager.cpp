@@ -51,7 +51,25 @@ void TorrentManager::addNewFileHandler(FileIO& fileIO)
         fileHandlers[fileID] = fileHandlerAndMutex;
     }
     else
-        {
+    {
         throw std::runtime_error("FileHandler for this fileID already exists");
+    }
+}
+
+void TorrentManager::removeFileHandler(const FileID& fileID)
+{
+    std::unique_lock<std::mutex> lockFileHandlers(_mutexFileHandlers);
+    // Check if fileId already exists
+    auto fileHandlerIt = fileHandlers.find(fileID);
+    if (fileHandlerIt != fileHandlers.end())
+    {
+        // stop the file handler's processes
+        (fileHandlerIt->second)->fileHandler->stop();
+
+        fileHandlers.erase(fileHandlerIt);
+    }
+    else
+    {
+        throw std::runtime_error("FileHandler for this fileID does not exist");
     }
 }

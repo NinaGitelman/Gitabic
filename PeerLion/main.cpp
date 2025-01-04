@@ -11,6 +11,7 @@
 #include <cstdint>
 #include "ICEConnection/ICEConnection.h"
 #include "Torrent/PeersConnectionManager/PeersConnectionManager.h"
+#include "Torrent/TorrentManager/TorrentManager.h"
 #include "Utils/VectorUint8Utils.h"
 
 /// @brief  Heper function to pritn the DATA
@@ -43,6 +44,8 @@ int main(int argc, char *argv[]) {
   //     std::cout << e.what() << " in main.cpp";
   //   }
 
+
+
   // working example with server for 2 diferent peers
 
   int connect = 1;
@@ -61,85 +64,105 @@ int main(int argc, char *argv[]) {
   ID id = newId.id;
 
 
-  if (argc >= 2) // if there is cmd arg then this will start the connection
-  {
-    ServerResponseNewId otherNewId(serverSocket->receive([](uint8_t code) {
-      return code == ServerResponseCodes::NewID;
-    }));
-
-    ID otherId = otherNewId.id;
-
-    std::cout << "This peer is starting the connection request\n\n";
+  try {
+    const string filePath = "/home/user/Downloads/unnamed2.png";
+    MetaDataFile file = MetaDataFile::createMetaData(filePath, "1234", serverAdd, "nina");
+    MetaDataFile md1(file);
+    FileIO fileIO= FileIO(md1);
+  //  FileIO fileIO2= FileIO(mdFile2);
 
 
-    // connection start
-    // by now using this just to check for if added the file
-    bool connected = connectionManager.addFileForPeer(fileID, otherId);
-    sleep(1);
-    try {
-      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend(
-        "Hello world from connection manager");
-      DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend(
-        "Hello world from connection manager");
-      DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend(
-        "Hello world from connection manager");
+    TorrentManager& instanceTorrentManager= TorrentManager::getInstance(serverSocket);
+   instanceTorrentManager.addNewFileHandler(fileIO);
+    //instanceTorrentManager.addNewFileHandler(fileIO2);
 
-      connectionManager.sendMessage(otherId, &debuggingStringMessage);
-      connectionManager.sendMessage(otherId, &debuggingStringMessage);
-      connectionManager.sendMessage(otherId, &debuggingStringMessage);
-      sleep(60);
-    } catch (const std::exception &e) {
-      std::cout << e.what() << " in main.cpp";
-    }
-  } else {
-    std::cout << "This peer is receiveing the connection request\n\n";
-
-    connect = 0;
-
-    ServerRequestAuthorizeICEConnection authIceReq(serverSocket->receive([](uint8_t code) {
-      return code == ServerRequestCodes::AuthorizeICEConnection;
-    }));
-
-    std::cout << "Received connection request from another peer: \n";
-    printDataAsASCII(authIceReq.iceCandidateInfo);
-    std::cout << "\n\n\n";
-
-    // get my ice data
-    // First handler negotiation
-    ICEConnection handler1(connect);
-    std::vector<uint8_t> myIceData = handler1.getLocalICEData();
-    std::cout << "my ice data: ";
-    printDataAsASCII(myIceData);
-    ClientResponseAuthorizedICEConnection connectionResponse(myIceData, authIceReq.requestId);
-    serverSocket->sendRequest(connectionResponse);
-    try {
-      std::thread peerThread([&handler1, authIceReq]() {
-        handler1.connectToPeer(authIceReq.iceCandidateInfo);
-      });
-      peerThread.detach();
-
-      /// TODO the problem is that it isnt sending the message content right...
-      DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world from main");
-      DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend("Hello world from main");
-      DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend("Hello world from main");
-      handler1.sendMessage(&debuggingStringMessage);
-      handler1.sendMessage(&debuggingStringMessage2);
-      handler1.sendMessage(&debuggingStringMessage3);
-      // handler1.sendMessage(debuggingStringMessage);
-      while (true) {
-        while (handler1.receivedMessagesCount() > 0) {
-          MessageBaseReceived newMessage = handler1.receiveMessage();
-          if (newMessage.code == ClientRequestCodesToServer::DebuggingStringMessage) {
-            DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
-            recvMessage.printDataAsASCII();
-          }
-        }
-      }
-    } catch (const std::exception &e) {
-      std::cout << e.what() << " in main.cpp";
-    }
+  //  instanceTorrentManager.removeFileHandler(fileIO2.getDownloadProgress().get_file_hash());
+    instanceTorrentManager.removeFileHandler(fileIO.getDownloadProgress().get_file_hash());
+  }catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
   }
 
+  //
+  //
+  // if (argc >= 2) // if there is cmd arg then this will start the connection
+  // {
+  //   ServerResponseNewId otherNewId(serverSocket->receive([](uint8_t code) {
+  //     return code == ServerResponseCodes::NewID;
+  //   }));
+  //
+  //   ID otherId = otherNewId.id;
+  //
+  //   std::cout << "This peer is starting the connection request\n\n";
+  //
+  //
+  //   // connection start
+  //   // by now using this just to check for if added the file
+  //   bool connected = connectionManager.addFileForPeer(fileID, otherId);
+  //   sleep(1);
+  //   try {
+  //     DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend(
+  //       "Hello world from connection manager");
+  //     DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend(
+  //       "Hello world from connection manager");
+  //     DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend(
+  //       "Hello world from connection manager");
+  //
+  //     connectionManager.sendMessage(otherId, &debuggingStringMessage);
+  //     connectionManager.sendMessage(otherId, &debuggingStringMessage);
+  //     connectionManager.sendMessage(otherId, &debuggingStringMessage);
+  //     sleep(60);
+  //   } catch (const std::exception &e) {
+  //     std::cout << e.what() << " in main.cpp";
+  //   }
+  // } else {
+  //   std::cout << "This peer is receiveing the connection request\n\n";
+  //
+  //   connect = 0;
+  //
+  //   ServerRequestAuthorizeICEConnection authIceReq(serverSocket->receive([](uint8_t code) {
+  //     return code == ServerRequestCodes::AuthorizeICEConnection;
+  //   }));
+  //
+  //   std::cout << "Received connection request from another peer: \n";
+  //   printDataAsASCII(authIceReq.iceCandidateInfo);
+  //   std::cout << "\n\n\n";
+  //
+  //   // get my ice data
+  //   // First handler negotiation
+  //   ICEConnection handler1(connect);
+  //   std::vector<uint8_t> myIceData = handler1.getLocalICEData();
+  //   std::cout << "my ice data: ";
+  //   printDataAsASCII(myIceData);
+  //   ClientResponseAuthorizedICEConnection connectionResponse(myIceData, authIceReq.requestId);
+  //   serverSocket->sendRequest(connectionResponse);
+  //   try {
+  //     std::thread peerThread([&handler1, authIceReq]() {
+  //       handler1.connectToPeer(authIceReq.iceCandidateInfo);
+  //     });
+  //     peerThread.detach();
+  //
+  //     /// TODO the problem is that it isnt sending the message content right...
+  //     DebuggingStringMessageToSend debuggingStringMessage = DebuggingStringMessageToSend("Hello world from main");
+  //     DebuggingStringMessageToSend debuggingStringMessage2 = DebuggingStringMessageToSend("Hello world from main");
+  //     DebuggingStringMessageToSend debuggingStringMessage3 = DebuggingStringMessageToSend("Hello world from main");
+  //     handler1.sendMessage(&debuggingStringMessage);
+  //     handler1.sendMessage(&debuggingStringMessage2);
+  //     handler1.sendMessage(&debuggingStringMessage3);
+  //     // handler1.sendMessage(debuggingStringMessage);
+  //     while (true) {
+  //       while (handler1.receivedMessagesCount() > 0) {
+  //         MessageBaseReceived newMessage = handler1.receiveMessage();
+  //         if (newMessage.code == ClientRequestCodesToServer::DebuggingStringMessage) {
+  //           DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(newMessage);
+  //           recvMessage.printDataAsASCII();
+  //         }
+  //       }
+  //     }
+  //   } catch (const std::exception &e) {
+  //     std::cout << e.what() << " in main.cpp";
+  //   }
+  // }
+  //
 
   return EXIT_SUCCESS;
 }
