@@ -238,6 +238,7 @@ void PeersConnectionManager::handleMessage(MessageBaseReceived& message)
          ThreadSafeCout::cout("Peers Connection Manager received: " + recvMessage.data + "\n\n");
          g_message(recvMessage.data.c_str());
 
-  }
+  }else {
 
+  }
 }
