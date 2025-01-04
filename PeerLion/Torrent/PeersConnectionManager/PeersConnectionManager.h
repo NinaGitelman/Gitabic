@@ -49,6 +49,8 @@ struct PeerConnectionAndMutex {
 
 class PeersConnectionManager {
 public:
+    // Singleton
+    static PeersConnectionManager &getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
     virtual ~PeersConnectionManager();
 
     /// @brief Function adds the given fileID to the connected peer list
@@ -71,8 +73,6 @@ public:
     /// @param MessageBaseToSend the message
     void sendMessage(const PeerID &peer, MessageBaseToSend *message);
 
-    static PeersConnectionManager &getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
-
 
     // Function to check if the given peer is connected
     bool isConnected(const PeerID& peer);
@@ -94,14 +94,11 @@ private:
 
     // Delete copy and assignment to ensure singleton
     PeersConnectionManager(const PeersConnectionManager &) = delete;
-
     explicit PeersConnectionManager(std::shared_ptr<TCPSocket> socket = nullptr);
-
-
     PeersConnectionManager &operator=(const PeersConnectionManager &) = delete;
 
+    /// TODO
     // thread that will be called from the constructor
     void routePackets(std::shared_ptr<atomic<bool> > isRunning);
-
     void handleMessage(MessageBaseReceived &message);
 };
