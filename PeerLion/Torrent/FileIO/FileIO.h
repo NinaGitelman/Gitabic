@@ -1,13 +1,12 @@
 #ifndef FILEHANDLER_H
 #define FILEHANDLER_H
 
-#include "../../Encryptions/SHA256/sha256.h"
-#include "../MetaDataFile/MetaDataFile.h"
-#include "../DowndloadProgress/DownloadProgress.h"
+#include "../../Utils/MetaDataFile/MetaDataFile.h"
+#include "../../Utils/DowndloadProgress/DownloadProgress.h"
 
 enum FileMode { Download, Seed, Hybrid, Default };
 
-class FileHandler {
+class FileIO {
 	static const std::string dirPath;
 	string fileName;
 	FileMode mode;
@@ -21,12 +20,12 @@ class FileHandler {
 
 public:
 	// Rule of five
-	FileHandler(const FileHandler &other); // Copy constructor
-	FileHandler(FileHandler &&other) noexcept; // Move constructor
-	FileHandler &operator=(FileHandler other); // Unified assignment operator
-	~FileHandler() = default; // Destructor
+	FileIO(const FileIO &other); // Copy constructor
+	FileIO(FileIO &&other) noexcept; // Move constructor
+	FileIO &operator=(FileIO other); // Unified assignment operator
+	~FileIO() = default; // Destructor
 	// Swap function
-	friend void swap(FileHandler &first, FileHandler &second) noexcept;
+	friend void swap(FileIO &first, FileIO &second) noexcept;
 
 	void initNew(const MetaDataFile &metaData);
 
@@ -46,9 +45,9 @@ public:
 		this->mode = mode;
 	}
 
-	explicit FileHandler(const string &hash);
+	explicit FileIO(const string &hash);
 
-	explicit FileHandler(const MetaDataFile &metaData);
+	explicit FileIO(const MetaDataFile &metaData);
 
 	/**
 	 *
@@ -78,7 +77,7 @@ public:
 	 */
 	[[nodiscard]] vector<uint8_t> loadBlock(uint32_t pieceIndex, uint32_t blockIndex) const;
 
-	static vector<FileHandler> getAllHandlers();
+	static vector<FileIO> getAllHandlers();
 };
 
 

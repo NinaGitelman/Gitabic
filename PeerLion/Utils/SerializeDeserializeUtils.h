@@ -39,15 +39,18 @@ public:
    static void copyToFront(vector<uint8_t> to, T from);
 
    template<typename T>
-   static void copyToEnd(vector<uint8_t> to, T from);
+   static void copyToEnd(vector<uint8_t> to, T from) {
+      to.resize(to.size() + sizeof(T));
+      memcpy(to.data() + to.size() - sizeof(T), &from, sizeof(T));
+   }
 
-   template<size_t N>
-   static void addToFront(std::vector<uint8_t> &to, const std::array<uint8_t, N> &from) {
+   template<size_t S>
+   static void addToFront(std::vector<uint8_t> &to, const std::array<uint8_t, S> &from) {
       to.insert(to.begin(), from.begin(), from.end());
    }
 
-   template<size_t N>
-   static void addToEnd(std::vector<uint8_t> &to, const std::array<uint8_t, N> &from) {
+   template<size_t S>
+   static void addToEnd(std::vector<uint8_t> &to, const std::array<uint8_t, S> &from) {
       to.insert(to.end(), from.begin(), from.end());
    }
 };

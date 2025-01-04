@@ -1,0 +1,210 @@
+//
+// Created by user on 12/18/24.
+//
+
+#include "TorrentFileHandler.h"
+
+#include "../../NetworkUnit/ServerComm/BitTorrentMessages.h"
+
+
+TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
+										const std::shared_ptr<TCPSocket> &serverSocket,
+										const AESKey aesKey) : _fileIO(fileIo),
+																_peersConnectionManager(
+																	PeersConnectionManager::getInstance()),
+																_fileID(
+																	_fileIO.
+																	getDownloadProgress().
+																	get_file_hash()),
+																_serverSocket(serverSocket),
+																_peerManager(
+																	std::make_unique<PeerManager>(_fileID,
+																								serverSocket,
+																								fileIo.getMode() ==
+																								FileMode::Seed)),
+
+																_aesHandler(aesKey) {
+	_running = true;
+	_handleRequestsThread = thread(&TorrentFileHandler::handleRequests, this);
+	_handleResponsesThread = thread(&TorrentFileHandler::handleResponses, this);
+	_downloadFileThread = thread(&TorrentFileHandler::downloadFile, this);
+	_sendMessagesThread = thread(&TorrentFileHandler::sendMessages, this);
+	_handleRequestsThread.detach();
+	_handleResponsesThread.detach();
+	_downloadFileThread.detach();
+	_sendMessagesThread.detach();
+}
+
+
+ResultMessages TorrentFileHandler::handle(const DataRequest &request) const {
+	ResultMessages res{};
+	res.to = request.from;
+	for (auto i = request.blockIndex; i < request.blockIndex + request.blocksCount; i++) {
+		const auto block = _fileIO.loadBlock(request.pieceIndex, i);
+		res.messages.push_back(
+			std::make_shared<BlockResponse>(request.fileId, AESKey{}, request.pieceIndex, i, block));
+	}
+	return res;
+}
+
+ResultMessages TorrentFileHandler::handle(const CancelDataRequest &request) {
+	std::lock_guard guard(_mutexMessagesToSend);
+	for (auto msg = _messagesToSend.begin(); msg != _messagesToSend.end(); ++msg) {
+		if (auto &torrentMsg = *reinterpret_cast<TorrentMessageBase *>(&*msg);
+			torrentMsg.fileId == request.fileId && msg->get()->code == BitTorrentResponseCodes::dataResponse) {
+			if (const auto packet = reinterpret_cast<DataRequest *>(&(**msg));
+				packet->pieceIndex == request.pieceIndex && (packet->blockIndex >= request.blockIndex) && packet->
+				blocksCount + packet->blockIndex <= request.blockIndex + request.blocksCount + request.blockIndex) {
+				msg = _messagesToSend.erase(msg);
+			}
+		}
+	}
+	return ResultMessages{};
+}
+
+ResultMessages TorrentFileHandler::handle(const PieceOwnershipUpdate &request) {
+	//Update piece manager when created
+	switch (request.code) {
+		case BitTorrentRequestCodes::hasPieceUpdate:
+			break;
+		case BitTorrentRequestCodes::lostPieceUpdate:
+			break;
+		default:
+			break;
+	}
+	return ResultMessages{};
+}
+
+ResultMessages TorrentFileHandler::handle(const TorrentMessageBase &request) const {
+	ResultMessages res{};
+	res.to = request.from;
+	switch (request.code) {
+		case BitTorrentRequestCodes::keepAlive:
+			res.messages.push_back(
+				std::make_shared<TorrentMessageBase>(request.fileId, AESKey{}, BitTorrentResponseCodes::keepAliveRes));
+		case BitTorrentRequestCodes::fileInterested:
+			_peerManager->getPeerState(request.from).peerInterested = true;
+		case BitTorrentRequestCodes::fileNotInterested:
+			_peerManager->getPeerState(request.from).peerInterested = false;
+		case BitTorrentRequestCodes::choke:
+			_peerManager->getPeerState(request.from).peerChoking = true;
+		case BitTorrentRequestCodes::unchoke:
+			_peerManager->getPeerState(request.from).peerChoking = false;
+			break;
+		default:
+			throw std::runtime_error("Unknown message code");
+	}
+
+	return res;
+}
+
+
+void TorrentFileHandler::handleRequests() {
+	while (_running) {
+		ResultMessages resultMessages;
+		while (!_receivedRequests.empty()) {
+			std::unique_lock guard(_mutexReceivedRequests);
+			const auto request = _receivedRequests.front();
+			_receivedRequests.pop();
+			//add decrypt the message
+			guard.unlock();
+			switch (request.code) {
+				case BitTorrentRequestCodes::keepAlive:
+				case BitTorrentRequestCodes::fileInterested:
+				case BitTorrentRequestCodes::fileNotInterested:
+				case BitTorrentRequestCodes::unchoke:
+				case BitTorrentRequestCodes::choke:
+					resultMessages = handle(TorrentMessageBase(request, request.code));
+					break;
+				case BitTorrentRequestCodes::hasPieceUpdate:
+				case BitTorrentRequestCodes::lostPieceUpdate:
+					resultMessages = handle(PieceOwnershipUpdate(request));
+					break;
+				case BitTorrentRequestCodes::cancelDataRequest:
+					resultMessages = handle(CancelDataRequest(request));
+					break;
+				case BitTorrentRequestCodes::dataRequest:
+					resultMessages = handle(DataRequest(request));
+					break;
+				default:
+					throw std::runtime_error("Unknown message code");
+			}
+		}
+		for (const auto &msg: resultMessages.messages) {
+			std::lock_guard guard1(_mutexMessagesToSend);
+			_messagesToSend.push_back(msg);
+			_cvMessagesToSend.notify_one();
+		}
+	}
+}
+
+void TorrentFileHandler::handleResponses() {
+	while (_running) {
+	}
+}
+
+void TorrentFileHandler::downloadFile() {
+	while (_running) {
+	}
+}
+
+void TorrentFileHandler::sendMessages() {
+	while (_running) {
+		std::unique_lock guard(_mutexMessagesToSend);
+
+		// Wait for messages to be available
+		_cvMessagesToSend.wait(guard, [this]() {
+			return !_messagesToSend.empty() || !_running; // Stop waiting if _running is false
+		});
+
+		// Process all messages in the queue
+		while (!_messagesToSend.empty()) {
+			const auto message = _messagesToSend.front();
+			_messagesToSend.erase(_messagesToSend.begin());
+			guard.unlock(); // Unlock while processing the message
+
+			// Send the message
+			auto &torrentMsg = *reinterpret_cast<TorrentMessageBase *>(&*message);
+			_peersConnectionManager.sendMessage(torrentMsg.from, &*message);
+
+			guard.lock(); // Re-lock for the next iteration
+		}
+	}
+}
+
+void TorrentFileHandler::stop() {
+	_running = false;
+	_handleRequestsThread.join();
+	_handleResponsesThread.join();
+	_downloadFileThread.join();
+	_sendMessagesThread.join();
+}
+
+void TorrentFileHandler::addMessage(const MessageBaseReceived &msg) {
+	switch (msg.code) {
+		case BitTorrentRequestCodes::keepAlive:
+		case BitTorrentRequestCodes::fileInterested:
+		case BitTorrentRequestCodes::fileNotInterested:
+		case BitTorrentRequestCodes::dataRequest:
+		case BitTorrentRequestCodes::cancelDataRequest:
+		case BitTorrentRequestCodes::choke:
+		case BitTorrentRequestCodes::unchoke:
+		case BitTorrentRequestCodes::hasPieceUpdate:
+		case BitTorrentRequestCodes::lostPieceUpdate: {
+			std::lock_guard guard(_mutexReceivedRequests);
+			_receivedRequests.push(msg);
+			break;
+		}
+		case BitTorrentResponseCodes::keepAliveRes:
+		case BitTorrentResponseCodes::bitField:
+		case BitTorrentResponseCodes::missingFile:
+		case BitTorrentResponseCodes::dataResponse:
+		case BitTorrentResponseCodes::missingDataResponse: {
+			std::lock_guard guard2(_mutexReceivedResponses);
+			_receivedResponses.push(msg);
+			break;
+		}
+		default:
+			throw std::runtime_error("Unknown message code");
+	}
+}

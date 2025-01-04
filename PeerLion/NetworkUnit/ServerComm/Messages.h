@@ -292,6 +292,8 @@ struct DebuggingStringMessageReceived {
     }
 };
 
+//make hash function enabling the use of UserListResponse as a key in a map
+
 /// @brief A list of users that has a file
 struct UserListResponse {
     vector<ID> data;
@@ -310,6 +312,22 @@ struct UserListResponse {
             ID currID = *reinterpret_cast<ID *>(data.data() + i);
             this->data.push_back(currID);
         }
+    }
+
+    bool operator==(const UserListResponse &other) const {
+        return fileId == other.fileId && data == other.data;
+    }
+};
+
+template<>
+struct std::hash<UserListResponse> {
+    size_t operator()(const UserListResponse &userListResponse) const noexcept {
+        size_t res = 0;
+        res ^= hash<ID>()(userListResponse.fileId);
+        for (size_t i = 0; i < userListResponse.data.size(); i++) {
+            res ^= hash<ID>()(userListResponse.data[i]) << i;
+        }
+        return res;
     }
 };
 
