@@ -29,19 +29,29 @@ TorrentManager& TorrentManager::getInstance(std::shared_ptr<TCPSocket> socket)
 TorrentManager::TorrentManager(std::shared_ptr<TCPSocket> socket): _serverSocket(std::move(socket))
 {}
 
-/// TODO - check how to get or create file id and chekc if i have this file id....
+
+/// TODO - change empty aes key later...
 void TorrentManager::addNewFileHandler(FileIO& fileIO)
 {
     FileID fileID = fileIO.getDownloadProgress().get_file_hash();
+
+    std::unique_lock<std::mutex> lockFileHandlers(_mutexFileHandlers);
     // Check if fileId already exists
-    if (fileHandlers.find(fileId) == fileHandlers.end()) {
+    if (fileHandlers.find(fileID) == fileHandlers.end())
+    {
         // Create a new TorrentFileHandler wrapped in a shared_ptr
-        auto torrentFileHandler = std::make_shared<TorrentFileHandler>(fileIo, serverSocket, aesKey);
+        std::unique_lock<std::mutex> lockServerSock(_mutexFileHandlers);
+        auto torrentFileHandler = std::make_shared<TorrentFileHandler>(fileIO, _serverSocket, AESKey());
+        lockServerSock.unlock();
 
         // Create a FileHandlerAndMutex object
         auto fileHandlerAndMutex = std::make_shared<FileHandlerAndMutex>(torrentFileHandler);
 
         // Insert into the unordered_map
-        fileHandlers[fileId] = fileHandlerAndMutex;
+        fileHandlers[fileID] = fileHandlerAndMutex;
+    }
+    else
+        {
+        throw std::runtime_error("FileHandler for this fileID already exists");
     }
 }

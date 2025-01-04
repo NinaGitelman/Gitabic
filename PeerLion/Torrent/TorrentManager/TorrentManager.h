@@ -54,9 +54,10 @@ private:
     static mutex mutexInstance;
     static std::unique_ptr<TorrentManager> instance;
 
-
+    mutex _mutexServerSocket;
     std::shared_ptr<TCPSocket> _serverSocket;
 
+    mutex _mutexFileHandlers;
     unordered_map<FileID, std::shared_ptr<FileHandlerAndMutex>> fileHandlers;
 
 public:
@@ -65,6 +66,8 @@ public:
 
     void addNewFileHandler(FileIO& fileIO);
   //  void removeFileHandler(const FileID& fileID);
+
+
 };
 
 
