@@ -240,3 +240,9 @@ void PeersConnectionManager::handleMessage(MessageBaseReceived& message)
 
   }
 }
+
+bool PeersConnectionManager::isConnected(PeerID &peer) {
+
+    std::unique_lock<std::mutex> peersConnectionsLock(_mutexPeerConnections);
+    return _peerConnections.find(peer) != _peerConnections.end();
+}

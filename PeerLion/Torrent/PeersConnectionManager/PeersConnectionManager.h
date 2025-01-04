@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <unordered_set>
 #include "../../ICEConnection/ICEConnection.h"
-#include "../FileHandler/TorrentFileHandler.h"
 #include "../../NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
 #include <unordered_map>
 #include "../../Utils/ThreadSafeCout.h"
@@ -68,6 +67,10 @@ public:
 
     static PeersConnectionManager &getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
 
+
+    // Function to check if the given peer is connected
+    bool isConnected(PeerID &peer);
+
 private:
     std::shared_ptr<atomic<bool> > _isRunning; // bool to track if is connected to the other peer
     std::thread _routePacketThread; // Store the thread as a member
@@ -83,7 +86,7 @@ private:
     std::mutex _mutexPeerConnections;
     unordered_map<PeerID, PeerConnectionAndMutex> _peerConnections;
 
-    unordered_map<FileID, TorrentFileHandler> _fileHandlers;
+  //  unordered_map<FileID, TorrentFileHandler> _fileHandlers;
 
     // Delete copy and assignment to ensure singleton
     PeersConnectionManager(const PeersConnectionManager &) = delete;
