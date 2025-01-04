@@ -73,3 +73,21 @@ void TorrentManager::removeFileHandler(const FileID& fileID)
         throw std::runtime_error("FileHandler for this fileID does not exist");
     }
 }
+
+void TorrentManager::handleMessage(MessageBaseReceived& message)
+{
+    TorrentMessageBase torrentMessage(message, message.code);
+
+    std::unique_lock<std::mutex> lockFileHandlers(_mutexFileHandlers);
+    auto fileHandlerIt = fileHandlers.find(torrentMessage.fileId);
+    if (fileHandlerIt != fileHandlers.end())
+    {
+        fileHandlerIt->second->mutex.lock();
+        /// TODO - this isnt the smartest thing as we already make it a TorrentMessgeBase but it made a mess to do differently...
+        fileHandlerIt->second->fileHandler->addMessage(message);
+    }
+    else
+    {
+        throw std::runtime_error("FileHandler for this fileID does not exist");
+    }
+}

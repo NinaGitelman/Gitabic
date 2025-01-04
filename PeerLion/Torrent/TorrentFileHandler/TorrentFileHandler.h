@@ -23,14 +23,20 @@ private:
 	FileIO _fileIO;
 	PeersConnectionManager &_peersConnectionManager;
 	const ID _fileID;
+
 	const std::shared_ptr<TCPSocket> _serverSocket;
+
 	std::unique_ptr<PeerManager> _peerManager;
+
 	queue<MessageBaseReceived> _receivedRequests;
 	mutable mutex _mutexReceivedRequests;
+
 	queue<MessageBaseReceived> _receivedResponses;
 	mutable mutex _mutexReceivedResponses;
+
 	vector<std::shared_ptr<MessageBaseToSend> > _messagesToSend;
 	mutable mutex _mutexMessagesToSend;
+
 	condition_variable _cvMessagesToSend;
 
 	ResultMessages handle(const DataRequest &request) const;
@@ -46,12 +52,11 @@ private:
 	thread _handleResponsesThread;
 	thread _downloadFileThread;
 
-	bool _running;
+	atomic<bool> _running = {false};
 
 	AESHandler _aesHandler;
 
 	void handleRequests();
-
 	void handleResponses();
 
 	void downloadFile();

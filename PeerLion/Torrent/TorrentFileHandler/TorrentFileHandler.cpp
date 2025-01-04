@@ -99,16 +99,20 @@ ResultMessages TorrentFileHandler::handle(const TorrentMessageBase &request) con
 }
 
 
-void TorrentFileHandler::handleRequests() {
+void TorrentFileHandler::handleRequests()
+{
 	while (_running) {
 		ResultMessages resultMessages;
-		while (!_receivedRequests.empty()) {
+		while (!_receivedRequests.empty())
+		{
 			std::unique_lock guard(_mutexReceivedRequests);
 			const auto request = _receivedRequests.front();
 			_receivedRequests.pop();
 			//add decrypt the message
 			guard.unlock();
-			switch (request.code) {
+
+			switch (request.code)
+			{
 				case BitTorrentRequestCodes::keepAlive:
 				case BitTorrentRequestCodes::fileInterested:
 				case BitTorrentRequestCodes::fileNotInterested:
@@ -138,13 +142,56 @@ void TorrentFileHandler::handleRequests() {
 	}
 }
 
-void TorrentFileHandler::handleResponses() {
-	while (_running) {
+
+void TorrentFileHandler::handleResponses()
+{
+	while (_running)
+	{
+		std::unique_lock guard(_mutexReceivedResponses);
+		ResultMessages resultMessages;
+		while (!_receivedResponses.empty())
+		{
+			const auto response = _receivedResponses.front();
+			_receivedResponses.pop();
+			guard.unlock();
+
+			switch (response.code)
+			{
+				case BitTorrentResponseCodes::keepAliveRes:
+					// Handle keep-alive response
+						break;
+
+				case BitTorrentResponseCodes::bitField:
+					// Handle bitfield response
+						break;
+
+				case BitTorrentResponseCodes::missingFile:
+					// Handle missing file response
+						break;
+
+				case BitTorrentResponseCodes::dataResponse:
+					// Handle data response
+						break;
+
+				case BitTorrentResponseCodes::missingDataResponse:
+					// Handle missing data response
+						break;
+
+				default:
+					// Handle unknown response code
+						break;
+			}
+
+			guard.lock();
+		}
 	}
 }
 
-void TorrentFileHandler::downloadFile() {
-	while (_running) {
+
+void TorrentFileHandler::downloadFile()
+{
+	while (_running)
+	{
 	}
 }
 
@@ -190,6 +237,7 @@ void TorrentFileHandler::addMessage(const MessageBaseReceived &msg) {
 		case BitTorrentRequestCodes::choke:
 		case BitTorrentRequestCodes::unchoke:
 		case BitTorrentRequestCodes::hasPieceUpdate:
+
 		case BitTorrentRequestCodes::lostPieceUpdate: {
 			std::lock_guard guard(_mutexReceivedRequests);
 			_receivedRequests.push(msg);
