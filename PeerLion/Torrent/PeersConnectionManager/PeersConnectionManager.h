@@ -92,8 +92,6 @@ private:
     std::mutex _mutexPeerConnections;
     unordered_map<PeerID, PeerConnectionAndMutex> _peerConnections;
 
-  //  unordered_map<FileID, TorrentFileHandler> _fileHandlers;
-
     // Delete copy and assignment to ensure singleton
     PeersConnectionManager(const PeersConnectionManager &) = delete;
 
