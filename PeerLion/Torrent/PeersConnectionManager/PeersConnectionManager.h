@@ -84,6 +84,8 @@ private:
     static mutex mutexInstance;
     static std::unique_ptr<PeersConnectionManager> instance;
 
+    /// TODO-later check if needs to add a mutex for this
+    std::mutex _mutexServerSocket;
     std::shared_ptr<TCPSocket> _serverSocket;
 
     std::mutex _mutexRegisteredPeersFiles;

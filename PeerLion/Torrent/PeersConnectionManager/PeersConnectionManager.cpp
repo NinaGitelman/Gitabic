@@ -80,8 +80,11 @@ bool PeersConnectionManager::addFileForPeer(const FileID& fileID,const PeerID& p
         // gets local ice data and sends to server on the request
         std::vector<uint8_t> myIceData = peerConnection->getLocalICEData();
         ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(peer, myIceData);
-        _serverSocket->sendRequest(requestIce);
 
+        {
+            std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
+            _serverSocket->sendRequest(requestIce);
+        }
         std::cout << "send request of get my ice data\n\n";
         std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
         {
@@ -89,13 +92,17 @@ bool PeersConnectionManager::addFileForPeer(const FileID& fileID,const PeerID& p
         };
 
         // send request to server to connect to the other peer and for its ice data
-        ServerResponseUserAuthorizedICEData response = _serverSocket->receive(isRelevant);
 
-        std::cout << "peer data: " ;
-        printDataAsASCII(response.iceCandidateInfo);
-        // create thread that will add the peer
 
-        bool connected = peerConnection->connectToPeer(response.iceCandidateInfo);
+            std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
+            ServerResponseUserAuthorizedICEData response =  _serverSocket->receive(isRelevant);
+            serverSocketLock.unlock();
+
+            std::cout << "peer data: " ;
+            printDataAsASCII(response.iceCandidateInfo);
+            // create thread that will add the peer
+
+            bool connected = peerConnection->connectToPeer(response.iceCandidateInfo);
 
          if(connected)
          {
