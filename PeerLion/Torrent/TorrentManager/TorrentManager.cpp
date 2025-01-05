@@ -16,7 +16,8 @@ TorrentManager& TorrentManager::getInstance(std::shared_ptr<TCPSocket> socket)
 
     if (!instance)
     {
-        instance = std::unique_ptr<TorrentManager>();
+        // Create a new TorrentManager instance
+        instance = std::unique_ptr<TorrentManager>(new TorrentManager(socket));
     }
     else if (socket)
     {
@@ -34,15 +35,13 @@ TorrentManager::TorrentManager(std::shared_ptr<TCPSocket> socket): _serverSocket
 void TorrentManager::addNewFileHandler(FileIO& fileIO)
 {
     FileID fileID = fileIO.getDownloadProgress().get_file_hash();
-
+    // tnis line throws seg fault: the next one
     std::unique_lock<std::mutex> lockFileHandlers(_mutexFileHandlers);
     // Check if fileId already exists
     if (fileHandlers.find(fileID) == fileHandlers.end())
     {
-        // Create a new TorrentFileHandler wrapped in a shared_ptr
-        std::unique_lock<std::mutex> lockServerSock(_mutexFileHandlers);
         auto torrentFileHandler = std::make_shared<TorrentFileHandler>(fileIO, _serverSocket, AESKey());
-        lockServerSock.unlock();
+
 
         // Create a FileHandlerAndMutex object
         auto fileHandlerAndMutex = std::make_shared<FileHandlerAndMutex>(torrentFileHandler);

@@ -20,6 +20,7 @@ using FileID = ID; // to be pretty :)
 
 class TorrentFileHandler {
 private:
+	mutable mutex _mutexFileIO;
 	FileIO _fileIO;
 	PeersConnectionManager &_peersConnectionManager;
 	const ID _fileID;
@@ -39,13 +40,13 @@ private:
 
 	condition_variable _cvMessagesToSend;
 
-	ResultMessages handle(const DataRequest &request) const;
+	ResultMessages handle(const DataRequest &request);
 
 	ResultMessages handle(const CancelDataRequest &request);
 
 	ResultMessages handle(const PieceOwnershipUpdate &request);
 
-	ResultMessages handle(const TorrentMessageBase &request) const;
+	ResultMessages handle(const TorrentMessageBase &request);
 
 	thread _sendMessagesThread;
 	thread _handleRequestsThread;
@@ -57,11 +58,21 @@ private:
 	AESHandler _aesHandler;
 
 	void handleRequests();
+
+	/// @brief Function to handle all responses in received responses queue
 	void handleResponses();
+
+	/// @brief function to handle the given block response
+	/// @param blockResponse the response to handle
+	void handleResponse(const BlockResponse &blockResponse);
 
 	void downloadFile();
 
 	void sendMessages();
+
+	/// @brief helper function to check if the code is relevant to this handler
+	/// @param code the code of the messge to check if it is relevant
+	bool isRelevantMessageCode(const uint8_t& code) const;
 
 public:
 	TorrentFileHandler(const FileIO &fileIo, const std::shared_ptr<TCPSocket> &serverSocket, AESKey aesKey);

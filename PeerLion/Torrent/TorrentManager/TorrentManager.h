@@ -5,16 +5,17 @@
 #include "../TorrentFileHandler/TorrentFileHandler.h"
 #include "../PeersConnectionManager/PeersConnectionManager.h"
 #include "../FileIO/FileIO.h"
+#include <mutex>
 
 class TorrentFileHandler;
 class PeersConnectionManager;
 
-
+using std::mutex;
 
 // file handler and mutex to manage the file handlers and mutex S
 struct FileHandlerAndMutex {
     std::shared_ptr<TorrentFileHandler> fileHandler;
-    std::mutex mutex;
+    mutable std::mutex mutex;
 
     FileHandlerAndMutex(std::shared_ptr<TorrentFileHandler> fileHandler)
         : fileHandler(std::move(fileHandler)) {
@@ -57,7 +58,7 @@ private:
     mutex _mutexServerSocket;
     std::shared_ptr<TCPSocket> _serverSocket;
 
-    mutex _mutexFileHandlers;
+    std::mutex _mutexFileHandlers;
     unordered_map<FileID, std::shared_ptr<FileHandlerAndMutex>> fileHandlers;
 
 public:

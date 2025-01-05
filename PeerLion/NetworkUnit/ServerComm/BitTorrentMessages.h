@@ -34,7 +34,7 @@ enum BitTorrentResponseCodes {
  keepAliveRes = 102,
  bitField = 112,
  missingFile = 113,
- dataResponse = 123,
+ blockResponse = 123,
  missingDataResponse = 124
 };
 
@@ -346,7 +346,7 @@ struct BlockResponse : TorrentMessageBase {
   */
  BlockResponse(const ID &fileId, const AESKey &initVector, const uint32_t pieceIndex, const uint16_t blockIndex,
                const vector<uint8_t> &block) : TorrentMessageBase(fileId, initVector,
-                                                                  BitTorrentResponseCodes::dataResponse) {
+                                                                  BitTorrentResponseCodes::blockResponse) {
   BlockResponse::pieceIndex = pieceIndex;
   BlockResponse::blockIndex = blockIndex;
   BlockResponse::block = block;

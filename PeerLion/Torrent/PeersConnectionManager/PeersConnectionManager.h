@@ -103,4 +103,7 @@ private:
     // thread that will be called from the constructor
     void routePackets(std::shared_ptr<atomic<bool> > isRunning);
     void handleMessage(MessageBaseReceived &message);
+
+
+
 };

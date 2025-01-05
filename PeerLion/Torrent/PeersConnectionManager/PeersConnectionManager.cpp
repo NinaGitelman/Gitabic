@@ -4,6 +4,8 @@
 /// TODO - change add file for peers and remove file from peer to use the peer's own mutex...
 #include "PeersConnectionManager.h"
 
+#include "../TorrentManager/TorrentManager.h"
+
 std::mutex PeersConnectionManager::mutexInstance;
 std::unique_ptr<PeersConnectionManager> PeersConnectionManager::instance;
 
@@ -205,6 +207,7 @@ void PeersConnectionManager::sendMessage(const PeerID& peer, MessageBaseToSend* 
     }
 }
 
+// BY M
 void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool>> isRunning)
 {
       while(isRunning->load())
@@ -225,7 +228,6 @@ void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool>> isRunnin
                 {
 
                       MessageBaseReceived currMessage = currPeer->second.connection->receiveMessage();
-
                       handleMessage(currMessage);
                 }
 
@@ -235,17 +237,23 @@ void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool>> isRunnin
     }
 }
 
-// TODO - add the rest of it for each handler created...
+// TODO - check if can leave as default or if there will be other message typess
 void PeersConnectionManager::handleMessage(MessageBaseReceived& message)
 {
 
-  if(message.code == DEBUGGING_STRING_MESSAGE)
-  {
-      DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(message);
-         ThreadSafeCout::cout("Peers Connection Manager received: " + recvMessage.data + "\n\n");
-         g_message(recvMessage.data.c_str());
+    switch (message.code) {
+        case DEBUGGING_STRING_MESSAGE:
+        {
+            DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(message);
+            ThreadSafeCout::cout("Peers Connection Manager received: " + recvMessage.data + "\n\n");
+            g_message(recvMessage.data.c_str());
+            break;
+        }
+        default:
+            TorrentManager::getInstance().handleMessage(message);
+            break;
+    }
 
-  }
 }
 
 bool PeersConnectionManager::isConnected(const PeerID& peer) {
