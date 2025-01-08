@@ -38,6 +38,28 @@ public:
     virtual void updateBlockReceived(const PeerID &peer, uint32_t pieceIndex, uint16_t blockIndex) = 0;
 
     /**
+    * @brief Updates the bitfield of a peer.
+    * @param peer The ID of the peer.
+    * @param peerBitfield The bitfield of pieces the peer has.
+    */
+    virtual void updatePeerBitfield(const PeerID &peer, const vector<std::bitset<8> > &peerBitfield) = 0;
+
+    /**
+     * @brief Removes a peer from tracking.
+     * @param peer The ID of the peer.
+     */
+    virtual void removePeer(const PeerID &peer) = 0;
+
+    /**
+ * @brief Checks if a peer has a specific piece.
+ * @param peer The ID of the peer.
+ * @param pieceIndex The index of the piece.
+ * @return True if the peer has the piece, false otherwise.
+ */
+    [[nodiscard]] virtual bool hasPiece(const PeerID &peer, uint pieceIndex) const = 0;
+
+
+    /**
      * @brief Constructor for IPieceChooser.
      * @param pieceCount The total number of pieces in the file.
      * @param downloadProgress Reference to the download progress tracker.

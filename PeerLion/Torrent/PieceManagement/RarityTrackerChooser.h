@@ -4,13 +4,15 @@
 
 #ifndef RARITYTRACKER_H
 #define RARITYTRACKER_H
-
 #include <queue>
-#include <unordered_map>
-#include <ranges>
-#include "IPieceChooser.h"
-#include <functional>
 
+#include <unordered_map>
+
+#include <ranges>
+
+#include "IPieceChooser.h"
+
+#include <functional>
 /**
  * @class RarityTrackerChooser
  * @brief Class for choosing pieces to download based on their rarity.
@@ -27,15 +29,15 @@ class RarityTrackerChooser : IPieceChooser {
      */
     struct RequestTracker {
         std::chrono::steady_clock::time_point requestTime; ///< Time when the request was made.
-        uint32_t pieceIndex; ///< Index of the piece requested.
-        uint16_t blockIndex; ///< Index of the block requested.
+        uint32_t pieceIndex{}; ///< Index of the piece requested.
+        uint16_t blockIndex{}; ///< Index of the block requested.
         bool received = false; ///< Flag indicating if the block was received.
     };
 
     std::unordered_map<PeerID, std::vector<RequestTracker> > activeRequests; ///< Active requests per peer.
     std::unordered_map<PeerID, uint8_t> peerWindows; ///< Window sizes per peer.
     std::unordered_map<PeerID, std::chrono::steady_clock::time_point> lastRequestTimes;
-    ///< Last request times per peer.
+    ///< Last request time per peer.
 
     std::vector<uint8_t> _rarity; ///< Rarity of each piece.
     std::unordered_map<PeerID, std::vector<std::bitset<8> > > _peersBitfields; ///< Bitfields of pieces each peer has.
@@ -71,28 +73,6 @@ class RarityTrackerChooser : IPieceChooser {
      */
     void adjustPeerWindow(const PeerID &peer, bool success);
 
-public:
-    /**
-     * @brief Constructor for RarityTrackerChooser.
-     * @param pieceCount The total number of pieces in the file.
-     * @param downloadProgress Reference to the download progress tracker.
-     * @param fileID The identifier for the file being downloaded.
-     */
-    RarityTrackerChooser(uint pieceCount, DownloadProgress &downloadProgress, const FileID &fileID);
-
-    /**
-     * @brief Updates the bitfield of a peer.
-     * @param peer The ID of the peer.
-     * @param peerBitfield The bitfield of pieces the peer has.
-     */
-    void updatePeerBitfield(const PeerID &peer, const vector<std::bitset<8> > &peerBitfield);
-
-    /**
-     * @brief Removes a peer from tracking.
-     * @param peer The ID of the peer.
-     */
-    void removePeer(const PeerID &peer);
-
     /**
      * @brief Gets the rarity of a specific piece.
      * @param pieceIndex The index of the piece.
@@ -113,13 +93,36 @@ public:
      */
     vector<uint> getTopNRarest(uint n) const;
 
+public:
+    /**
+     * @brief Constructor for RarityTrackerChooser.
+     * @param pieceCount The total number of pieces in the file.
+     * @param downloadProgress Reference to the download progress tracker.
+     * @param fileID The identifier for the file being downloaded.
+     */
+    RarityTrackerChooser(uint pieceCount, DownloadProgress &downloadProgress, const FileID &fileID);
+
+    /**
+     * @brief Updates the bitfield of a peer.
+     * @param peer The ID of the peer.
+     * @param peerBitfield The bitfield of pieces the peer has.
+     */
+    void updatePeerBitfield(const PeerID &peer, const vector<std::bitset<8> > &peerBitfield) override;
+
+    /**
+     * @brief Removes a peer from tracking.
+     * @param peer The ID of the peer.
+     */
+    void removePeer(const PeerID &peer) override;
+
+
     /**
      * @brief Checks if a peer has a specific piece.
      * @param peer The ID of the peer.
      * @param pieceIndex The index of the piece.
      * @return True if the peer has the piece, false otherwise.
      */
-    bool hasPiece(const PeerID &peer, uint pieceIndex) const;
+    bool hasPiece(const PeerID &peer, uint pieceIndex) const override;
 
     /**
      * @brief Chooses blocks to download from a list of peers.
@@ -136,5 +139,6 @@ public:
      */
     void updateBlockReceived(const PeerID &peer, uint32_t pieceIndex, uint16_t blockIndex) override;
 };
+
 
 #endif // RARITYTRACKER_H
