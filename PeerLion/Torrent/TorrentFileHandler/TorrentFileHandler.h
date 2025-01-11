@@ -70,13 +70,8 @@ private:
 
 	void sendMessages();
 
-	/// @brief helper function to check if the code is relevant to this handler
-	/// @param code the code of the messge to check if it is relevant
-	bool isRelevantMessageCode(const uint8_t& code) const;
-
 public:
 	TorrentFileHandler(const FileIO &fileIo, const std::shared_ptr<TCPSocket> &serverSocket, AESKey aesKey);
-
 
 	void stop();
 
