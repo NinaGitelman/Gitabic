@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
   //   }
 
 
-
   // working example with server for 2 diferent peers
 
   int connect = 1;
@@ -67,21 +66,20 @@ int main(int argc, char *argv[]) {
   try {
     const string filePath = "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/unnamed.png";
     MetaDataFile file = MetaDataFile::createMetaData(filePath, "1234", serverAdd, "nina");
-    const MetaDataFile& md1(file);
-    FileIO fileIO= FileIO(md1);
-  //  FileIO fileIO2= FileIO(mdFile2);
+    const MetaDataFile &md1(file);
+    FileIO fileIO = FileIO(md1);
+    //  FileIO fileIO2= FileIO(mdFile2);
 
 
-    TorrentManager& instanceTorrentManager= TorrentManager::getInstance(serverSocket);
-   instanceTorrentManager.addNewFileHandler(fileIO);
+    TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);
+    instanceTorrentManager.addNewFileHandler(fileIO);
     //instanceTorrentManager.addNewFileHandler(fileIO2);
 
-  //  instanceTorrentManager.removeFileHandler(fileIO2.getDownloadProgress().get_file_hash());
-    instanceTorrentManager.removeFileHandler(fileIO.getDownloadProgress().get_file_hash());
-  }catch (std::exception &e) {
+    //  instanceTorrentManager.removeFileHandler(fileIO2.getDownloadProgress().get_file_hash());
+    instanceTorrentManager.removeFileHandler(fileIO.getDownloadProgress().getFileHash());
+  } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
   }
-
 
 
   if (argc >= 2) // if there is cmd arg then this will start the connection
