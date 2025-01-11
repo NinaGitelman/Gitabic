@@ -79,7 +79,7 @@ namespace Utils {
         /// @brief Calculates appropriate piece size for a file
         /// @param fileSize Size of the file
         /// @return Appropriate piece size in bytes
-        static uint pieceSize(const uint64_t fileSize);
+        static uint pieceSize(uint64_t fileSize);
     };
 
     /// @brief Class providing data conversion utilities

@@ -197,6 +197,10 @@ PieceProgress DownloadProgress::getPiece(const uint32_t index) const {
     return pieces[index];
 }
 
+uint DownloadProgress::getPieceIndex(const uint64_t offset) const {
+    return offset / Utils::FileSplitter::pieceSize(fileSize);
+}
+
 
 void DownloadProgress::init(const MetaDataFile &metaData) {
     using namespace Utils;
@@ -337,6 +341,10 @@ PieceProgress PieceProgress::getBlocksStatused(const DownloadStatus status) cons
         }
     }
     return piece_progress;
+}
+
+uint16_t PieceProgress::getBlockIndex(const uint64_t offset) {
+    return offset / Utils::FileSplitter::BLOCK_SIZE;
 }
 
 vector<uint8_t> PieceProgress::serialize() const {

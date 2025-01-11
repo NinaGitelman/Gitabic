@@ -69,6 +69,8 @@ struct PieceProgress {
 
     [[nodiscard]] PieceProgress getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
 
+    static uint16_t getBlockIndex(uint64_t offset);
+
 
     /// @brief Serializes the piece progress information
     /// @return Vector containing the serialized piece data
@@ -84,35 +86,35 @@ struct PieceProgress {
 /// @brief Manages and tracks the progress of a file download
 class DownloadProgress {
 public:
-    [[nodiscard]] const string &get_file_name() const {
+    [[nodiscard]] const string &getFileName() const {
         return fileName;
     }
 
-    [[nodiscard]] const string &get_creator() const {
+    [[nodiscard]] const string &getCreator() const {
         return creator;
     }
 
-    [[nodiscard]] const HashResult &get_file_hash() const {
+    [[nodiscard]] const HashResult &getFileHash() const {
         return fileHash;
     }
 
-    [[nodiscard]] bool is_completed() const {
+    [[nodiscard]] bool isCompleted() const {
         return completed;
     }
 
-    [[nodiscard]] uint64_t get_total_download_bytes() const {
+    [[nodiscard]] uint64_t getTotalDownloadBytes() const {
         return totalDownloadBytes;
     }
 
-    [[nodiscard]] uint64_t get_file_size() const {
+    [[nodiscard]] uint64_t getFileSize() const {
         return fileSize;
     }
 
-    [[nodiscard]] time_t get_start_time() const {
+    [[nodiscard]] time_t getStartTime() const {
         return startTime;
     }
 
-    [[nodiscard]] time_t get_last_time() const {
+    [[nodiscard]] time_t getLastTime() const {
         return lastTime;
     }
 
@@ -174,6 +176,8 @@ public:
     [[nodiscard]] vector<PieceProgress> getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
 
     [[nodiscard]] PieceProgress getPiece(uint32_t index) const;
+
+    uint getPieceIndex(uint64_t offset) const;
 
 private:
     /// @brief Initializes the download progress tracker with metadata

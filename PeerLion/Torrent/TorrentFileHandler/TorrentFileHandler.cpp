@@ -15,7 +15,7 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 																_fileID(
 																	_fileIO.
 																	getDownloadProgress().
-																	get_file_hash()),
+																	getFileHash()),
 																_serverSocket(serverSocket),
 																_peerManager(
 																	std::make_unique<PeerManager>(_fileID,
