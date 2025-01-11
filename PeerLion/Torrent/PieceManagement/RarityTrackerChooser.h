@@ -13,15 +13,18 @@
 #include "IPieceChooser.h"
 
 #include <functional>
+#include <list>
 /**
  * @class RarityTrackerChooser
  * @brief Class for choosing pieces to download based on their rarity.
  */
 class RarityTrackerChooser : IPieceChooser {
-    static constexpr uint16_t MIN_WINDOW = 2; ///< Minimum window size for requests.
-    static constexpr uint16_t MAX_WINDOW = 15; ///< Maximum window size for requests.
-    static constexpr uint16_t INITIAL_WINDOW = 5; ///< Initial window size for requests.
-    static constexpr uint32_t REQUEST_TIMEOUT_MS = 5000; ///< Timeout for requests in milliseconds.
+    static constexpr uint8_t MIN_WINDOW = 2; ///< Minimum window size for requests.
+    static constexpr uint8_t MAX_WINDOW = 15; ///< Maximum window size for requests.
+    static constexpr uint8_t INITIAL_WINDOW = 5; ///< Initial window size for requests.
+    static constexpr uint16_t REQUEST_TIMEOUT_MS = 5000; ///< Timeout for requests in milliseconds.
+    static constexpr uint8_t MAXIMUM_REQUESTS = 12; ///< Timeout for requests in milliseconds.
+    static constexpr uint8_t MINIMUM_REQUESTS = 5; ///< Timeout for requests in milliseconds.
 
     /**
      * @struct RequestTracker
@@ -38,6 +41,8 @@ class RarityTrackerChooser : IPieceChooser {
     std::unordered_map<PeerID, uint8_t> peerWindows; ///< Window sizes per peer.
     std::unordered_map<PeerID, std::chrono::steady_clock::time_point> lastRequestTimes;
     ///< Last request time per peer.
+    std::unordered_map<PeerID, std::list<long> > peerResponseTimes;
+    ///< The times took the peer to respond
 
     std::vector<uint8_t> _rarity; ///< Rarity of each piece.
     std::unordered_map<PeerID, std::vector<std::bitset<8> > > _peersBitfields; ///< Bitfields of pieces each peer has.
@@ -123,6 +128,11 @@ public:
      * @return True if the peer has the piece, false otherwise.
      */
     bool hasPiece(const PeerID &peer, uint pieceIndex) const override;
+
+    void gotPiece(const PeerID &peer, uint pieceIndex) override;
+
+    void lostPiece(const PeerID &peer, uint pieceIndex) override;
+
 
     /**
      * @brief Chooses blocks to download from a list of peers.

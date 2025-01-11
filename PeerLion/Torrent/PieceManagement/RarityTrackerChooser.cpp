@@ -96,19 +96,41 @@ bool RarityTrackerChooser::hasPiece(const PeerID &peer, const uint pieceIndex) c
 	return _peersBitfields.at(peer)[pieceIndex / 8].test(pieceIndex % 8);
 }
 
+void RarityTrackerChooser::gotPiece(const PeerID &peer, const uint pieceIndex) {
+	if (!hasPiece(peer, pieceIndex)) {
+		_rarity[pieceIndex]++;
+		_peersBitfields[peer][pieceIndex / 8].set(pieceIndex % 8);
+	}
+}
+
+void RarityTrackerChooser::lostPiece(const PeerID &peer, const uint pieceIndex) {
+	if (hasPiece(peer, pieceIndex)) {
+		_rarity[pieceIndex]--;
+		_peersBitfields[peer][pieceIndex / 8].reset(pieceIndex % 8);
+	}
+}
+
 vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> peers) {
 	vector<ResultMessages> result;
 	auto now = std::chrono::steady_clock::now();
 
 	// Handle timeouts
 	for (auto &requests: activeRequests | std::views::values) {
-		auto it = std::ranges::remove_if(requests,
-										[now](const RequestTracker &req) {
-											const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-												now - req.requestTime).count();
-											return elapsed > REQUEST_TIMEOUT_MS || req.received;
-										}).begin();
-		requests.erase(it, requests.end());
+		//create a for loop that iterate through the requests and remove the ones that are timed out
+		for (auto it = requests.begin(); it != requests.end();) {
+			if (it->received) {
+				it = requests.erase(it);
+				continue;
+			}
+			const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+				now - it->requestTime).count();
+			if (elapsed > REQUEST_TIMEOUT_MS) {
+				_downloadProgress.updateBlockStatus(it->pieceIndex, it->blockIndex, DownloadStatus::Empty);
+				it = requests.erase(it);
+			} else {
+				++it;
+			}
+		}
 	}
 
 	// Get and sort pieces
@@ -152,33 +174,24 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 				const auto &block: missingBlocks) {
 				if (availableSlots == 0) break;
 
-				// Check if block is already requested
-				bool alreadyRequested = false;
-				for (const auto &requests: activeRequests | std::views::values) {
-					for (const auto &req: requests) {
-						if (req.pieceIndex == _downloadProgress.getPieceIndex(piece.offset) &&
-							req.blockIndex == piece.getBlockIndex(block.offset)) {
-							alreadyRequested = true;
-							break;
-						}
-					}
-					if (alreadyRequested) break;
-				}
-
-				if (!alreadyRequested) {
+				if (block.status == DownloadStatus::Empty) {
 					auto request = std::make_shared<DataRequest>(
 						_fileID,
 						AESKey{},
 						_downloadProgress.getPieceIndex(piece.offset),
-						piece.getBlockIndex(block.offset),
+						PieceProgress::getBlockIndex(block.offset),
 						1
 					);
+					piece.updateBlockStatus(PieceProgress::getBlockIndex(block.offset), DownloadStatus::Downloading);
+					_downloadProgress.updateBlockStatus(_downloadProgress.getPieceIndex(piece.offset),
+														PieceProgress::getBlockIndex(block.offset),
+														DownloadStatus::Downloading);
 
 					res.messages.push_back(request);
 					activeRequests[peer].push_back({
 						now,
 						_downloadProgress.getPieceIndex(piece.offset),
-						piece.getBlockIndex(block.offset)
+						PieceProgress::getBlockIndex(block.offset)
 					});
 					availableSlots--;
 				}
@@ -199,7 +212,7 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 					_fileID,
 					AESKey{},
 					_downloadProgress.getPieceIndex(piece.offset),
-					piece.getBlockIndex(block.offset),
+					PieceProgress::getBlockIndex(block.offset),
 					1
 				);
 
@@ -207,7 +220,7 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 				activeRequests[peer].push_back({
 					now,
 					_downloadProgress.getPieceIndex(piece.offset),
-					piece.getBlockIndex(block.offset)
+					PieceProgress::getBlockIndex(block.offset)
 				});
 				availableSlots--;
 			}
@@ -248,8 +261,6 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 }
 
 void RarityTrackerChooser::updateBlockReceived(const PeerID &peer, uint32_t pieceIndex, uint16_t blockIndex) {
-	//Something wrong here, need to fix
-	//Probably need to make some kind of avg time, and base on that decide window size
 	if (activeRequests.contains(peer)) {
 		auto &requests = activeRequests[peer];
 		const auto it = std::ranges::find_if(requests,
@@ -258,8 +269,26 @@ void RarityTrackerChooser::updateBlockReceived(const PeerID &peer, uint32_t piec
 											});
 
 		if (it != requests.end()) {
-			auto responseTime = std::chrono::steady_clock::now() - it->requestTime;
-			adjustPeerWindow(peer, true);
+			const auto responseTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+				std::chrono::steady_clock::now() - it->requestTime).count();
+
+			// Store last 5 response times
+			auto &times = peerResponseTimes[peer];
+			times.push_front(responseTime);
+			if (times.size() > MAXIMUM_REQUESTS) {
+				times.pop_back();
+			}
+
+			// Calculate average of previous and current times
+			if (times.size() >= MINIMUM_REQUESTS) {
+				const double avgTime = std::accumulate(times.begin(), times.end(), 0.0)
+										/ static_cast<double>(times.size());
+				const double prevAvgTime = std::accumulate(++times.begin(), times.end(), 0.0) / (times.size() - 1);
+
+				// Adjust window based on trend
+				adjustPeerWindow(peer, avgTime < prevAvgTime);
+			}
+
 			it->received = true;
 		}
 	}

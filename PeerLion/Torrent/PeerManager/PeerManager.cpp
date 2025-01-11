@@ -95,7 +95,7 @@ void PeerManager::removePeer(const PeerID &peer) {
 	}
 }
 
-vector<PeerID> PeerManager::getConnectedPeers() const {
+vector<PeerID> PeerManager::getRequestablePeers() const {
 	vector<PeerID> result;
 	std::lock_guard guard(_mutexPeerStates);
 	for (auto &[first, second]: _peerStates) {
@@ -103,7 +103,6 @@ vector<PeerID> PeerManager::getConnectedPeers() const {
 			result.push_back(first);
 		}
 	}
-
 	return result;
 }
 

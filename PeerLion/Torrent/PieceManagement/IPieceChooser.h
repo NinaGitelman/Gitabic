@@ -51,12 +51,16 @@ public:
     virtual void removePeer(const PeerID &peer) = 0;
 
     /**
- * @brief Checks if a peer has a specific piece.
- * @param peer The ID of the peer.
- * @param pieceIndex The index of the piece.
- * @return True if the peer has the piece, false otherwise.
- */
+     * @brief Checks if a peer has a specific piece.
+     * @param peer The ID of the peer.
+     * @param pieceIndex The index of the piece.
+     * @return True if the peer has the piece, false otherwise.
+     */
     [[nodiscard]] virtual bool hasPiece(const PeerID &peer, uint pieceIndex) const = 0;
+
+    virtual void gotPiece(const PeerID &peer, uint pieceIndex) = 0;
+
+    virtual void lostPiece(const PeerID &peer, uint pieceIndex) = 0;
 
 
     /**
