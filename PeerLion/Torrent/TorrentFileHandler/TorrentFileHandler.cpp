@@ -26,7 +26,7 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 																_aesHandler(aesKey) {
 	_running = true;
 
-	_pieceChooser = std::make_unique<IPieceChooser>(RarityTrackerChooser(_fileIO.getDownloadProgress().getAmmountOfPieces(), _fileIO.getDownloadProgress(), _fileID));
+	_pieceChooser = std::make_unique<RarityTrackerChooser>(RarityTrackerChooser(_fileIO.getDownloadProgress().getAmmountOfPieces(), _fileIO.getDownloadProgress(), _fileID));
 
 	_handleRequestsThread = thread(&TorrentFileHandler::handleRequests, this);
 	_handleResponsesThread = thread(&TorrentFileHandler::handleResponses, this);

@@ -10,8 +10,9 @@
 #include "../../NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
 #include "../PeerManager/PeerManager.h"
 #include "../../NetworkUnit/ServerComm/BitTorrentMessages.h"
+#include "../PieceManagement/IPieceChooser.h"
 
-class IPieceChooser;
+
 class PeerManager; // Forward declaration
 class PeersConnectionManager; // Forward declaration
 
