@@ -123,7 +123,10 @@ void TorrentFileHandler::handleRequests() {
 					resultMessages = handle(TorrentMessageBase(request, request.code));
 					break;
 				case BitTorrentRequestCodes::hasPieceUpdate:
+					// TODO if update on piece having - update ipieceChooser
+
 				case BitTorrentRequestCodes::lostPieceUpdate:
+					/// TODO update ipiecechooser
 					resultMessages = handle(PieceOwnershipUpdate(request));
 					break;
 				case BitTorrentRequestCodes::cancelDataRequest:
@@ -145,7 +148,11 @@ void TorrentFileHandler::handleRequests() {
 	}
 }
 
-
+/*
+*	responses:
+*	if finished downloading piece - brodcast to who wants the file -> how will i know it??
+*	TODO broadcast to vector<PeerID>
+*/
 void TorrentFileHandler::handleResponses() {
 	while (_running) {
 		std::unique_lock guard(_mutexReceivedResponses);
@@ -195,6 +202,8 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 	std::unique_lock guard(_mutexFileIO);
 	//void FileIO::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex, const vector<uint8_t> &data) {
 	_fileIO.saveBlock(blockResponse.pieceIndex, blockResponse.blockIndex, blockResponse.block);
+
+	/// TODO update piece chooser
 }
 
 
@@ -205,12 +214,6 @@ void TorrentFileHandler::downloadFile()
 		once per second:
 		get peerlist from its peermanager
 		send them the requests IPieceChooser chooses
-
-
-		responses:
-		if update on piece having - update ipieceChooser
-		if received block update ipieceChooser
-		if finished downloading piece - brodcast it -> how will i know it??
 	 */
 	const int WAITING_TIME = 1;
 	while (_running)
@@ -219,7 +222,8 @@ void TorrentFileHandler::downloadFile()
 		vector<PeerID> requestablePeers= _peerManager->getRequestablePeers();
 		peerManagerLock.unlock();
 
-		_pieceChooser->ChooseBlocks(requestablePeers);
+		vector<ResultMessages> resMessages = _pieceChooser->ChooseBlocks(requestablePeers);
+
 
 	}
 }
@@ -255,6 +259,7 @@ void TorrentFileHandler::stop() {
 	_downloadFileThread.join();
 	_sendMessagesThread.join();
 }
+
 
 void TorrentFileHandler::addMessage(const MessageBaseReceived &msg) {
 	switch (msg.code) {
