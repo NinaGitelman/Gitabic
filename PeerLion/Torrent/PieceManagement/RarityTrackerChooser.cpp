@@ -51,6 +51,9 @@ RarityTrackerChooser::RarityTrackerChooser(const uint pieceCount,
 																											0) {
 }
 
+
+
+
 void RarityTrackerChooser::updatePeerBitfield(const PeerID &peer, const vector<std::bitset<8> > &peerBitfield) {
 	if (_peersBitfields.contains(peer)) {
 		removePeerRarity(peerBitfield);

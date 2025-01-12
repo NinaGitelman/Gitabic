@@ -118,6 +118,11 @@ public:
         return lastTime;
     }
 
+    int getAmmountOfPieces() const
+    {
+        return pieces.size();
+    }
+
     /// @brief Constructs a new download progress tracker from metadata
     /// @param metaData Metadata of the file being downloaded
     explicit DownloadProgress(const MetaDataFile &metaData);

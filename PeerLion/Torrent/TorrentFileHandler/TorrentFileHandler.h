@@ -11,6 +11,7 @@
 #include "../PeerManager/PeerManager.h"
 #include "../../NetworkUnit/ServerComm/BitTorrentMessages.h"
 
+class IPieceChooser;
 class PeerManager; // Forward declaration
 class PeersConnectionManager; // Forward declaration
 
@@ -28,6 +29,7 @@ private:
 	const std::shared_ptr<TCPSocket> _serverSocket;
 
 	std::unique_ptr<PeerManager> _peerManager;
+	std::unique_ptr<IPieceChooser> _pieceChooser;
 
 	queue<MessageBaseReceived> _receivedRequests;
 	mutable mutex _mutexReceivedRequests;

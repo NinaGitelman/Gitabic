@@ -11,14 +11,15 @@
 #include <ranges>
 
 #include "IPieceChooser.h"
-
+#include "../FileIO/FileIO.h"
 #include <functional>
 #include <list>
+
 /**
  * @class RarityTrackerChooser
  * @brief Class for choosing pieces to download based on their rarity.
  */
-class RarityTrackerChooser : IPieceChooser {
+class RarityTrackerChooser : public IPieceChooser {
     static constexpr uint8_t MIN_WINDOW = 2; ///< Minimum window size for requests.
     static constexpr uint8_t MAX_WINDOW = 15; ///< Maximum window size for requests.
     static constexpr uint8_t INITIAL_WINDOW = 5; ///< Initial window size for requests.

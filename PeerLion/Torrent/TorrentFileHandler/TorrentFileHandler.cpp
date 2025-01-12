@@ -5,26 +5,29 @@
 #include "TorrentFileHandler.h"
 
 #include "../../NetworkUnit/ServerComm/BitTorrentMessages.h"
+#include "../PieceManagement/RarityTrackerChooser.h"
 
 
 TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
-										const std::shared_ptr<TCPSocket> &serverSocket,
-										const AESKey aesKey) : _fileIO(fileIo),
-																_peersConnectionManager(
-																	PeersConnectionManager::getInstance()),
-																_fileID(
-																	_fileIO.
-																	getDownloadProgress().
-																	getFileHash()),
-																_serverSocket(serverSocket),
-																_peerManager(
-																	std::make_unique<PeerManager>(_fileID,
-																								serverSocket,
-																								fileIo.getMode() ==
-																								FileMode::Seed)),
-
+                                       const std::shared_ptr<TCPSocket> &serverSocket,
+                                       const AESKey aesKey) : _fileIO(fileIo),
+                                                              _peersConnectionManager(
+	                                                              PeersConnectionManager::getInstance()),
+                                                              _fileID(
+	                                                              _fileIO.
+	                                                              getDownloadProgress().
+	                                                              getFileHash()),
+                                                              _serverSocket(serverSocket),
+                                                              _peerManager(
+	                                                              std::make_unique<PeerManager>(_fileID,
+	                                                                                            serverSocket,
+	                                                                                            fileIo.getMode() ==
+	                                                                                            FileMode::Seed)),
 																_aesHandler(aesKey) {
 	_running = true;
+
+	_pieceChooser = std::make_unique<IPieceChooser>(RarityTrackerChooser(_fileIO.getDownloadProgress().getAmmountOfPieces(), _fileIO.getDownloadProgress(), _fileID));
+
 	_handleRequestsThread = thread(&TorrentFileHandler::handleRequests, this);
 	_handleResponsesThread = thread(&TorrentFileHandler::handleResponses, this);
 	_downloadFileThread = thread(&TorrentFileHandler::downloadFile, this);
@@ -195,7 +198,20 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 }
 
 
-void TorrentFileHandler::downloadFile() {
+void TorrentFileHandler::downloadFile()
+{
+	/*
+	*Download:
+		once per second:
+		get peerlist from its peermanager
+		send them the requests IPieceChooser chooses
+
+
+		responses:
+		if update on piece having - update ipieceChooser
+		if received block update ipieceChooser
+		if finished downloading piece - brodcast it
+	 */
 	while (_running) {
 	}
 }
