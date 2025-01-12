@@ -207,6 +207,28 @@ void PeersConnectionManager::sendMessage(const PeerID& peer, MessageBaseToSend* 
     }
 }
 
+void  PeersConnectionManager::broadcast(MessageBaseToSend *message)
+{
+    // Create a local copy of peer IDs to avoid holding the lock during sendMessage
+    std::vector<PeerID> peerIDs;
+
+    {
+        // Lock only to access the shared data
+        std::unique_lock<std::mutex> registeredPeersLock(_mutexPeerConnections);
+        for (const auto& peer : _registeredPeersFiles)
+        {
+            peerIDs.push_back(peer.first); // Collect PeerIDs
+        }
+    } // Mutex is released here
+
+    // Send messages without holding the lock
+    for (const auto& peerID : peerIDs)
+    {
+        sendMessage(peerID, message);
+    }
+
+}
+
 // BY M
 void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool>> isRunning)
 {

@@ -114,11 +114,13 @@ void RarityTrackerChooser::lostPiece(const PeerID &peer, const uint pieceIndex) 
 }
 
 vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> peers) {
+
 	vector<ResultMessages> result;
 	auto now = std::chrono::steady_clock::now();
 
 	// Handle timeouts
 	for (auto &requests: activeRequests | std::views::values) {
+
 		//create a for loop that iterate through the requests and remove the ones that are timed out
 		for (auto it = requests.begin(); it != requests.end();) {
 			if (it->received) {

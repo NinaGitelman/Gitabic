@@ -210,9 +210,17 @@ void TorrentFileHandler::downloadFile()
 		responses:
 		if update on piece having - update ipieceChooser
 		if received block update ipieceChooser
-		if finished downloading piece - brodcast it
+		if finished downloading piece - brodcast it -> how will i know it??
 	 */
-	while (_running) {
+	const int WAITING_TIME = 1;
+	while (_running)
+	{
+		std::unique_lock peerManagerLock(_mutexPeerManager);
+		vector<PeerID> requestablePeers= _peerManager->getRequestablePeers();
+		peerManagerLock.unlock();
+
+		_pieceChooser->ChooseBlocks(requestablePeers);
+
 	}
 }
 

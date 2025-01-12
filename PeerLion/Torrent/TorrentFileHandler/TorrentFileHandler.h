@@ -29,7 +29,10 @@ private:
 
 	const std::shared_ptr<TCPSocket> _serverSocket;
 
+	mutex _mutexPeerManager;
 	std::unique_ptr<PeerManager> _peerManager;
+
+	mutex _mutexPieceChooser;
 	std::unique_ptr<IPieceChooser> _pieceChooser;
 
 	queue<MessageBaseReceived> _receivedRequests;

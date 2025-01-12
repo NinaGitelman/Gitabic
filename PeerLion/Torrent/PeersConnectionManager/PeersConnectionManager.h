@@ -69,10 +69,13 @@ public:
 
 
     // @brief Function to send the given message to the given peer
-    /// @param PeerId the peer to send message to
-    /// @param MessageBaseToSend the message
+    /// @param peer the peer to send message to
+    /// @param message the message
     void sendMessage(const PeerID &peer, MessageBaseToSend *message);
 
+    /// @brief funciton to send a broadcast (message to all users) of the given message
+    /// @param message the message to broadcast
+    void broadcast (MessageBaseToSend *message);
 
     // Function to check if the given peer is connected
     bool isConnected(const PeerID& peer);
