@@ -70,8 +70,19 @@ ResultMessages TorrentFileHandler::handle(const PieceOwnershipUpdate &request) {
 	//Update piece manager when created
 	switch (request.code) {
 		case BitTorrentRequestCodes::hasPieceUpdate:
+			{
+				PieceOwnershipUpdate pieceOwnershipUpdate(request);
+
+				std::unique_lock pieceChooserLock(_mutexPieceChooser);
+				_pieceChooser->gotPiece(pieceOwnershipUpdate.from, pieceOwnershipUpdate.pieceIndex);
+			}
 			break;
 		case BitTorrentRequestCodes::lostPieceUpdate:
+			{
+				PieceOwnershipUpdate pieceOwnershipUpdate(request);
+				std::unique_lock pieceChooserLock(_mutexPieceChooser);
+				_pieceChooser->lostPiece(pieceOwnershipUpdate.from, pieceOwnershipUpdate.pieceIndex);
+			}
 			break;
 		default:
 			break;
@@ -87,13 +98,25 @@ ResultMessages TorrentFileHandler::handle(const TorrentMessageBase &request) {
 			res.messages.push_back(
 				std::make_shared<TorrentMessageBase>(request.fileId, AESKey{}, BitTorrentResponseCodes::keepAliveRes));
 		case BitTorrentRequestCodes::fileInterested:
-			_peerManager->getPeerState(request.from).peerInterested = true;
+			{
+				std::unique_lock peerManagerLock(_mutexPeerManager);
+				_peerManager->getPeerState(request.from).peerInterested = true;
+			}
 		case BitTorrentRequestCodes::fileNotInterested:
-			_peerManager->getPeerState(request.from).peerInterested = false;
+			{
+				std::unique_lock peerManagerLock(_mutexPeerManager);
+				_peerManager->getPeerState(request.from).peerInterested = false;
+			}
 		case BitTorrentRequestCodes::choke:
-			_peerManager->getPeerState(request.from).peerChoking = true;
+			{
+				std::unique_lock peerManagerLock(_mutexPeerManager);
+				_peerManager->getPeerState(request.from).peerChoking = true;
+			}
 		case BitTorrentRequestCodes::unchoke:
-			_peerManager->getPeerState(request.from).peerChoking = false;
+			{
+				std::unique_lock peerManagerLock(_mutexPeerManager);
+				_peerManager->getPeerState(request.from).peerChoking = false;
+			}
 			break;
 		default:
 			throw std::runtime_error("Unknown message code");
@@ -122,11 +145,8 @@ void TorrentFileHandler::handleRequests() {
 				case BitTorrentRequestCodes::choke:
 					resultMessages = handle(TorrentMessageBase(request, request.code));
 					break;
-				case BitTorrentRequestCodes::hasPieceUpdate:
-					// TODO if update on piece having - update ipieceChooser
-
+			case BitTorrentRequestCodes::hasPieceUpdate:
 				case BitTorrentRequestCodes::lostPieceUpdate:
-					/// TODO update ipiecechooser
 					resultMessages = handle(PieceOwnershipUpdate(request));
 					break;
 				case BitTorrentRequestCodes::cancelDataRequest:
@@ -166,7 +186,6 @@ void TorrentFileHandler::handleResponses() {
 				case BitTorrentResponseCodes::keepAliveRes:
 					// by now dont need the keep alive response, check if need later
 					// Handle keep-alive response
-
 					break;
 
 				case BitTorrentResponseCodes::bitField:
@@ -200,10 +219,26 @@ void TorrentFileHandler::handleResponses() {
 
 void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 	std::unique_lock guard(_mutexFileIO);
-	//void FileIO::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex, const vector<uint8_t> &data) {
-	_fileIO.saveBlock(blockResponse.pieceIndex, blockResponse.blockIndex, blockResponse.block);
 
-	/// TODO update piece chooser
+	{
+		std::unique_lock fileIOLock(_mutexFileIO);
+		_fileIO.saveBlock(blockResponse.pieceIndex, blockResponse.blockIndex, blockResponse.block);
+	}
+	{
+		std::unique_lock pieceChooserLock(_mutexPieceChooser);
+		_pieceChooser->updateBlockReceived(blockResponse.from, blockResponse.pieceIndex, blockResponse.blockIndex);
+	}
+
+	// update all interested peers that i got this pice
+	{
+		std::unique_lock peerManagerBlock(_mutexPeerManager);
+		vector<PeerID> interestedPeers = _peerManager->getInterestedPeers();
+
+		PieceOwnershipUpdate hasPieceUpdate(_fileID, _aesHandler.getKey(), blockResponse.pieceIndex);
+
+		_peersConnectionManager.sendMessage(interestedPeers, &hasPieceUpdate);
+
+	}
 }
 
 
@@ -222,8 +257,10 @@ void TorrentFileHandler::downloadFile()
 		vector<PeerID> requestablePeers= _peerManager->getRequestablePeers();
 		peerManagerLock.unlock();
 
-		vector<ResultMessages> resMessages = _pieceChooser->ChooseBlocks(requestablePeers);
-
+		{
+			std::unique_lock pieceChooserLock(_mutexPieceChooser);
+			vector<ResultMessages> resMessages = _pieceChooser->ChooseBlocks(requestablePeers);
+		}
 
 	}
 }

@@ -53,6 +53,7 @@ public:
 	void removePeer(const PeerID &peer);
 
 	vector<PeerID> getRequestablePeers() const;
+	vector<PeerID> getInterestedPeers() const;
 
 	void updatePeerState(const PeerID &peer, const PeerState &state);
 

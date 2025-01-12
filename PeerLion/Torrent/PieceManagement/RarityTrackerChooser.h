@@ -130,6 +130,10 @@ public:
      */
     bool hasPiece(const PeerID &peer, uint pieceIndex) const override;
 
+    // TODO - URI check if this is correct
+    /*
+     * Function to update that the given peer HAS the given piece
+      */
     void gotPiece(const PeerID &peer, uint pieceIndex) override;
 
     void lostPiece(const PeerID &peer, uint pieceIndex) override;

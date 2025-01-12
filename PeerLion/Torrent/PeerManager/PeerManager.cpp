@@ -106,6 +106,17 @@ vector<PeerID> PeerManager::getRequestablePeers() const {
 	return result;
 }
 
+vector<PeerID> PeerManager::getInterestedPeers() const {
+	vector<PeerID> result;
+	std::lock_guard guard(_mutexPeerStates);
+	for (auto &[first, second]: _peerStates) {
+		if (second.peerInterested) {
+			result.push_back(first);
+		}
+	}
+	return result;
+}
+
 void PeerManager::updatePeerState(const PeerID &peer, const PeerState &state) {
 	std::lock_guard guard(_mutexPeerStates);
 	if (_peerStates.contains(peer)) {

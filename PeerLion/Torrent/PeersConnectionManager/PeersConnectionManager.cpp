@@ -206,6 +206,13 @@ void PeersConnectionManager::sendMessage(const PeerID& peer, MessageBaseToSend* 
          throw std::runtime_error("Peer not found");
     }
 }
+void PeersConnectionManager::sendMessage(const vector<PeerID>& peers, MessageBaseToSend* message)
+{
+    for (PeerID peer: peers)
+    {
+        sendMessage(peer, message);
+    }
+}
 
 void  PeersConnectionManager::broadcast(MessageBaseToSend *message)
 {
