@@ -9,24 +9,26 @@
 
 
 TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
-                                       const std::shared_ptr<TCPSocket> &serverSocket,
-                                       const AESKey aesKey) : _fileIO(fileIo),
-                                                              _peersConnectionManager(
-	                                                              PeersConnectionManager::getInstance()),
-                                                              _fileID(
-	                                                              _fileIO.
-	                                                              getDownloadProgress().
-	                                                              getFileHash()),
-                                                              _serverSocket(serverSocket),
-                                                              _peerManager(
-	                                                              std::make_unique<PeerManager>(_fileID,
-	                                                                                            serverSocket,
-	                                                                                            fileIo.getMode() ==
-	                                                                                            FileMode::Seed)),
+										const std::shared_ptr<TCPSocket> &serverSocket,
+										const AESKey aesKey) : _fileIO(fileIo),
+																_peersConnectionManager(
+																	PeersConnectionManager::getInstance()),
+																_fileID(
+																	_fileIO.
+																	getDownloadProgress().
+																	getFileHash()),
+																_serverSocket(serverSocket),
+																_peerManager(
+																	std::make_unique<PeerManager>(_fileID,
+																								serverSocket,
+																								fileIo.getMode() ==
+																								FileMode::Seed)),
 																_aesHandler(aesKey) {
 	_running = true;
 
-	_pieceChooser = std::make_unique<RarityTrackerChooser>(RarityTrackerChooser(_fileIO.getDownloadProgress().getAmmountOfPieces(), _fileIO.getDownloadProgress(), _fileID));
+	_pieceChooser = std::make_unique<RarityTrackerChooser>(
+		RarityTrackerChooser(_fileIO.getDownloadProgress().getAmmountOfPieces(), _fileIO.getDownloadProgress(),
+							_fileID));
 
 	_handleRequestsThread = thread(&TorrentFileHandler::handleRequests, this);
 	_handleResponsesThread = thread(&TorrentFileHandler::handleResponses, this);
@@ -69,21 +71,19 @@ ResultMessages TorrentFileHandler::handle(const CancelDataRequest &request) {
 ResultMessages TorrentFileHandler::handle(const PieceOwnershipUpdate &request) {
 	//Update piece manager when created
 	switch (request.code) {
-		case BitTorrentRequestCodes::hasPieceUpdate:
-			{
-				PieceOwnershipUpdate pieceOwnershipUpdate(request);
+		case BitTorrentRequestCodes::hasPieceUpdate: {
+			PieceOwnershipUpdate pieceOwnershipUpdate(request);
 
-				std::unique_lock pieceChooserLock(_mutexPieceChooser);
-				_pieceChooser->gotPiece(pieceOwnershipUpdate.from, pieceOwnershipUpdate.pieceIndex);
-			}
-			break;
-		case BitTorrentRequestCodes::lostPieceUpdate:
-			{
-				PieceOwnershipUpdate pieceOwnershipUpdate(request);
-				std::unique_lock pieceChooserLock(_mutexPieceChooser);
-				_pieceChooser->lostPiece(pieceOwnershipUpdate.from, pieceOwnershipUpdate.pieceIndex);
-			}
-			break;
+			std::unique_lock pieceChooserLock(_mutexPieceChooser);
+			_pieceChooser->gotPiece(pieceOwnershipUpdate.from, pieceOwnershipUpdate.pieceIndex);
+		}
+		break;
+		case BitTorrentRequestCodes::lostPieceUpdate: {
+			PieceOwnershipUpdate pieceOwnershipUpdate(request);
+			std::unique_lock pieceChooserLock(_mutexPieceChooser);
+			_pieceChooser->lostPiece(pieceOwnershipUpdate.from, pieceOwnershipUpdate.pieceIndex);
+		}
+		break;
 		default:
 			break;
 	}
@@ -97,27 +97,23 @@ ResultMessages TorrentFileHandler::handle(const TorrentMessageBase &request) {
 		case BitTorrentRequestCodes::keepAlive:
 			res.messages.push_back(
 				std::make_shared<TorrentMessageBase>(request.fileId, AESKey{}, BitTorrentResponseCodes::keepAliveRes));
-		case BitTorrentRequestCodes::fileInterested:
-			{
-				std::unique_lock peerManagerLock(_mutexPeerManager);
-				_peerManager->getPeerState(request.from).peerInterested = true;
-			}
-		case BitTorrentRequestCodes::fileNotInterested:
-			{
-				std::unique_lock peerManagerLock(_mutexPeerManager);
-				_peerManager->getPeerState(request.from).peerInterested = false;
-			}
-		case BitTorrentRequestCodes::choke:
-			{
-				std::unique_lock peerManagerLock(_mutexPeerManager);
-				_peerManager->getPeerState(request.from).peerChoking = true;
-			}
-		case BitTorrentRequestCodes::unchoke:
-			{
-				std::unique_lock peerManagerLock(_mutexPeerManager);
-				_peerManager->getPeerState(request.from).peerChoking = false;
-			}
-			break;
+		case BitTorrentRequestCodes::fileInterested: {
+			std::unique_lock peerManagerLock(_mutexPeerManager);
+			_peerManager->getPeerState(request.from).peerInterested = true;
+		}
+		case BitTorrentRequestCodes::fileNotInterested: {
+			std::unique_lock peerManagerLock(_mutexPeerManager);
+			_peerManager->getPeerState(request.from).peerInterested = false;
+		}
+		case BitTorrentRequestCodes::choke: {
+			std::unique_lock peerManagerLock(_mutexPeerManager);
+			_peerManager->getPeerState(request.from).peerChoking = true;
+		}
+		case BitTorrentRequestCodes::unchoke: {
+			std::unique_lock peerManagerLock(_mutexPeerManager);
+			_peerManager->getPeerState(request.from).peerChoking = false;
+		}
+		break;
 		default:
 			throw std::runtime_error("Unknown message code");
 	}
@@ -145,7 +141,7 @@ void TorrentFileHandler::handleRequests() {
 				case BitTorrentRequestCodes::choke:
 					resultMessages = handle(TorrentMessageBase(request, request.code));
 					break;
-			case BitTorrentRequestCodes::hasPieceUpdate:
+				case BitTorrentRequestCodes::hasPieceUpdate:
 				case BitTorrentRequestCodes::lostPieceUpdate:
 					resultMessages = handle(PieceOwnershipUpdate(request));
 					break;
@@ -218,13 +214,10 @@ void TorrentFileHandler::handleResponses() {
 }
 
 void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
-	std::unique_lock guard(_mutexFileIO);
-
-	{
+	std::unique_lock guard(_mutexFileIO); {
 		std::unique_lock fileIOLock(_mutexFileIO);
 		_fileIO.saveBlock(blockResponse.pieceIndex, blockResponse.blockIndex, blockResponse.block);
-	}
-	{
+	} {
 		std::unique_lock pieceChooserLock(_mutexPieceChooser);
 		_pieceChooser->updateBlockReceived(blockResponse.from, blockResponse.pieceIndex, blockResponse.blockIndex);
 	}
@@ -237,13 +230,11 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 		PieceOwnershipUpdate hasPieceUpdate(_fileID, _aesHandler.getKey(), blockResponse.pieceIndex);
 
 		_peersConnectionManager.sendMessage(interestedPeers, &hasPieceUpdate);
-
 	}
 }
 
 
-void TorrentFileHandler::downloadFile()
-{
+void TorrentFileHandler::downloadFile() {
 	/*
 	*Download:
 		once per second:
@@ -251,17 +242,13 @@ void TorrentFileHandler::downloadFile()
 		send them the requests IPieceChooser chooses
 	 */
 	const int WAITING_TIME = 1;
-	while (_running)
-	{
+	while (_running) {
 		std::unique_lock peerManagerLock(_mutexPeerManager);
-		vector<PeerID> requestablePeers= _peerManager->getRequestablePeers();
-		peerManagerLock.unlock();
-
-		{
+		const vector<PeerID> requestablePeers = _peerManager->getRequestablePeers();
+		peerManagerLock.unlock(); {
 			std::unique_lock pieceChooserLock(_mutexPieceChooser);
 			vector<ResultMessages> resMessages = _pieceChooser->ChooseBlocks(requestablePeers);
 		}
-
 	}
 }
 
