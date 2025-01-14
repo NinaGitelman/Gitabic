@@ -186,12 +186,16 @@ void TorrentFileHandler::handleResponses() {
 
 				case BitTorrentResponseCodes::bitField:
 					// Handle bitfield response
-
+					_pieceChooser->updatePeerBitfield(response.from, FileBitField(response).field);
 					break;
 
 				case BitTorrentResponseCodes::missingFile:
 					// Handle missing file response
-
+					if (_peerManager->getPeerState(response.from).peerInterested) {
+						_peerManager->getPeerState(response.from).amInterested = false;
+					} else {
+						_peerManager->removePeer(response.from);
+					}
 					break;
 
 				case BitTorrentResponseCodes::blockResponse:
@@ -214,18 +218,19 @@ void TorrentFileHandler::handleResponses() {
 }
 
 void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
+	bool pieceFinished = false;
 	std::unique_lock guard(_mutexFileIO); {
 		std::unique_lock fileIOLock(_mutexFileIO);
-		_fileIO.saveBlock(blockResponse.pieceIndex, blockResponse.blockIndex, blockResponse.block);
+		pieceFinished = _fileIO.saveBlock(blockResponse.pieceIndex, blockResponse.blockIndex, blockResponse.block);
 	} {
 		std::unique_lock pieceChooserLock(_mutexPieceChooser);
 		_pieceChooser->updateBlockReceived(blockResponse.from, blockResponse.pieceIndex, blockResponse.blockIndex);
 	}
 
 	// update all interested peers that i got this pice
-	{
+	if (pieceFinished) {
 		std::unique_lock peerManagerBlock(_mutexPeerManager);
-		vector<PeerID> interestedPeers = _peerManager->getInterestedPeers();
+		const vector<PeerID> interestedPeers = _peerManager->getInterestedPeers();
 
 		PieceOwnershipUpdate hasPieceUpdate(_fileID, _aesHandler.getKey(), blockResponse.pieceIndex);
 

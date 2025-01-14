@@ -62,7 +62,7 @@ public:
 	 * @param blockIndex The index of the block
 	 * @param data The block data
 	 */
-	void saveBlock(uint32_t pieceIndex, uint16_t blockIndex, const vector<uint8_t> &data);
+	bool saveBlock(uint32_t pieceIndex, uint16_t blockIndex, const vector<uint8_t> &data);
 
 	/**
 	 * @param pieceIndex the piece index
