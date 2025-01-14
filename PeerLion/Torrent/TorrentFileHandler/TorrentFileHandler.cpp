@@ -241,14 +241,22 @@ void TorrentFileHandler::downloadFile() {
 		get peerlist from its peermanager
 		send them the requests IPieceChooser chooses
 	 */
-	const int WAITING_TIME = 1;
+	const auto WAITING_TIME = std::chrono::seconds(1);
 	while (_running) {
+		auto start = std::chrono::steady_clock::now();
 		std::unique_lock peerManagerLock(_mutexPeerManager);
 		const vector<PeerID> requestablePeers = _peerManager->getRequestablePeers();
 		peerManagerLock.unlock(); {
 			std::unique_lock pieceChooserLock(_mutexPieceChooser);
-			vector<ResultMessages> resMessages = _pieceChooser->ChooseBlocks(requestablePeers);
+			for (auto &[to, messages]: _pieceChooser->ChooseBlocks(requestablePeers)) {
+				std::lock_guard guard(_mutexMessagesToSend);
+				for (const auto &msg: messages) {
+					_messagesToSend.push_back(msg);
+					_cvMessagesToSend.notify_one();
+				}
+			}
 		}
+		std::this_thread::sleep_for(WAITING_TIME - (std::chrono::steady_clock::now() - start));
 	}
 }
 
