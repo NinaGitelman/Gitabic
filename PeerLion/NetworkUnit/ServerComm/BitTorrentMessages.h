@@ -66,10 +66,10 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralReceive {
   * @param to The peer ID to send the message to.
   */
  TorrentMessageBase(const ID &fileId, const AESKey &initVector, const uint8_t code,
-                    const PeerID &to) : MessageBaseToSend(
-                                         code), GeneralReceive(to),
-                                        fileId(fileId),
-                                        initVector(initVector) {
+                    const ID &to) : MessageBaseToSend(
+                                     code), GeneralReceive(to),
+                                    fileId(fileId),
+                                    initVector(initVector) {
  }
 
  /**

@@ -4,6 +4,8 @@
 
 #include "PeerManager.h"
 
+#include <list>
+
 unordered_set<UserListResponse> PeerManager::_messagesSet;
 mutex PeerManager::_mutexMessagesSet;
 condition_variable PeerManager::_cvMessagesSet;
@@ -85,7 +87,7 @@ void PeerManager::addPeer(const PeerID &peer) {
 		_peerStates[peer] = PeerState();
 		_peerStates[peer].amInterested = !_isSeed;
 		if (!_isSeed) {
-			_newPeerList.push(peer);
+			_newPeerList.push_back(peer);
 		}
 	}
 }
@@ -99,9 +101,9 @@ void PeerManager::removePeer(const PeerID &peer) {
 	}
 }
 
-queue<PeerID> PeerManager::getNewPeerListQueue() {
+std::list<PeerID> PeerManager::getNewPeerList() {
 	auto res = std::move(_newPeerList);
-	_newPeerList = queue<PeerID>();
+	_newPeerList = std::list<PeerID>();
 	return res;
 }
 

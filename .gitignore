@@ -37,3 +37,5 @@ cmake-build-*/  # CLion's build output folders
 *.ipr
 *.iws
 */cmake-build-debug/*
+
+*/build/*

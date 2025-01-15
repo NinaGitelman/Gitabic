@@ -6,6 +6,7 @@
 #define PEERMANAGER_H
 #include <bitset>
 #include <cstdint>
+#include <list>
 #include <vector>
 #include "../PeersConnectionManager/PeersConnectionManager.h"
 
@@ -38,7 +39,7 @@ class PeerManager {
 	bool _isSeed;
 	std::thread _updateConnectedPeersThread;
 	mutable mutex _mutexPeerStates;
-	queue<PeerID> _newPeerList;
+	std::list<PeerID> _newPeerList;
 
 
 	[[noreturn]] void updateConnectedPeers();
@@ -53,7 +54,7 @@ public:
 
 	void removePeer(const PeerID &peer);
 
-	queue<PeerID> getNewPeerListQueue();
+	std::list<PeerID> getNewPeerList();
 
 	vector<PeerID> getRequestablePeers() const;
 

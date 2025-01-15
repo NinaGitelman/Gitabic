@@ -67,12 +67,12 @@ public:
     static TorrentManager &getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
 
     /// @brief function to add a new file handler - add new file to the torrent system
-    /// @param fileIo the fileIO of the file to add
+    /// @param fileIO the fileIO of the file to add
     /// @throw runtime_error if the file id is already in the system
     void addNewFileHandler(FileIO &fileIO);
 
     /// @brief function to remove file from the torrent system
-    /// @param fileIo the fileIO of the file to add
+    /// @param fileID the fileIO of the file to add
     /// @throw runtime_error if the file id is already in the system
     void removeFileHandler(const FileID &fileID);
 

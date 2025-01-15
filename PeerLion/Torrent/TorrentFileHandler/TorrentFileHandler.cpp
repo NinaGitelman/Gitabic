@@ -249,7 +249,7 @@ void TorrentFileHandler::downloadFile() {
 	 */
 	const auto WAITING_TIME = std::chrono::seconds(1);
 	while (_running) {
-		const auto newPeers = _peerManager->getNewPeerListQueue();
+		const auto newPeers = _peerManager->getNewPeerList();
 		for (const auto &peer: newPeers) {
 			std::lock_guard guard(_mutexMessagesToSend);
 			_messagesToSend.push_back(
