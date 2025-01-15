@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <memory>
 
-#define TEN_MINUTES 10 * 60
+#define TEN_MINUTES 10 //TODO * 60
 #define TIME_RETRY 10
 
 using std::condition_variable;
@@ -18,8 +18,7 @@ using std::time_t;
 using std::unique_lock;
 using std::unordered_map;
 
-class DataRepublish
-{
+class DataRepublish {
 public:
     /// @brief Gets the Singleton instance of DataRepublish
     /// @param tcpSocket the socket to publish in
@@ -52,7 +51,7 @@ private:
     bool publish(ID fileId, ID myId);
 
     /// @brief The saved data and next time needs to be published
-    unordered_map<ID, pair<ID, std::time_t>> savedData;
+    unordered_map<ID, pair<ID, std::time_t> > savedData;
     mutex mut;
 
     /// @brief Thread that runs republishOldData method

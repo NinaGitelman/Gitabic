@@ -19,7 +19,7 @@
 #include "Utils/VectorUint8Utils.h"
 
 #define SERVER_ADDRESS "0.0.0.0"
-#define SERVER_PORT 0
+#define SERVER_PORT 4786
 
 /// @brief  Heper function to pritn the DATA
 void printDataAsASCII(vector<uint8_t> data) {
@@ -33,21 +33,29 @@ void printDataAsASCII(vector<uint8_t> data) {
   std::cout << std::endl;
 }
 
+void main2();
+
 int main(const int argc, char **argv) {
+  if (argc == 2) {
+    main2();
+    return 0;
+  }
   string filePath = getenv("HOME");
   filePath += "/Gitabic/a.txt";
   auto b = Address(SERVER_ADDRESS, SERVER_PORT);
   MetaDataFile mdFile1 = MetaDataFile::createMetaData(
     filePath, "1234", b, "nina");
-  if (argc == 2 && atoi(argv[1]) == 1) {
-    auto fileIO = FileIO(mdFile1);
-    TorrentManager &instanceTorrentManager = TorrentManager::getInstance();
-    instanceTorrentManager.addNewFileHandler(fileIO);
-  } else {
-    auto fileIO = FileIO(SHA256::hashToString(mdFile1.getFileHash()));
-    TorrentManager &instanceTorrentManager = TorrentManager::getInstance();
-    instanceTorrentManager.addNewFileHandler(fileIO);
-  }
+
+  auto fileIO = FileIO(SHA256::hashToString(mdFile1.getFileHash()));
+
+  auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
+  auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
+  auto &dataRepublish = DataRepublish::getInstance(serverSocket.get());
+  dataRepublish.saveData(mdFile1.getFileHash(), ServerResponseNewId(res).id);
+
+  TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);
+  instanceTorrentManager.addNewFileHandler(fileIO);
+
   while (true) {
     string input;
     std::getline(std::cin, input);
@@ -56,6 +64,34 @@ int main(const int argc, char **argv) {
     }
   }
 }
+
+void main2() {
+  string filePath = getenv("HOME");
+  filePath += "/Gitabic/a.txt.gitabic";
+  auto addr = Address(SERVER_ADDRESS, SERVER_PORT);
+  MetaDataFile mdFile1(filePath);
+
+
+  auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
+  auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
+  auto &dataRepublish = DataRepublish::getInstance(serverSocket.get());
+  dataRepublish.saveData(mdFile1.getFileHash(), ServerResponseNewId(res).id);
+
+  TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);
+
+  std::cout << "in main" << std::endl;
+  auto fileIO = FileIO(mdFile1);
+  instanceTorrentManager.addNewFileHandler(fileIO);
+
+  while (true) {
+    string input;
+    std::getline(std::cin, input);
+    if (input == "exit") {
+      break;
+    }
+  }
+}
+
 
 // int main(int argc, char *argv[]) {
 //   //   int connect = 1;

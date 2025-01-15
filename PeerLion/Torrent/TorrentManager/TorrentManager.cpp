@@ -16,11 +16,7 @@ TorrentManager &TorrentManager::getInstance(std::shared_ptr<TCPSocket> socket) {
     if (!instance) {
         // Create a new TorrentManager instance
         instance = std::unique_ptr<TorrentManager>(new TorrentManager(socket));
-    } else if (socket) {
-        // Optionally handle attempts to reinitialize with a different socket
-        throw std::runtime_error("PeersConnectionManager already initialized");
     }
-
     return *instance;
 }
 

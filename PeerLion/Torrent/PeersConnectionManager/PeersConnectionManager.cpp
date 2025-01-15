@@ -9,56 +9,41 @@
 std::mutex PeersConnectionManager::mutexInstance;
 std::unique_ptr<PeersConnectionManager> PeersConnectionManager::instance;
 
-PeersConnectionManager& PeersConnectionManager::getInstance(std::shared_ptr<TCPSocket> socket)
-{
+PeersConnectionManager &PeersConnectionManager::getInstance(std::shared_ptr<TCPSocket> socket) {
     std::lock_guard<std::mutex> lock(mutexInstance);
 
-    if (!instance)
-    {
+    if (!instance) {
         instance = std::unique_ptr<PeersConnectionManager>(
             new PeersConnectionManager(socket)
         );
-    } else if (socket)
-    {
-        // Optionally handle attempts to reinitialize with a different socket
-        throw std::runtime_error("PeersConnectionManager already initialized");
     }
     return *instance;
 }
 
-PeersConnectionManager::PeersConnectionManager(std::shared_ptr<TCPSocket> socket): _serverSocket(socket)
-{
-    _isRunning = std::make_shared<std::atomic<bool>>(true);
+PeersConnectionManager::PeersConnectionManager(std::shared_ptr<TCPSocket> socket): _serverSocket(socket) {
+    _isRunning = std::make_shared<std::atomic<bool> >(true);
 
     _routePacketThread = std::thread([this]() {
-          routePackets(_isRunning);  // Pass the shared_ptr directly
-     });
-
-
+        routePackets(_isRunning); // Pass the shared_ptr directly
+    });
 }
 
-PeersConnectionManager::~PeersConnectionManager()
-{
+PeersConnectionManager::~PeersConnectionManager() {
     if (_isRunning) {
-        *_isRunning = false;  // Signal thread to stop
+        *_isRunning = false; // Signal thread to stop
     }
     if (_routePacketThread.joinable()) {
-        _routePacketThread.join();  // Wait for thread to finish
+        _routePacketThread.join(); // Wait for thread to finish
     }
 }
 
 
 // for debugging...
-static void printDataAsASCII(vector<uint8_t> data)
-{
-    for (const auto& byte : data)
-    {
-        if (std::isprint(byte))
-        {
+static void printDataAsASCII(vector<uint8_t> data) {
+    for (const auto &byte: data) {
+        if (std::isprint(byte)) {
             std::cout << static_cast<char>(byte); // Printable characters
-        }
-        else
-        {
+        } else {
             std::cout << '.'; // Replace non-printable characters with '.'
         }
     }
@@ -66,213 +51,170 @@ static void printDataAsASCII(vector<uint8_t> data)
 }
 
 // TODO divide this into smaller functions maybe...
-bool PeersConnectionManager::addFileForPeer(const FileID& fileID,const PeerID& peer)
-{
+bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &peer) {
     bool addedFile = false;
     std::cout << "Debug Peers Connection Manager add peer" << std::endl;
 
     std::unique_lock<std::mutex> peersConectionLock(_mutexPeerConnections);
 
     // first check if i am connected already from before
-    if(_peerConnections.find(peer) == _peerConnections.end())
-    {
+    if (_peerConnections.find(peer) == _peerConnections.end()) {
         // create ice connection and send to server the ice data
         std::shared_ptr<ICEConnection> peerConnection = std::make_shared<ICEConnection>(true);
 
         // gets local ice data and sends to server on the request
         std::vector<uint8_t> myIceData = peerConnection->getLocalICEData();
-        ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(peer, myIceData);
-
-        {
+        ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(peer, myIceData); {
             std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
             _serverSocket->sendRequest(requestIce);
         }
         std::cout << "send request of get my ice data\n\n";
-        std::function<bool(uint8_t)> isRelevant = [](uint8_t code)
-        {
+        std::function<bool(uint8_t)> isRelevant = [](uint8_t code) {
             return code == ServerResponseCodes::UserAuthorizedICEData;
         };
 
         // send request to server to connect to the other peer and for its ice data
 
 
-            std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
-            ServerResponseUserAuthorizedICEData response =  _serverSocket->receive(isRelevant);
-            serverSocketLock.unlock();
+        std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
+        ServerResponseUserAuthorizedICEData response = _serverSocket->receive(isRelevant);
+        serverSocketLock.unlock();
 
-            std::cout << "peer data: " ;
-            printDataAsASCII(response.iceCandidateInfo);
-            // create thread that will add the peer
+        std::cout << "peer data: ";
+        printDataAsASCII(response.iceCandidateInfo);
+        // create thread that will add the peer
 
-            bool connected = peerConnection->connectToPeer(response.iceCandidateInfo);
+        bool connected = peerConnection->connectToPeer(response.iceCandidateInfo);
 
-         if(connected)
-         {
+        if (connected) {
             addedFile = connected;
             std::cout << "SUCESSFULLY CONNECTED to peer in add file for peer" << std::endl;
 
-             _peerConnections.emplace(peer, PeerConnectionAndMutex(peerConnection));
+            _peerConnections.emplace(peer, PeerConnectionAndMutex(peerConnection));
 
-             peersConectionLock.unlock();
-            {
+            peersConectionLock.unlock(); {
                 // create registered peer files for this peer
                 std::unique_lock<std::mutex> lock(_mutexRegisteredPeersFiles);
 
-                _registeredPeersFiles.insert(std::pair<PeerID, unordered_set<FileID>>(peer, unordered_set{fileID}));
+                _registeredPeersFiles.insert(std::pair<PeerID, unordered_set<FileID> >(peer, unordered_set{fileID}));
             }
-        }
-        else
-        {
+        } else {
             std::cout << "failed connecting to peer in add file for peer" << std::endl;
             addedFile = false;
         }
     }
     // if the file is not present in the peer files list, add it
-    else if(_registeredPeersFiles[peer].find(fileID) == _registeredPeersFiles[peer].end() )
-    {
+    else if (_registeredPeersFiles[peer].find(fileID) == _registeredPeersFiles[peer].end()) {
         _registeredPeersFiles[peer].insert(fileID);
         addedFile = true;
     }
     return addedFile;
-
 }
 
 
-void PeersConnectionManager::removeFileFromPeer( const FileID fileID,const PeerID& peer)
-{
+void PeersConnectionManager::removeFileFromPeer(const FileID fileID, const PeerID &peer) {
     std::unique_lock<std::mutex> registeredPeersLock(_mutexRegisteredPeersFiles);
 
     auto itPeerFiles = _registeredPeersFiles.find(peer);
 
-    if (itPeerFiles  != _registeredPeersFiles.end() ) // if finds the peer
+    if (itPeerFiles != _registeredPeersFiles.end()) // if finds the peer
     {
         auto itFileIdInSet = itPeerFiles->second.find(fileID);
 
-        if(itFileIdInSet != itPeerFiles->second.end()) // if finds the fileId in the peer files set
+        if (itFileIdInSet != itPeerFiles->second.end()) // if finds the fileId in the peer files set
         {
-
-            if(itPeerFiles->second.size() == 1 ) // the only file id left -> disconnect
+            if (itPeerFiles->second.size() == 1) // the only file id left -> disconnect
             {
-                 _registeredPeersFiles.erase(itPeerFiles);
-                registeredPeersLock.unlock();
+                _registeredPeersFiles.erase(itPeerFiles);
+                registeredPeersLock.unlock(); {
+                    std::unique_lock<std::mutex> lock(_mutexRegisteredPeersFiles);
 
-                    {
-                        std::unique_lock<std::mutex> lock(_mutexRegisteredPeersFiles);
+                    // delete the connection and the peer
+                    auto itPeerConnection = _peerConnections.find(peer);
+                    if (itPeerConnection != _peerConnections.end()) {
+                        // disconnect the ice connection
+                        (itPeerConnection->second).connection->disconnect();
 
-                        // delete the connection and the peer
-                        auto itPeerConnection = _peerConnections.find(peer);
-                        if(itPeerConnection != _peerConnections.end())
-                        {
-                          // disconnect the ice connection
-                          (itPeerConnection->second).connection->disconnect();
-
-                          // take it out from the map
+                        // take it out from the map
 
 
-                          _peerConnections.erase(itPeerConnection);
+                        _peerConnections.erase(itPeerConnection);
                     }
                 }
-
-            }
-            else // simply delete this file id
+            } else // simply delete this file id
             {
                 itPeerFiles->second.erase(itFileIdInSet);
-
             }
-        }
-        else
-        {
+        } else {
             throw std::runtime_error("File id not in peer");
         }
-    }
-    else
-    {
+    } else {
         throw std::runtime_error("Peer not found");
     }
 }
 
-void PeersConnectionManager::sendMessage(const PeerID& peer, MessageBaseToSend* message)
-{
+void PeersConnectionManager::sendMessage(const PeerID &peer, MessageBaseToSend *message) {
     std::unique_lock<std::mutex> registeredPeersLock(_mutexPeerConnections);
 
     auto itPeerConnection = _peerConnections.find(peer);
 
-    if (itPeerConnection  != _peerConnections.end() ) // if finds the peer
+    if (itPeerConnection != _peerConnections.end()) // if finds the peer
     {
-      (itPeerConnection->second).connection->sendMessage(message);
-    }
-    else
-    {
-         throw std::runtime_error("Peer not found");
+        (itPeerConnection->second).connection->sendMessage(message);
+    } else {
+        throw std::runtime_error("Peer not found");
     }
 }
-void PeersConnectionManager::sendMessage(const vector<PeerID>& peers, MessageBaseToSend* message)
-{
-    for (PeerID peer: peers)
-    {
+
+void PeersConnectionManager::sendMessage(const vector<PeerID> &peers, MessageBaseToSend *message) {
+    for (PeerID peer: peers) {
         sendMessage(peer, message);
     }
 }
 
-void  PeersConnectionManager::broadcast(MessageBaseToSend *message)
-{
+void PeersConnectionManager::broadcast(MessageBaseToSend *message) {
     // Create a local copy of peer IDs to avoid holding the lock during sendMessage
-    std::vector<PeerID> peerIDs;
-
-    {
+    std::vector<PeerID> peerIDs; {
         // Lock only to access the shared data
         std::unique_lock<std::mutex> registeredPeersLock(_mutexPeerConnections);
-        for (const auto& peer : _registeredPeersFiles)
-        {
+        for (const auto &peer: _registeredPeersFiles) {
             peerIDs.push_back(peer.first); // Collect PeerIDs
         }
     } // Mutex is released here
 
     // Send messages without holding the lock
-    for (const auto& peerID : peerIDs)
-    {
+    for (const auto &peerID: peerIDs) {
         sendMessage(peerID, message);
     }
-
 }
 
 // BY M
-void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool>> isRunning)
-{
-      while(isRunning->load())
-      {
+void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool> > isRunning) {
+    while (isRunning->load()) {
+        std::unique_lock<std::mutex> peersConnectionsLock(_mutexPeerConnections);
 
-            std::unique_lock<std::mutex> peersConnectionsLock(_mutexPeerConnections);
+        for (auto currPeer = _peerConnections.begin(); currPeer != _peerConnections.end(); currPeer++) {
+            std::unique_lock<std::mutex> currPeerLock(currPeer->second.mutex);
 
-            for(auto currPeer = _peerConnections.begin(); currPeer != _peerConnections.end(); currPeer++)
-            {
-                std::unique_lock<std::mutex> currPeerLock(currPeer->second.mutex);
+            peersConnectionsLock.unlock();
 
-                peersConnectionsLock.unlock();
+            int messagesCount = currPeer->second.connection->receivedMessagesCount();
 
-                int messagesCount = currPeer->second.connection->receivedMessagesCount();
-
-                int currMessage = 0;
-                for(currMessage=0; currMessage < messagesCount; currMessage++)
-                {
-
-                      MessageBaseReceived currMessage = currPeer->second.connection->receiveMessage();
-                      handleMessage(currMessage);
-                }
-
-                peersConnectionsLock.lock();
-
+            int currMessage = 0;
+            for (currMessage = 0; currMessage < messagesCount; currMessage++) {
+                MessageBaseReceived currMessage = currPeer->second.connection->receiveMessage();
+                handleMessage(currMessage);
             }
+
+            peersConnectionsLock.lock();
+        }
     }
 }
 
 // TODO - check if can leave as default or if there will be other message typess
-void PeersConnectionManager::handleMessage(MessageBaseReceived& message)
-{
-
+void PeersConnectionManager::handleMessage(MessageBaseReceived &message) {
     switch (message.code) {
-        case DEBUGGING_STRING_MESSAGE:
-        {
+        case DEBUGGING_STRING_MESSAGE: {
             DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(message);
             ThreadSafeCout::cout("Peers Connection Manager received: " + recvMessage.data + "\n\n");
             g_message(recvMessage.data.c_str());
@@ -282,11 +224,9 @@ void PeersConnectionManager::handleMessage(MessageBaseReceived& message)
             TorrentManager::getInstance().handleMessage(message);
             break;
     }
-
 }
 
-bool PeersConnectionManager::isConnected(const PeerID& peer) {
-
+bool PeersConnectionManager::isConnected(const PeerID &peer) {
     std::unique_lock<std::mutex> peersConnectionsLock(_mutexPeerConnections);
     return _peerConnections.find(peer) != _peerConnections.end();
 }
