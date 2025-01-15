@@ -155,6 +155,8 @@ void TorrentFileHandler::handleRequests() {
 					throw std::runtime_error("Unknown message code");
 			}
 			guard.lock();
+			ThreadSafeCout::cout(
+				"Handled " + std::to_string(request.code) + " response From " + SHA256::hashToString(request.from));
 		}
 		for (const auto &msg: resultMessages.messages) {
 			std::lock_guard guard1(_mutexMessagesToSend);
@@ -214,6 +216,8 @@ void TorrentFileHandler::handleResponses() {
 			}
 
 			guard.lock();
+			ThreadSafeCout::cout(
+				"Handled " + std::to_string(response.code) + " response From " + SHA256::hashToString(response.from));
 		}
 	}
 }
@@ -268,6 +272,7 @@ void TorrentFileHandler::downloadFile() {
 					_cvMessagesToSend.notify_one();
 				}
 			}
+			ThreadSafeCout::cout("Sent packets to " + std::to_string(requestablePeers.size()) + " peers");
 		}
 		std::this_thread::sleep_for(WAITING_TIME - (std::chrono::steady_clock::now() - start));
 	}
@@ -293,6 +298,8 @@ void TorrentFileHandler::sendMessages() {
 			_peersConnectionManager.sendMessage(torrentMsg.from, &*message);
 
 			guard.lock(); // Re-lock for the next iteration
+			ThreadSafeCout::cout(
+				"Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.from));
 		}
 	}
 }
