@@ -187,6 +187,7 @@ void TorrentFileHandler::handleResponses() {
 				case BitTorrentResponseCodes::bitField:
 					// Handle bitfield response
 					_pieceChooser->updatePeerBitfield(response.from, FileBitField(response).field);
+					_peerManager->getPeerState(response.from).bitfield = FileBitField(response).field;
 					break;
 
 				case BitTorrentResponseCodes::missingFile:
@@ -248,6 +249,13 @@ void TorrentFileHandler::downloadFile() {
 	 */
 	const auto WAITING_TIME = std::chrono::seconds(1);
 	while (_running) {
+		const auto newPeers = _peerManager->getNewPeerListQueue();
+		for (const auto &peer: newPeers) {
+			std::lock_guard guard(_mutexMessagesToSend);
+			_messagesToSend.push_back(
+				std::make_shared<TorrentMessageBase>(_fileID, _aesHandler.getKey(),
+													BitTorrentRequestCodes::fileInterested, peer));
+		}
 		auto start = std::chrono::steady_clock::now();
 		std::unique_lock peerManagerLock(_mutexPeerManager);
 		const vector<PeerID> requestablePeers = _peerManager->getRequestablePeers();

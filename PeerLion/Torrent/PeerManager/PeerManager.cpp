@@ -18,7 +18,7 @@ void PeerManager::updateConnectedPeers() {
 			if (!_peersConnectionManager.isConnected(peer)) {
 				std::unique_lock guard(_mutexPeerStates);
 				_peerStates.erase(peer);
-				if (_backUpPeers.size() > 0) {
+				if (!_backUpPeers.empty()) {
 					const auto bPeer = *_backUpPeers.erase(_backUpPeers.begin());
 					guard.unlock();
 					addPeer(bPeer);
@@ -76,13 +76,17 @@ PeerManager::PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &ser
 }
 
 
-void PeerManager::addPeer(PeerID peer) {
+void PeerManager::addPeer(const PeerID &peer) {
 	std::lock_guard guard(_mutexPeerStates);
 	if (_peerStates.size() >= MAX_PEERS) {
 		_backUpPeers.insert(peer);
 	} else if (!_peerStates.contains(peer)) {
-		_peerStates[peer] = PeerState();
 		_peersConnectionManager.addFileForPeer(_fileId, peer);
+		_peerStates[peer] = PeerState();
+		_peerStates[peer].amInterested = !_isSeed;
+		if (!_isSeed) {
+			_newPeerList.push(peer);
+		}
 	}
 }
 
@@ -93,6 +97,12 @@ void PeerManager::removePeer(const PeerID &peer) {
 	} else {
 		_peersConnectionManager.removeFileFromPeer(_fileId, peer);
 	}
+}
+
+queue<PeerID> PeerManager::getNewPeerListQueue() {
+	auto res = std::move(_newPeerList);
+	_newPeerList = queue<PeerID>();
+	return res;
 }
 
 vector<PeerID> PeerManager::getRequestablePeers() const {

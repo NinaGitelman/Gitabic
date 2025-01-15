@@ -38,6 +38,7 @@ class PeerManager {
 	bool _isSeed;
 	std::thread _updateConnectedPeersThread;
 	mutable mutex _mutexPeerStates;
+	queue<PeerID> _newPeerList;
 
 
 	[[noreturn]] void updateConnectedPeers();
@@ -46,13 +47,16 @@ class PeerManager {
 
 public:
 	PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &serverSocket,
-				const bool isSeed);
+				bool isSeed);
 
-	void addPeer(PeerID peer);
+	void addPeer(const PeerID &peer);
 
 	void removePeer(const PeerID &peer);
 
+	queue<PeerID> getNewPeerListQueue();
+
 	vector<PeerID> getRequestablePeers() const;
+
 	vector<PeerID> getInterestedPeers() const;
 
 	void updatePeerState(const PeerID &peer, const PeerState &state);

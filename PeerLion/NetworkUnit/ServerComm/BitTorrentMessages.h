@@ -58,6 +58,18 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralReceive {
                                                                                        code), GeneralReceive(),
                                                                                       fileId(fileId),
                                                                                       initVector(initVector) {
+ } /**
+  * @brief Constructor with file ID and initialization vector.
+  * @param fileId The file ID.
+  * @param initVector The AES initialization vector.
+  * @param code The message code.
+  * @param to The peer ID to send the message to.
+  */
+ TorrentMessageBase(const ID &fileId, const AESKey &initVector, const uint8_t code,
+                    const PeerID &to) : MessageBaseToSend(
+                                         code), GeneralReceive(to),
+                                        fileId(fileId),
+                                        initVector(initVector) {
  }
 
  /**
