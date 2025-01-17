@@ -120,11 +120,6 @@ void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSo
         id = generateRandomId();
         ids[id] = clientSocket;
         clientSocket->send(ServerResponseNewId(id));
-        if (ids.size() == 2)
-        {
-            ID i123 = ids.begin()->first == id ? (++ids.begin())->first : ids.begin()->first;
-            clientSocket->send(ServerResponseNewId(i123));
-        }
         while (_running)
         {
             if (!messagesToSend[id].empty())
@@ -184,18 +179,18 @@ void MultiThreadedServer::printDataAsASCII(vector<uint8_t> data)
 ID MultiThreadedServer::generateRandomId()
 {
     ID id;
-    srand(time(0));
+    srand(time(nullptr));
     do
     {
         for (auto &it : id)
         {
             it = rand() % 256;
         }
-    } while (std::find_if(ids.begin(), ids.end(),
-                          [&id](const auto &pair)
-                          {
-                              return pair.first == id;
-                          }) != ids.end() ||
+    } while (std::ranges::find_if(ids,
+                                  [&id](const auto &pair)
+                                  {
+                                      return pair.first == id;
+                                  }) != ids.end() ||
              id == ID());
     return id;
 }

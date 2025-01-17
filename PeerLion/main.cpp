@@ -19,7 +19,7 @@
 #include "Utils/VectorUint8Utils.h"
 
 #define SERVER_ADDRESS "0.0.0.0"
-#define SERVER_PORT 4786
+#define SERVER_PORT 4787
 
 /// @brief  Heper function to pritn the DATA
 void printDataAsASCII(vector<uint8_t> data) {

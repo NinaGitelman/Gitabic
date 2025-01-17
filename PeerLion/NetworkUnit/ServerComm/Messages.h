@@ -94,7 +94,7 @@ struct GeneralReceive {
         this->from = from;
     }
 
-    GeneralReceive()=default;
+    GeneralReceive() = default;
 };
 
 
@@ -163,9 +163,11 @@ struct ClientResponseAuthorizedICEConnection : MessageBaseToSend {
     uint16_t requestId;
 
     ClientResponseAuthorizedICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId) : MessageBaseToSend(
-            ClientResponseCodesToServer::AuthorizedICEConnection),
-        iceCandidateInfo(move(iceCandidateInfo)),
-        requestId(requestId) {
+                                                                                                      ClientResponseCodesToServer::AuthorizedICEConnection),
+                                                                                                  iceCandidateInfo(
+                                                                                                      move(
+                                                                                                          iceCandidateInfo)),
+                                                                                                  requestId(requestId) {
     }
 
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override {
@@ -244,7 +246,7 @@ struct StoreRequest : MessageBaseToSend {
     ID fileId;
 
     virtual vector<uint8_t> serialize(uint32_t previousSize = 0) const override {
-        vector<uint8_t> serialized = MessageBaseToSend::serialize(previousSize + sizeof(myId));
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(previousSize + sizeof(myId) + sizeof(fileId));
         vector<uint8_t> thisSerialized(myId.begin(), myId.end());
         vector<uint8_t> thisSerialized2(fileId.begin(), fileId.end());
         // Concatenate all the data int a vector
