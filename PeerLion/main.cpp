@@ -83,6 +83,14 @@ void main2() {
   auto fileIO = FileIO(mdFile1);
   instanceTorrentManager.addNewFileHandler(fileIO);
 
+  // const UserListRequest request(mdFile1.getFileHash());
+  // serverSocket->sendRequest(request);
+  // const std::function<bool(uint8_t)> isRelevant = [](const uint8_t code) {
+  //   return code == ServerResponseCodes::UserListRes;
+  // };
+  // const MessageBaseReceived received = serverSocket->receive(isRelevant);
+  // const UserListResponse response(received);
+  // ThreadSafeCout::cout(std::to_string(response.data.size()) + " users have the file\n");
   while (true) {
     string input;
     std::getline(std::cin, input);

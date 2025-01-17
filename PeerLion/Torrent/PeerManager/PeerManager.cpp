@@ -13,7 +13,7 @@ condition_variable PeerManager::_cvMessagesSet;
 void PeerManager::updateConnectedPeers() {
 	while (true) {
 		ThreadSafeCout::cout("PeerManager: Updating connected peers\n");
-		for (auto peers = getNewPeerList(); const auto peer: peers) {
+		for (auto peers = requestForNewPeerList(); const auto peer: peers) {
 			ThreadSafeCout::cout("PeerManager: Adding peer " + SHA256::hashToString(peer) + "\n");
 			addPeer(peer);
 		}
@@ -40,7 +40,7 @@ void PeerManager::updateConnectedPeers() {
 	}
 }
 
-vector<ID> PeerManager::getNewPeerList() const {
+vector<ID> PeerManager::requestForNewPeerList() const {
 	const UserListRequest request(_fileId);
 	_serverSocket->sendRequest(request); {
 		const std::function<bool(uint8_t)> isRelevant = [](const uint8_t code) {

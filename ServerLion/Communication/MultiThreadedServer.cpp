@@ -149,6 +149,7 @@ void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSo
     catch (const std::exception &e)
     {
         std::cout << "handleClient exception: " << e.what() << std::endl;
+        TrackerDataStorage::getInstance().removePeerData(id);
     }
 
     // Clean up client

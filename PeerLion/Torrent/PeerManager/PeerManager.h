@@ -44,7 +44,7 @@ class PeerManager {
 
 	[[noreturn]] void updateConnectedPeers();
 
-	vector<ID> getNewPeerList() const;
+	vector<ID> requestForNewPeerList() const;
 
 public:
 	PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &serverSocket,

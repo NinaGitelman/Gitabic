@@ -280,7 +280,7 @@ struct ServerResponseUserList : MessageBaseToSend
     /// @return A byte vector
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
-        vector<uint8_t> serialized = MessageBaseToSend::serialize(userList.size() * SHA256_SIZE);
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(userList.size() * SHA256_SIZE + _fileId.size());
         SerializeDeserializeUtils::addToEnd(serialized, vector<uint8_t>(_fileId.begin(), _fileId.end()));
         for (const ID &id : userList)
         {

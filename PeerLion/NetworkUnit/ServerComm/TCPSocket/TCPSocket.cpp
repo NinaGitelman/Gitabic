@@ -25,7 +25,7 @@ TCPSocket::~TCPSocket() {
 }
 
 void TCPSocket::sendRequest(const MessageBaseToSend &msg) {
-    std::lock_guard<mutex> guard(socketMut); // Lock the resource
+    std::lock_guard guard(socketMut); // Lock the resource
 
     const vector<uint8_t> serialized = msg.serialize();
     send(sockfd, serialized.data(), serialized.size(), 0); // Send the serialized data

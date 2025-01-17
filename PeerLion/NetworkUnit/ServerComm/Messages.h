@@ -100,6 +100,8 @@ struct GeneralReceive {
 
 /// @brief A base struct for the messages sent
 struct MessageBaseToSend {
+    virtual ~MessageBaseToSend() = default;
+
     uint8_t code;
 
     MessageBaseToSend() {
@@ -213,17 +215,18 @@ struct DebuggingStringMessageToSend : MessageBaseToSend {
 
 /// @brief A request for user list
 struct UserListRequest : MessageBaseToSend {
-    UserListRequest(ID fileId) : fileId(fileId), MessageBaseToSend(ClientRequestCodesToServer::UserListReq) {
+    explicit UserListRequest(const ID &fileId) : MessageBaseToSend(ClientRequestCodesToServer::UserListReq),
+                                                 fileId(fileId) {
     }
 
-    UserListRequest(ID fileId, uint8_t code) : fileId(fileId), MessageBaseToSend(code) {
+    UserListRequest(const ID &fileId, const uint8_t code) : MessageBaseToSend(code), fileId(fileId) {
     }
 
     /// @brief The file we want to download
     ID fileId;
 
-    virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override {
-        vector<uint8_t> thisSerialized(fileId.begin(), fileId.end());
+    [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
+        const vector<uint8_t> thisSerialized(fileId.begin(), fileId.end());
         vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + thisSerialized.size());
         SerializeDeserializeUtils::addToEnd(serialized, thisSerialized);
         // Put the base struct serialization in the start of the vector
