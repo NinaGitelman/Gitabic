@@ -23,9 +23,11 @@ PeersConnectionManager &PeersConnectionManager::getInstance(std::shared_ptr<TCPS
 PeersConnectionManager::PeersConnectionManager(std::shared_ptr<TCPSocket> socket): _serverSocket(socket) {
     _isRunning = std::make_shared<std::atomic<bool> >(true);
 
-    _routePacketThread = std::thread([this]() {
-        routePackets(_isRunning); // Pass the shared_ptr directly
-    });
+    _routePacketThread = std::thread(&PeersConnectionManager::routePackets, this);
+    _shareIceDataThread = std::thread(&PeersConnectionManager::shareIceData, this);
+
+    _routePacketThread.detach();
+    _shareIceDataThread.detach();
 }
 
 PeersConnectionManager::~PeersConnectionManager() {
@@ -81,11 +83,9 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
         serverSocketLock.unlock();
 
         if (response.code == ServerResponseCodes::UserAlreadyConnected) {
-            //TODO - handle
-            return true;
+            throw std::runtime_error("Tried to connect to a already connected peer");
         }
         if (response.code == ServerResponseCodes::UserFullCapacity) {
-            //TODO - handle
             return false;
         }
 
@@ -115,7 +115,7 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
         }
     }
     // if the file is not present in the peer files list, add it
-    else if (_registeredPeersFiles[peer].find(fileID) == _registeredPeersFiles[peer].end()) {
+    else if (!_registeredPeersFiles[peer].contains(fileID)) {
         _registeredPeersFiles[peer].insert(fileID);
         addedFile = true;
     }
@@ -200,8 +200,8 @@ void PeersConnectionManager::broadcast(MessageBaseToSend *message) {
 }
 
 // BY M
-void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool> > isRunning) {
-    while (isRunning->load()) {
+void PeersConnectionManager::routePackets() {
+    while (_isRunning->load()) {
         std::unique_lock<std::mutex> peersConnectionsLock(_mutexPeerConnections);
 
         for (auto currPeer = _peerConnections.begin(); currPeer != _peerConnections.end(); currPeer++) {
@@ -224,17 +224,29 @@ void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool> > isRunni
 
 void PeersConnectionManager::shareIceData() {
     while (_isRunning->load()) {
-        //TODO if full - send full capacity. if already connected - send already connected
-        //TODO else - send ice data and add to relevant variables.
         const auto req = _serverSocket->receive([](const uint8_t code) {
             return code == ServerRequestCodes::AuthorizeICEConnection;
         });
-        const auto authIceReq = ServerRequestAuthorizeICEConnection(req);
 
+        const auto authIceReq = ServerRequestAuthorizeICEConnection(req);
+        if (_peerConnections.contains(authIceReq.from)) {
+            _serverSocket->sendRequest(ClientResponseAlreadyConnected(authIceReq.requestId));
+            continue;
+        }
+        if (_peerConnections.size() > MAXIMUM_CONNECTED_USERS) {
+            _serverSocket->sendRequest(ClientResponseFullCapacity(authIceReq.requestId));
+            continue;
+        }
         const auto peerConnection = std::make_shared<ICEConnection>(false);
         const auto response = ClientResponseAuthorizedICEConnection(peerConnection->getLocalICEData(),
                                                                     authIceReq.requestId);
         _serverSocket->sendRequest(response);
+
+        if (peerConnection->connectToPeer(authIceReq.iceCandidateInfo)) {
+            ThreadSafeCout::cout("SUCESSFULLY CONNECTED to peer in share ice data\n");
+            std::lock_guard guard(_mutexPeerConnections);
+            _peerConnections.emplace(authIceReq.from, PeerConnectionAndMutex(peerConnection));
+        }
     }
 }
 
@@ -242,11 +254,13 @@ void PeersConnectionManager::shareIceData() {
 void PeersConnectionManager::handleMessage(MessageBaseReceived &message) {
     switch (message.code) {
         case DEBUGGING_STRING_MESSAGE: {
-            DebuggingStringMessageReceived recvMessage = DebuggingStringMessageReceived(message);
+            const DebuggingStringMessageReceived recvMessage(message);
             ThreadSafeCout::cout("Peers Connection Manager received: " + recvMessage.data + "\n\n");
             g_message(recvMessage.data.c_str());
             break;
         }
+        case CODE_NO_MESSAGES_RECEIVED:
+            break;
         default:
             TorrentManager::getInstance().handleMessage(message);
             break;
@@ -255,5 +269,5 @@ void PeersConnectionManager::handleMessage(MessageBaseReceived &message) {
 
 bool PeersConnectionManager::isConnected(const PeerID &peer) {
     std::unique_lock<std::mutex> peersConnectionsLock(_mutexPeerConnections);
-    return _peerConnections.find(peer) != _peerConnections.end();
+    return _peerConnections.contains(peer) && _peerConnections[peer].connection->isConnected();
 }

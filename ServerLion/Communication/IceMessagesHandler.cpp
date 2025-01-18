@@ -26,6 +26,7 @@ ResultMessage IceMessagesHandler::handle(const ClientResponseAuthorizedICEConnec
     res.id = waitsForResponse[request.requestId];
     waitsForResponse.erase(request.requestId);
     res.msg = std::make_shared<ServerResponseUserAuthorizedICEData>(request.iceCandidateInfo);
+    std::cout << "Ice request\n";
     return res;
 }
 
@@ -34,6 +35,7 @@ ResultMessage IceMessagesHandler::handle(const ClientResponseAlreadyConnected &r
     res.id = waitsForResponse[request.requestID];
     waitsForResponse.erase(request.requestID);
     res.msg = std::make_shared<MessageBaseToSend>(ServerResponseCodes::UserAlreadyConnected);
+    std::cout << "Ice response\n";
     return res;
 }
 

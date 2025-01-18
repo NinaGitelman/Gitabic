@@ -37,6 +37,7 @@ void TrackerDataStorage::saveData(const ID &key, const ID &value)
 {
     std::lock_guard<std::mutex> guard(mut);
     savedData[time(nullptr) + TEN_MINUTES] = std::make_pair(key, value);
+    std::cout << "Peer saved data" << std::endl;
 }
 
 vector<ID> TrackerDataStorage::getRegisteredData(const ID &fileId, const ID &yourID)
@@ -50,6 +51,7 @@ vector<ID> TrackerDataStorage::getRegisteredData(const ID &fileId, const ID &you
             ids.push_back(second);
         }
     }
+    std::cout << "Peer requested data and got " << ids.size() << "peers" << std::endl;
     return ids;
 }
 

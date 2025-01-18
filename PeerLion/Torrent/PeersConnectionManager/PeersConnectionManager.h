@@ -16,13 +16,17 @@ using FileID = ID; // to be pretty :)
 using std::unordered_map;
 using std::unordered_set;
 
+#define MAXIMUM_CONNECTED_USERS 50
+
 
 // peer connection to manage this peers mutex and the ice connection
 struct PeerConnectionAndMutex {
     std::shared_ptr<ICEConnection> connection;
     std::mutex mutex;
 
-    PeerConnectionAndMutex(std::shared_ptr<ICEConnection> connection)
+    PeerConnectionAndMutex() = default;
+
+    explicit PeerConnectionAndMutex(std::shared_ptr<ICEConnection> connection)
         : connection(std::move(connection)) {
     }
 
@@ -111,9 +115,9 @@ private:
 
     /// TODO
     // thread that will be called from the constructor
-    void routePackets(std::shared_ptr<atomic<bool> > isRunning);
+    void routePackets();
 
     void shareIceData();
 
-    void handleMessage(MessageBaseReceived &message);
+    static void handleMessage(MessageBaseReceived &message);
 };
