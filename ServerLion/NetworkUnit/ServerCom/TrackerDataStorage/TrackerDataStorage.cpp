@@ -54,9 +54,9 @@ vector<ID> TrackerDataStorage::getRegisteredData(const ID &fileId, const ID &you
 }
 
 void TrackerDataStorage::removePeerData(const ID &peerID) {
-    savedData.erase(std::remove_if(savedData.begin(), savedData.end(), [peerID](const auto &pair) {
-        return pair.second.second == peerID;
-    }), savedData.end());
+    std::erase_if(savedData, [&peerID](const auto& item) {
+    return item.second.second == peerID;
+    });
 }
 
 void TrackerDataStorage::removeOldData()
