@@ -69,22 +69,33 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
             _serverSocket->sendRequest(requestIce);
         }
         std::cout << "send request of get my ice data\n\n";
-        std::function<bool(uint8_t)> isRelevant = [](uint8_t code) {
-            return code == ServerResponseCodes::UserAuthorizedICEData;
+        const std::function<bool(uint8_t)> isRelevant = [](const uint8_t code) {
+            return code >= ServerResponseCodes::UserAuthorizedICEData && code <= ServerResponseCodes::UserFullCapacity;
         };
 
         // send request to server to connect to the other peer and for its ice data
 
 
         std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
-        ServerResponseUserAuthorizedICEData response = _serverSocket->receive(isRelevant);
+        MessageBaseReceived response = _serverSocket->receive(isRelevant);
         serverSocketLock.unlock();
 
+        if (response.code == ServerResponseCodes::UserAlreadyConnected) {
+            //TODO - handle
+            return true;
+        }
+        if (response.code == ServerResponseCodes::UserFullCapacity) {
+            //TODO - handle
+            return false;
+        }
+
         std::cout << "peer data: ";
-        printDataAsASCII(response.iceCandidateInfo);
+
+        auto userIceData = ServerResponseUserAuthorizedICEData(response);
+        printDataAsASCII(userIceData.iceCandidateInfo);
         // create thread that will add the peer
 
-        bool connected = peerConnection->connectToPeer(response.iceCandidateInfo);
+        bool connected = peerConnection->connectToPeer(userIceData.iceCandidateInfo);
 
         if (connected) {
             addedFile = connected;
@@ -208,6 +219,22 @@ void PeersConnectionManager::routePackets(std::shared_ptr<atomic<bool> > isRunni
 
             peersConnectionsLock.lock();
         }
+    }
+}
+
+void PeersConnectionManager::shareIceData() {
+    while (_isRunning->load()) {
+        //TODO if full - send full capacity. if already connected - send already connected
+        //TODO else - send ice data and add to relevant variables.
+        const auto req = _serverSocket->receive([](const uint8_t code) {
+            return code == ServerRequestCodes::AuthorizeICEConnection;
+        });
+        const auto authIceReq = ServerRequestAuthorizeICEConnection(req);
+
+        const auto peerConnection = std::make_shared<ICEConnection>(false);
+        const auto response = ClientResponseAuthorizedICEConnection(peerConnection->getLocalICEData(),
+                                                                    authIceReq.requestId);
+        _serverSocket->sendRequest(response);
     }
 }
 

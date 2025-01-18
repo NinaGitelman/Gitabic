@@ -16,16 +16,31 @@ ResultMessage IceMessagesHandler::handle(const ClientRequestGetUserICEInfo &requ
 {
     ResultMessage res;
     res.id = request.RequestedUserId;
-    res.msg = std::make_shared<ServerRequestAuthorizeICEConnection>(request.iceCandidateInfo, waitIds);
+    res.msg = std::make_shared<ServerRequestAuthorizeICEConnection>(request.iceCandidateInfo, waitIds, request.from);
     waitsForResponse[waitIds++] = request.from;
     return res;
 }
 
-ResultMessage IceMessagesHandler::handle(const ClientResponseAuthorizedICEConnection &request)
-{
+ResultMessage IceMessagesHandler::handle(const ClientResponseAuthorizedICEConnection &request) {
     ResultMessage res;
     res.id = waitsForResponse[request.requestId];
     waitsForResponse.erase(request.requestId);
     res.msg = std::make_shared<ServerResponseUserAuthorizedICEData>(request.iceCandidateInfo);
+    return res;
+}
+
+ResultMessage IceMessagesHandler::handle(const ClientResponseAlreadyConnected &request) {
+    ResultMessage res;
+    res.id = waitsForResponse[request.requestID];
+    waitsForResponse.erase(request.requestID);
+    res.msg = std::make_shared<MessageBaseToSend>(ServerResponseCodes::UserAlreadyConnected);
+    return res;
+}
+
+ResultMessage IceMessagesHandler::handle(const ClientResponseFullCapacity &request) {
+    ResultMessage res;
+    res.id = waitsForResponse[request.requestID];
+    waitsForResponse.erase(request.requestID);
+    res.msg = std::make_shared<MessageBaseToSend>(ServerResponseCodes::UserFullCapacity);
     return res;
 }

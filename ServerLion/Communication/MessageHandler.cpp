@@ -40,8 +40,14 @@ ResultMessage MessageHandler::handle(MessageBaseReceived msg)
     case ClientRequestCodes::DebuggingStringMessage:
         // Handle DebuggingStringMessageToSend logic
         break;
-    case ClientResponseCodes::AuthorizedICEConnection:
+    case ClientResponseCodesToServer::AuthorizedICEConnection:
         res = iceMessagesHandler.handle(ClientResponseAuthorizedICEConnection(msg));
+        break;
+    case ClientResponseCodesToServer::AlreadyConnected:
+         res = iceMessagesHandler.handle(ClientResponseAlreadyConnected(msg));
+        break;
+    case ClientResponseCodesToServer::FullCapacity:
+         res = iceMessagesHandler.handle(ClientResponseFullCapacity(msg));
         break;
     default:
         // Handle unknown codes or errors

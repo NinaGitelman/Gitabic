@@ -20,6 +20,8 @@ public:
 
     ResultMessage handle(const ClientRequestGetUserICEInfo &request);
     ResultMessage handle(const ClientResponseAuthorizedICEConnection &request);
+    ResultMessage handle(const ClientResponseAlreadyConnected &request);
+    ResultMessage handle(const ClientResponseFullCapacity &request);
 
 private:
     // Constructor and Destructor are private
@@ -31,5 +33,7 @@ private:
     static std::unique_ptr<IceMessagesHandler> instance;
     static std::once_flag initInstanceFlag;
 };
+
+
 
 #endif // ICEMESSAGESHANDLER_H

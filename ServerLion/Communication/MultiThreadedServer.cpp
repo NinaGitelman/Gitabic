@@ -119,6 +119,7 @@ void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSo
     {
         id = generateRandomId();
         ids[id] = clientSocket;
+        messagesToSend[id] = std::queue<std::shared_ptr<MessageBaseToSend>>();
         clientSocket->send(ServerResponseNewId(id));
         while (_running)
         {
@@ -149,14 +150,15 @@ void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSo
     catch (const std::exception &e)
     {
         std::cout << "handleClient exception: " << e.what() << std::endl;
-        TrackerDataStorage::getInstance().removePeerData(id);
     }
 
     // Clean up client
     {
+        TrackerDataStorage::getInstance().removePeerData(id);
         std::lock_guard<std::mutex> lock(_clientsMutex);
         _clients.erase(clientId);
         ids.erase(id);
+        messagesToSend.erase(id);
     }
 }
 

@@ -51,6 +51,7 @@ class PeersConnectionManager {
 public:
     // Singleton
     static PeersConnectionManager &getInstance(std::shared_ptr<TCPSocket> socket = nullptr);
+
     virtual ~PeersConnectionManager();
 
     /// @brief Function adds the given fileID to the connected peer list
@@ -58,14 +59,14 @@ public:
     /// if not, creates its ice connectionsa dn the vector of fileIds with the file id for it
     /// @param peer  the peerID
     /// @param fileID the fileID of the file to get from it
-    bool addFileForPeer(const FileID& fileID,const PeerID &peer);
+    bool addFileForPeer(const FileID &fileID, const PeerID &peer);
 
 
     /// @brief function removes given file form given peer
     /// if there is only this file, it will disconnect the peer
     /// @param fileID the fileId to remove
     /// @param peer the peer to remove from
-    void removeFileFromPeer(const FileID fileID,const PeerID &peer);
+    void removeFileFromPeer(const FileID fileID, const PeerID &peer);
 
 
     // @brief Function to send the given message to the given peer
@@ -74,21 +75,20 @@ public:
     void sendMessage(const PeerID &peer, MessageBaseToSend *message);
 
     /// @brief Function to send given message to all the given peers
-    void sendMessage(const vector<PeerID>& peers, MessageBaseToSend *message);
+    void sendMessage(const vector<PeerID> &peers, MessageBaseToSend *message);
 
     /// @brief funciton to send a broadcast (message to all users) of the given message
     /// @param message the message to broadcast
-    void broadcast (MessageBaseToSend *message);
-
+    void broadcast(MessageBaseToSend *message);
 
 
     // Function to check if the given peer is connected
-    bool isConnected(const PeerID& peer);
+    bool isConnected(const PeerID &peer);
 
 private:
     std::shared_ptr<atomic<bool> > _isRunning; // bool to track if is connected to the other peer
     std::thread _routePacketThread; // Store the thread as a member
-
+    std::thread _shareIceDataThread;
     static mutex mutexInstance;
     static std::unique_ptr<PeersConnectionManager> instance;
 
@@ -104,14 +104,16 @@ private:
 
     // Delete copy and assignment to ensure singleton
     PeersConnectionManager(const PeersConnectionManager &) = delete;
+
     explicit PeersConnectionManager(std::shared_ptr<TCPSocket> socket = nullptr);
+
     PeersConnectionManager &operator=(const PeersConnectionManager &) = delete;
 
     /// TODO
     // thread that will be called from the constructor
     void routePackets(std::shared_ptr<atomic<bool> > isRunning);
+
+    void shareIceData();
+
     void handleMessage(MessageBaseReceived &message);
-
-
-
 };

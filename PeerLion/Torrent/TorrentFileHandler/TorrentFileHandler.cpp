@@ -12,7 +12,7 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 										const std::shared_ptr<TCPSocket> &serverSocket,
 										const AESKey aesKey) : _fileIO(fileIo),
 																_peersConnectionManager(
-																	PeersConnectionManager::getInstance()),
+																	PeersConnectionManager::getInstance(serverSocket)),
 																_fileID(
 																	_fileIO.
 																	getDownloadProgress().
