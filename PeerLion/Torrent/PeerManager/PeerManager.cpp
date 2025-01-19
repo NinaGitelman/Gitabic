@@ -70,17 +70,27 @@ vector<ID> PeerManager::requestForNewPeerList() const {
 			return code == ServerResponseCodes::UserListRes;
 		};
 
-		std::unique_lock<mutex> lockServerSock(_mutexServerSocket);
-		const MessageBaseReceived received = _serverSocket->receive(isRelevant);
-		lockServerSock.unlock();
+		try
+		{
 
-		const UserListResponse response(received);
-		if (response.fileId == _fileId) {
-			// return response.data;
+			std::unique_lock<mutex> lockServerSock(_mutexServerSocket);
+			// TODO WAITS - forever waits in here (actually in the receive function). ..
+			const MessageBaseReceived received = _serverSocket->receive(isRelevant);
+			lockServerSock.unlock();
+
+			const UserListResponse response(received);
+			if (response.fileId == _fileId) {
+				// return response.data;
+			}
+			std::unique_lock guard(_mutexMessagesSet);
+			_messagesSet.insert(response);
+			_cvMessagesSet.notify_all();
 		}
-		std::unique_lock guard(_mutexMessagesSet);
-		_messagesSet.insert(response);
-		_cvMessagesSet.notify_all();
+		catch (const std::exception &e)
+		{
+			std::cout << "Error";
+			std::cout << e.what() << std::endl;
+		}
 	}
 	const auto now = std::chrono::system_clock::now();
 	while (true) {
@@ -91,7 +101,7 @@ vector<ID> PeerManager::requestForNewPeerList() const {
 				return msg.data;
 			}
 		}
-		if (std::chrono::system_clock::now() - now > std::chrono::seconds(30)) {
+		if (std::chrono::system_clock::now() - now > std::chrono::seconds(1)) {
 			break;
 		}
 	}

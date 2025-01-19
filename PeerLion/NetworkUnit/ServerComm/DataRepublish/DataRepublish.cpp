@@ -6,17 +6,17 @@
 std::unique_ptr<DataRepublish> DataRepublish::instance = nullptr;
 mutex DataRepublish::instanceMutex;
 
-DataRepublish &DataRepublish::getInstance(std::shared_ptr<TCPSocket> tcpSocket)
+DataRepublish &DataRepublish::getInstance(const std::shared_ptr<TCPSocket>& tcpSocket)
 {
     std::lock_guard<mutex> lock(instanceMutex);
     if (!instance)
     {
-        instance = std::unique_ptr<DataRepublish>(new DataRepublish(std::move(tcpSocket)));
+        instance = std::unique_ptr<DataRepublish>(new DataRepublish(tcpSocket));
     }
     return *instance;
 }
 
-DataRepublish::DataRepublish(std::shared_ptr<TCPSocket> tcpSocket) : tcpSocket(std::move(tcpSocket))
+DataRepublish::DataRepublish(const std::shared_ptr<TCPSocket>& tcpSocket) : tcpSocket(tcpSocket)
 {
     isActive = true;
     republishOldDataThread = thread(&DataRepublish::republishOldData, this);

@@ -18,14 +18,16 @@ TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1) {
 
 TCPSocket::~TCPSocket() {
     if (sockfd != -1) {
+
         close(sockfd);
         sockfd = -1;
     }
+    std::cout << "server socket destructor" << std::endl;
 }
 
 void TCPSocket::sendRequest(const MessageBaseToSend &msg) {
     std::cout << "sending server request" << std::endl;
-    std::lock_guard guard(socketMut); // Lock the resource
+    //std::unique_lock<mutex> guard(socketMut); // Lock the resource // STOPS IN HERE
 
     const vector<uint8_t> serialized = msg.serialize();
     send(sockfd, serialized.data(), serialized.size(), 0); // Send the serialized data
@@ -34,11 +36,13 @@ void TCPSocket::sendRequest(const MessageBaseToSend &msg) {
 MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant) {
     std::cout << "in receive function";
     auto start_time = std::chrono::high_resolution_clock::now();
-    while (true) {
+    while (true)
+    {
         auto now = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = now - start_time; {
+        std::chrono::duration<double> elapsed = now - start_time;
+        {
             // If there is a relevant message already recieved - return it.
-            std::lock_guard<mutex> guard(socketMut);
+          std::lock_guard<mutex> guard(socketMut);
             auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const MessageBaseReceived &msg) {
                 return isRelevant(msg.code);
             });
@@ -78,11 +82,12 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant) 
     throw std::runtime_error("No relevant packets");
 }
 
+
 void TCPSocket::connectToServer(sockaddr_in &serverAddress) {
     // this doesnt even print even if debugger tells me it gets here
     std::cout << "In connect to server...";
     std::cout << inet_ntoa(serverAddress.sin_addr);
-    std::lock_guard<mutex> guard(socketMut);
+    std::unique_lock<mutex> guard(socketMut);
     if (connect(sockfd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == -1) {
         std::cerr << "Connection failed. Error: " << strerror(errno) << std::endl;
         throw std::runtime_error("Failed to connect to server");
