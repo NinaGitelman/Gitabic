@@ -46,7 +46,9 @@ int main(const int argc, char **argv) {
   MetaDataFile mdFile1 = MetaDataFile::createMetaData(
     filePath, "1234", b, "nina");
 
-  auto fileIO = FileIO(SHA256::hashToString(mdFile1.getFileHash()));
+  auto fileHash = mdFile1.getFileHash();
+  auto hashString = SHA256::hashToString(fileHash);
+  auto fileIO = FileIO(hashString);
 
   auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
   auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });

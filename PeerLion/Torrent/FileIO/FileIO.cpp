@@ -11,6 +11,7 @@
 using Utils::FileUtils;
 using Utils::FileSplitter;
 
+
 const std::string FileIO::dirPath = FileUtils::getExpandedPath("~/Gitabic/.filesFolders/");
 
 // Swap function definition
@@ -85,8 +86,10 @@ FileIO::FileIO(const string &hash)
         fileName = entry.path().filename().string();
         break;
     }
+    // TODO - URI I CHANGED THIS - was adding an ecxtra gitabic and dot
+    auto path = dirPath + hash + "/" + fileName;
     downloadProgress =
-            DownloadProgress(FileUtils::readFileToVector(dirPath + hash + "/." + fileName + ".gitabic"));
+            DownloadProgress(FileUtils::readFileToVector(path));
 }
 
 FileIO::FileIO(const MetaDataFile &metaData) {

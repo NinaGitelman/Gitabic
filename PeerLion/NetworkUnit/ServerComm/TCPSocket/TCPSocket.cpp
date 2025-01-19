@@ -14,7 +14,6 @@ TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1) {
         std::cerr << e.what() << '\n';
     }
 
-    std::cout << "end of constr";
 }
 
 TCPSocket::~TCPSocket() {
