@@ -52,13 +52,14 @@ int main(const int argc, char **argv) {
 
   auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
   auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
-  auto &dataRepublish = DataRepublish::getInstance(serverSocket.get());
+  auto &dataRepublish = DataRepublish::getInstance(serverSocket);
   dataRepublish.saveData(mdFile1.getFileHash(), ServerResponseNewId(res).id);
 
   TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);
   instanceTorrentManager.addNewFileHandler(fileIO);
 
-  while (true) {
+  while (true)
+  {
     string input;
     std::getline(std::cin, input);
     if (input == "exit") {
@@ -76,7 +77,7 @@ void main2() {
 
   auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
   auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
-  auto &dataRepublish = DataRepublish::getInstance(serverSocket.get());
+  auto &dataRepublish = DataRepublish::getInstance(serverSocket);
   dataRepublish.saveData(mdFile1.getFileHash(), ServerResponseNewId(res).id);
 
   TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);

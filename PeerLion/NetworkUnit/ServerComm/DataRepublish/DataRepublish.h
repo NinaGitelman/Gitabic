@@ -23,7 +23,7 @@ public:
     /// @brief Gets the Singleton instance of DataRepublish
     /// @param tcpSocket the socket to publish in
     /// @return The single instance of DataRepublish
-    static DataRepublish &getInstance(TCPSocket *tcpSocket = nullptr);
+    static DataRepublish &getInstance(std::shared_ptr<TCPSocket> tcpSocket = nullptr);
 
     /// @brief Stops the thread and deletes the instance
     ~DataRepublish();
@@ -39,7 +39,7 @@ public:
 
 private:
     // Private constructor
-    DataRepublish(TCPSocket *tcpSocket);
+    DataRepublish(std::shared_ptr<TCPSocket>);
 
     /// @brief Runs in a thread and republish each data once every ten minutes
     void republishOldData();
@@ -58,7 +58,7 @@ private:
     thread republishOldDataThread;
 
     /// @brief The socket to the server
-    TCPSocket *tcpSocket;
+    std::shared_ptr<TCPSocket> tcpSocket;
 
     /// @brief Controls whether the thread should keep running
     bool isActive;

@@ -31,11 +31,18 @@ class PeerManager {
 	static condition_variable _cvMessagesSet;
 
 	unordered_map<PeerID, PeerState> _peerStates;
+
 	vector<PeerID> _disconnectedPeers;
+
 	unordered_set<PeerID> _backUpPeers;
+
 	PeersConnectionManager &_peersConnectionManager;
+
 	ID _fileId;
+
+	mutable mutex _mutexServerSocket;
 	std::shared_ptr<TCPSocket> _serverSocket;
+
 	bool _isSeed;
 	std::thread _updateConnectedPeersThread;
 	mutable mutex _mutexPeerStates;
@@ -49,6 +56,9 @@ class PeerManager {
 public:
 	PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &serverSocket,
 				bool isSeed);
+
+	~PeerManager(){std::cout<<"Destructing pm"<<std::endl;};
+
 
 	void addPeer(const PeerID &peer);
 

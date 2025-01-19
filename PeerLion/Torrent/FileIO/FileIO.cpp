@@ -86,7 +86,7 @@ FileIO::FileIO(const string &hash)
         fileName = entry.path().filename().string();
         break;
     }
-    // TODO - URI I CHANGED THIS - was adding an ecxtra gitabic and dot
+    // TODO - URI CHECK I CHANGED THIS - was adding an ecxtra gitabic and dot
     auto path = dirPath + hash + "/" + fileName;
     downloadProgress =
             DownloadProgress(FileUtils::readFileToVector(path));

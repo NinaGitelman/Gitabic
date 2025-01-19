@@ -13,8 +13,12 @@ set(OLD_GLOB
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/DataRepublish/DataRepublish.cpp"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/TCPSocket/TCPSocket.cpp"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/SocketHandler/SocketHandler.cpp"
-  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileHandler/TorrentFileHandler.cpp"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileIO/FileIO.cpp"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.cpp"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeersConnectionManager/PeersConnectionManager.cpp"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/RarityTrackerChooser.cpp"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentFileHandler/TorrentFileHandler.cpp"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentManager/TorrentManager.cpp"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.cpp"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/FileUtils/FileUtils.cpp"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/MetaDataFile/MetaDataFile.cpp"
@@ -24,6 +28,7 @@ set(OLD_GLOB
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles/3.22.1/CompilerIdCXX/CMakeCXXCompilerId.cpp"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/cmake-build-debug/CMakeFiles/3.30.5/CompilerIdCXX/CMakeCXXCompilerId.cpp"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/main.cpp"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/out/build/x64-Debug/CMakeFiles/3.26.4-msvc4/CompilerIdCXX/CMakeCXXCompilerId.cpp"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
@@ -42,14 +47,20 @@ set(OLD_GLOB
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/Messages.h"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/TCPSocket/TCPSocket.h"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/SocketHandler/SocketHandler.h"
-  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileHandler/TorrentFileHandler.h"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileIO/FileIO.h"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.h"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeersConnectionManager/PeersConnectionManager.h"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/IPieceChooser.h"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/RarityTrackerChooser.h"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentFileHandler/TorrentFileHandler.h"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentManager/TorrentManager.h"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.h"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/FileUtils/FileUtils.h"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/MetaDataFile/MetaDataFile.h"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/SerializeDeserializeUtils.h"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/ThreadSafeCout.h"
   "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/VectorUint8Utils.h"
+  "/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/out/build/x64-Debug/CMakeFiles/ShowIncludes/foo.h"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")

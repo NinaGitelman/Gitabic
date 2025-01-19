@@ -1,20 +1,22 @@
 #include "DataRepublish.h"
 
+#include <utility>
+
 // Define the static members
 std::unique_ptr<DataRepublish> DataRepublish::instance = nullptr;
 mutex DataRepublish::instanceMutex;
 
-DataRepublish &DataRepublish::getInstance(TCPSocket *tcpSocket)
+DataRepublish &DataRepublish::getInstance(std::shared_ptr<TCPSocket> tcpSocket)
 {
     std::lock_guard<mutex> lock(instanceMutex);
     if (!instance)
     {
-        instance = std::unique_ptr<DataRepublish>(new DataRepublish(tcpSocket));
+        instance = std::unique_ptr<DataRepublish>(new DataRepublish(std::move(tcpSocket)));
     }
     return *instance;
 }
 
-DataRepublish::DataRepublish(TCPSocket *tcpSocket) : tcpSocket(tcpSocket)
+DataRepublish::DataRepublish(std::shared_ptr<TCPSocket> tcpSocket) : tcpSocket(std::move(tcpSocket))
 {
     isActive = true;
     republishOldDataThread = thread(&DataRepublish::republishOldData, this);
