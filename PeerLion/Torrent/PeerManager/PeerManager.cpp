@@ -131,7 +131,7 @@ vector<PeerID> PeerManager::getRequestablePeers() const {
 	vector<PeerID> result;
 	std::lock_guard guard(_mutexPeerStates);
 	for (auto &[first, second]: _peerStates) {
-		if (second.amInterested && !second.peerChoking) {
+		if (second.amInterested && !second.peerChoking && !second.bitfield.empty()) {
 			result.push_back(first);
 		}
 	}
