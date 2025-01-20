@@ -89,7 +89,7 @@ FileIO::FileIO(const string &hash)
     // TODO - URI CHECK I CHANGED THIS - was adding an ecxtra gitabic and dot
     auto path = dirPath + hash + "/" + fileName;
     downloadProgress =
-            DownloadProgress(FileUtils::readFileToVector(path));
+            DownloadProgress(FileUtils::readFileToVector(dirPath + hash + "/." + fileName + ".gitabic"));
 }
 
 FileIO::FileIO(const MetaDataFile &metaData) {
