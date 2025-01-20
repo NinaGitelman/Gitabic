@@ -51,6 +51,12 @@ public:
     virtual void removePeer(const PeerID &peer) = 0;
 
     /**
+     * @brief Adds a peer for tracking.
+     * @param peer The ID of the peer.
+     */
+    virtual void addPeer(const PeerID &peer) = 0;
+
+    /**
      * @brief Checks if a peer has a specific piece.
      * @param peer The ID of the peer.
      * @param pieceIndex The index of the piece.

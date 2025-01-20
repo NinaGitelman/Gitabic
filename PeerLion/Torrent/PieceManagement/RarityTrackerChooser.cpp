@@ -52,8 +52,6 @@ RarityTrackerChooser::RarityTrackerChooser(const uint pieceCount,
 }
 
 
-
-
 void RarityTrackerChooser::updatePeerBitfield(const PeerID &peer, const vector<std::bitset<8> > &peerBitfield) {
 	if (_peersBitfields.contains(peer)) {
 		removePeerRarity(peerBitfield);
@@ -69,6 +67,14 @@ void RarityTrackerChooser::removePeer(const PeerID &peer) {
 	activeRequests.erase(peer);
 	peerWindows.erase(peer);
 	lastRequestTimes.erase(peer);
+}
+
+void RarityTrackerChooser::addPeer(const PeerID &peer) {
+	_peersBitfields[peer] = vector<std::bitset<8> >((_pieceCount / 8) + 1, std::bitset<8>());
+	activeRequests[peer] = {};
+	peerWindows[peer] = INITIAL_WINDOW;
+	lastRequestTimes[peer] = {};
+	peerResponseTimes[peer] = {};
 }
 
 uint8_t RarityTrackerChooser::getRarity(const uint pieceIndex) const {
@@ -114,13 +120,11 @@ void RarityTrackerChooser::lostPiece(const PeerID &peer, const uint pieceIndex) 
 }
 
 vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> peers) {
-
 	vector<ResultMessages> result;
 	auto now = std::chrono::steady_clock::now();
 
 	// Handle timeouts
 	for (auto &requests: activeRequests | std::views::values) {
-
 		//create a for loop that iterate through the requests and remove the ones that are timed out
 		for (auto it = requests.begin(); it != requests.end();) {
 			if (it->received) {

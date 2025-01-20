@@ -120,6 +120,8 @@ public:
      */
     void removePeer(const PeerID &peer) override;
 
+    void addPeer(const PeerID &peer) override;
+
 
     /**
      * @brief Checks if a peer has a specific piece.

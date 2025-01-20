@@ -253,12 +253,15 @@ void TorrentFileHandler::downloadFile() {
 	 */
 	const auto WAITING_TIME = std::chrono::seconds(1);
 	while (_running) {
-		const auto newPeers = _peerManager->getNewPeerList();
-		for (const auto &peer: newPeers) {
+		if (_fileIO.getDownloadProgress().progress() == 1) {
+			break;
+		}
+		for (const auto &peer: _peerManager->getNewPeerList()) {
 			std::lock_guard guard(_mutexMessagesToSend);
 			_messagesToSend.push_back(
 				std::make_shared<TorrentMessageBase>(_fileID, _aesHandler.getKey(),
 													BitTorrentRequestCodes::fileInterested, peer));
+			_pieceChooser->addPeer(peer);
 		}
 		auto start = std::chrono::steady_clock::now();
 		std::unique_lock peerManagerLock(_mutexPeerManager);
@@ -276,6 +279,7 @@ void TorrentFileHandler::downloadFile() {
 		}
 		std::this_thread::sleep_for(WAITING_TIME - (std::chrono::steady_clock::now() - start));
 	}
+	ThreadSafeCout::cout("Finished downloading file!!!");
 }
 
 void TorrentFileHandler::sendMessages() {

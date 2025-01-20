@@ -101,7 +101,7 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
             addedFile = connected;
             std::cout << "SUCESSFULLY CONNECTED to peer in add file for peer" << std::endl;
 
-            _peerConnections.emplace(peer, PeerConnectionAndMutex(peerConnection));
+            _peerConnections[peer] = PeerConnectionAndMutex(peerConnection);
 
             peersConectionLock.unlock(); {
                 // create registered peer files for this peer
