@@ -261,6 +261,7 @@ void TorrentFileHandler::downloadFile() {
 			_messagesToSend.push_back(
 				std::make_shared<TorrentMessageBase>(_fileID, _aesHandler.getKey(),
 													BitTorrentRequestCodes::fileInterested, peer));
+			_cvMessagesToSend.notify_one();
 			_pieceChooser->addPeer(peer);
 		}
 		auto start = std::chrono::steady_clock::now();
