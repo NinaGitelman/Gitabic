@@ -16,7 +16,6 @@ TorrentManager &TorrentManager::getInstance(std::shared_ptr<TCPSocket> socket) {
     if (!instance) {
         // Create a new TorrentManager instance
         instance = std::unique_ptr<TorrentManager>(new TorrentManager(std::move(socket)));
-
     }
     return *instance;
 }
@@ -61,6 +60,7 @@ void TorrentManager::removeFileHandler(const FileID &fileID) {
 
 void TorrentManager::handleMessage(MessageBaseReceived &message) {
     TorrentMessageBase torrentMessage(message, message.code);
+    //TODO nina check - for some reason comes with empty buffer, which result crash. maybe problem in ice
 
     std::unique_lock<std::mutex> lockFileHandlers(_mutexFileHandlers);
     auto fileHandlerIt = fileHandlers.find(torrentMessage.fileId);
