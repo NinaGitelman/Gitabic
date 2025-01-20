@@ -20,11 +20,8 @@ PeerManager::PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &ser
 	_updateConnectedPeersThread.detach();
 }
 
-void PeerManager::updateConnectedPeers()
-{
-	while (true)
-	{
-
+void PeerManager::updateConnectedPeers() {
+	while (true) {
 		std::cout << "here";
 		ThreadSafeCout::cout("PeerManager: Updating connected peers\n");
 		for (auto peers = requestForNewPeerList(); const auto peer: peers) {
@@ -51,28 +48,22 @@ void PeerManager::updateConnectedPeers()
 			}
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(1
-			));
-		std::cout <<"after wait";
-
+		));
+		std::cout << "after wait";
 	}
-	std::cout <<"thread ending";
+	std::cout << "thread ending";
 }
 
 vector<ID> PeerManager::requestForNewPeerList() const {
-	const UserListRequest request(_fileId);
-
-	{
+	const UserListRequest request(_fileId); {
 		std::unique_lock<mutex> lockServerSock(_mutexServerSocket);
 		_serverSocket->sendRequest(request); // FAILS HERE
-	}
-		{
+	} {
 		const std::function<bool(uint8_t)> isRelevant = [](const uint8_t code) {
 			return code == ServerResponseCodes::UserListRes;
 		};
 
-		try
-		{
-
+		try {
 			std::unique_lock<mutex> lockServerSock(_mutexServerSocket);
 			// TODO WAITS - forever waits in here (actually in the receive function). ..
 			const MessageBaseReceived received = _serverSocket->receive(isRelevant);
@@ -80,14 +71,12 @@ vector<ID> PeerManager::requestForNewPeerList() const {
 
 			const UserListResponse response(received);
 			if (response.fileId == _fileId) {
-				// return response.data;
+				return response.data;
 			}
 			std::unique_lock guard(_mutexMessagesSet);
 			_messagesSet.insert(response);
 			_cvMessagesSet.notify_all();
-		}
-		catch (const std::exception &e)
-		{
+		} catch (const std::exception &e) {
 			std::cout << "Error";
 			std::cout << e.what() << std::endl;
 		}

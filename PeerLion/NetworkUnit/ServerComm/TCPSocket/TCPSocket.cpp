@@ -13,12 +13,10 @@ TCPSocket::TCPSocket(const Address &serverAddress) : sockfd(-1) {
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
     }
-
 }
 
 TCPSocket::~TCPSocket() {
     if (sockfd != -1) {
-
         close(sockfd);
         sockfd = -1;
     }
@@ -27,7 +25,7 @@ TCPSocket::~TCPSocket() {
 
 void TCPSocket::sendRequest(const MessageBaseToSend &msg) {
     std::cout << "sending server request" << std::endl;
-    //std::unique_lock<mutex> guard(socketMut); // Lock the resource // STOPS IN HERE
+    std::unique_lock<mutex> guard(socketMut); // Lock the resource // STOPS IN HERE
 
     const vector<uint8_t> serialized = msg.serialize();
     send(sockfd, serialized.data(), serialized.size(), 0); // Send the serialized data
@@ -36,13 +34,11 @@ void TCPSocket::sendRequest(const MessageBaseToSend &msg) {
 MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant) {
     std::cout << "in receive function";
     auto start_time = std::chrono::high_resolution_clock::now();
-    while (true)
-    {
+    while (true) {
         auto now = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = now - start_time;
-        {
+        std::chrono::duration<double> elapsed = now - start_time; {
             // If there is a relevant message already recieved - return it.
-          std::lock_guard<mutex> guard(socketMut);
+            std::lock_guard<mutex> guard(socketMut);
             auto msg = std::find_if(messages.begin(), messages.end(), [&isRelevant](const MessageBaseReceived &msg) {
                 return isRelevant(msg.code);
             });
@@ -56,6 +52,9 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant) 
         uint8_t code;
         uint32_t size;
         std::lock_guard<mutex> guard(socketMut);
+        if (!isDataToReceive()) {
+            continue;
+        }
         if (recv(sockfd, &code, sizeof(code), 0) != sizeof(code)) // Read the code (1 byte)
         {
             throw std::runtime_error("Failed to read response code");
@@ -80,6 +79,29 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant) 
         }
     }
     throw std::runtime_error("No relevant packets");
+}
+
+bool TCPSocket::isDataToReceive() const {
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(sockfd, &read_fds);
+
+    struct timeval timeout;
+    timeout.tv_sec = 0; // Set timeout
+    timeout.tv_usec = 0;
+
+    // Wait for data or timeout
+    int activity = select(sockfd + 1, &read_fds, nullptr, nullptr, &timeout);
+
+    if (activity < 0) {
+        std::cerr << "select() error" << std::endl;
+        return false;
+    } else if (activity == 0) {
+        return false;
+    }
+
+    // If socket_fd is set, there is data to receive
+    return FD_ISSET(sockfd, &read_fds);
 }
 
 
