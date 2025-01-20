@@ -84,7 +84,7 @@ FileIO::FileIO(const string &hash)
     string dir = dirPath + hash + '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
         string name = entry.path().filename().string();
-        if (name.find(".gitabic") != string::npos) {
+        if (name.find(".gitabic") == string::npos) {
             fileName = name;
             break;
         }
