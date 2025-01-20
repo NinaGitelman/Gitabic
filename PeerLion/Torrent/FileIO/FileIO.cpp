@@ -83,8 +83,11 @@ FileIO::FileIO(const string &hash)
       pieceSize(FileSplitter::pieceSize(downloadProgress.getFileSize())) {
     string dir = dirPath + hash + '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
-        fileName = entry.path().filename().string();
-        break;
+        string name = entry.path().filename().string();
+        if (name.find(".gitabic") != string::npos) {
+            fileName = name;
+            break;
+        }
     }
     // TODO - URI CHECK I CHANGED THIS - was adding an ecxtra gitabic and dot
     auto path = dirPath + hash + "/" + fileName;
