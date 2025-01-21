@@ -218,8 +218,9 @@ void PeersConnectionManager::routePackets() {
 
             int currMessage = 0;
             for (currMessage = 0; currMessage < messagesCount; currMessage++) {
-                MessageBaseReceived currMessage = currPeer->second.connection->receiveMessage();
-                handleMessage(currMessage);
+                MessageBaseReceived msg = currPeer->second.connection->receiveMessage();
+                msg.from = currPeer->first;
+                handleMessage(msg);
             }
 
             peersConnectionsLock.lock();
