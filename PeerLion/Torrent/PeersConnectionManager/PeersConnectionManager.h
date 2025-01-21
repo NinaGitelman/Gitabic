@@ -76,14 +76,14 @@ public:
     // @brief Function to send the given message to the given peer
     /// @param peer the peer to send message to
     /// @param message the message
-    void sendMessage(const PeerID &peer, MessageBaseToSend *message);
+    void sendMessage(const PeerID &peer, const std::shared_ptr<MessageBaseToSend> &message);
 
     /// @brief Function to send given message to all the given peers
-    void sendMessage(const vector<PeerID> &peers, MessageBaseToSend *message);
+    void sendMessage(const vector<PeerID> &peers, const std::shared_ptr<MessageBaseToSend> &message);
 
     /// @brief funciton to send a broadcast (message to all users) of the given message
     /// @param message the message to broadcast
-    void broadcast(MessageBaseToSend *message);
+    void broadcast(const std::shared_ptr<MessageBaseToSend> &message);
 
 
     // Function to check if the given peer is connected

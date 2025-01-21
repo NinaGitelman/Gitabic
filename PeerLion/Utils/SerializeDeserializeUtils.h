@@ -36,10 +36,10 @@ public:
    static void addToEnd(vector<uint8_t> &to, const vector<uint8_t> &from);
 
    template<typename T>
-   static void copyToFront(vector<uint8_t> to, T from);
+   static void copyToFront(vector<uint8_t> &to, T &from);
 
    template<typename T>
-   static void copyToEnd(vector<uint8_t> to, T from) {
+   static void copyToEnd(vector<uint8_t> &to, T &from) {
       to.resize(to.size() + sizeof(T));
       memcpy(to.data() + to.size() - sizeof(T), &from, sizeof(T));
    }

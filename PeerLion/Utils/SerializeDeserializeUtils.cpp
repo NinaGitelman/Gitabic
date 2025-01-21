@@ -3,7 +3,7 @@
 
 
 template<typename T>
-void SerializeDeserializeUtils::copyToFront(vector<uint8_t> to, T from) {
+void SerializeDeserializeUtils::copyToFront(vector<uint8_t> &to, T &from) {
     to.resize(to.size() + sizeof(T));
     for (size_t i = sizeof(T); i < to.size(); ++i) {
         to[i] = to[i - (to.size() - sizeof(T))];

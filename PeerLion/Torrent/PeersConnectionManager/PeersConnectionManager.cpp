@@ -60,8 +60,7 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
     std::unique_lock<std::mutex> peersConectionLock(_mutexPeerConnections);
 
     // first check if i am connected already from before
-    if (_peerConnections.find(peer) == _peerConnections.end())
-        {
+    if (_peerConnections.find(peer) == _peerConnections.end()) {
         ThreadSafeCout::cout("PeerManager: Adding peer " + SHA256::hashToString(peer) + "\n");
 
         // create ice connection and send to server the ice data
@@ -169,7 +168,7 @@ void PeersConnectionManager::removeFileFromPeer(const FileID fileID, const PeerI
     }
 }
 
-void PeersConnectionManager::sendMessage(const PeerID &peer, MessageBaseToSend *message) {
+void PeersConnectionManager::sendMessage(const PeerID &peer, const std::shared_ptr<MessageBaseToSend> &message) {
     std::unique_lock<std::mutex> registeredPeersLock(_mutexPeerConnections);
 
     auto itPeerConnection = _peerConnections.find(peer);
@@ -182,13 +181,14 @@ void PeersConnectionManager::sendMessage(const PeerID &peer, MessageBaseToSend *
     }
 }
 
-void PeersConnectionManager::sendMessage(const vector<PeerID> &peers, MessageBaseToSend *message) {
+void PeersConnectionManager::sendMessage(const vector<PeerID> &peers,
+                                         const std::shared_ptr<MessageBaseToSend> &message) {
     for (PeerID peer: peers) {
         sendMessage(peer, message);
     }
 }
 
-void PeersConnectionManager::broadcast(MessageBaseToSend *message) {
+void PeersConnectionManager::broadcast(const std::shared_ptr<MessageBaseToSend> &message) {
     // Create a local copy of peer IDs to avoid holding the lock during sendMessage
     std::vector<PeerID> peerIDs; {
         // Lock only to access the shared data

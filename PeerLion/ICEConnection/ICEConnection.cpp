@@ -61,7 +61,7 @@ void ICEConnection::disconnect() {
 
         // send a disconnect message
         MessageBaseToSend disconnectMessage = MessageBaseToSend(ICEConnectionCodes::Disconnect);
-        systemSendMessage(this, &disconnectMessage);
+        systemSendMessage(this, std::make_shared<MessageBaseToSend>(disconnectMessage));
 
         _isConnected.store(false);
         // NEEDS to be before as the threads will check if it is connected before using gloop, agent, context
@@ -143,8 +143,7 @@ void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint c
                     MessageBaseReceived newMessage = deserializeMessage(buf, len);
 
                     // if other user prettily asked to disconnect - disconnect
-                    if (newMessage.code == ICEConnectionCodes::Disconnect)
-                    {
+                    if (newMessage.code == ICEConnectionCodes::Disconnect) {
                         g_message("Other peer disconnected");
                         iceConnection->disconnect();
                     } else {
@@ -515,7 +514,7 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent *_agent, guint strea
     }
 }
 
-void ICEConnection::sendMessage(MessageBaseToSend *message) {
+void ICEConnection::sendMessage(const std::shared_ptr<MessageBaseToSend> &message) {
     std::cout << "ICEConnection sending message" << std::endl; {
         std::lock_guard<std::mutex> lock(_mutexMessagesToSend);
         _messagesToSend.push(message);
@@ -526,7 +525,7 @@ void ICEConnection::sendMessage(MessageBaseToSend *message) {
 }
 
 
-void ICEConnection::systemSendMessage(ICEConnection *connection, MessageBaseToSend *message) {
+void ICEConnection::systemSendMessage(ICEConnection *connection, std::shared_ptr<MessageBaseToSend> message) {
     std::vector<uint8_t> messageInVector = message->serialize();
 
     gint result = nice_agent_send(connection->_agent,
@@ -562,7 +561,7 @@ void ICEConnection::messageSendingThread(ICEConnection *connection) {
         while (!connection->_messagesToSend.empty()) {
             try {
                 // Take the message out of the queue
-                MessageBaseToSend *message = connection->_messagesToSend.front();
+                const auto message = connection->_messagesToSend.front();
                 connection->_messagesToSend.pop();
 
                 // Unlock mutex before sending to prevent deadlock

@@ -79,8 +79,8 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralReceive {
   * @param isDeserialized Flag indicating if the message is deserialized.
   */
  TorrentMessageBase(const MessageBaseReceived &msg, const uint8_t code,
-                    const bool isDeserialized = false) : GeneralReceive(
-  msg.from) {
+                    const bool isDeserialized = false) : MessageBaseToSend(code), GeneralReceive(
+                                                          msg.from) {
   if (!isDeserialized) {
    TorrentMessageBase::deserialize(msg.data);
   }
@@ -393,10 +393,9 @@ struct BlockResponse : TorrentMessageBase {
   */
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(
-   PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + sizeof(uint) + block.size());
+   PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + block.size());
   SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
   SerializeDeserializeUtils::copyToEnd(baseSerialized, blockIndex);
-  SerializeDeserializeUtils::copyToEnd(baseSerialized, static_cast<uint>(block.size()));
   SerializeDeserializeUtils::addToEnd(baseSerialized, block);
 
   return baseSerialized;
@@ -411,11 +410,8 @@ struct BlockResponse : TorrentMessageBase {
   const auto offset = TorrentMessageBase::deserialize(data);
   memcpy(&pieceIndex, data.data() + offset, sizeof(pieceIndex));
   memcpy(&blockIndex, data.data() + offset + sizeof(pieceIndex), sizeof(blockIndex));
-  uint32_t blockSize;
-  memcpy(&blockSize, data.data() + offset + sizeof(pieceIndex) + sizeof(blockIndex), sizeof(blockSize));
-  block = vector<uint8_t>(data.begin() + offset + sizeof(pieceIndex) + sizeof(blockIndex),
-                          data.begin() + offset + sizeof(pieceIndex) + sizeof(blockIndex) + blockSize);
-  return offset + sizeof(pieceIndex) + sizeof(blockIndex) + blockSize;
+  block = vector<uint8_t>(data.begin() + offset + sizeof(pieceIndex) + sizeof(blockIndex), data.end());
+  return offset + sizeof(pieceIndex) + sizeof(blockIndex) + block.size();
  }
 };
 

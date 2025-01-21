@@ -103,7 +103,6 @@ void PeerManager::addPeer(const PeerID &peer) {
 	if (_peerStates.size() >= MAX_PEERS) {
 		_backUpPeers.insert(peer);
 	} else if (!_peerStates.contains(peer)) {
-
 		_peersConnectionManager.addFileForPeer(_fileId, peer);
 		_peerStates[peer] = PeerState();
 		_peerStates[peer].amInterested = !_isSeed;
@@ -156,6 +155,7 @@ void PeerManager::updatePeerState(const PeerID &peer, const PeerState &state) {
 		_peerStates[peer] = state;
 	}
 }
+
 
 PeerState &PeerManager::getPeerState(const PeerID &peer) {
 	std::lock_guard guard(_mutexPeerStates);
