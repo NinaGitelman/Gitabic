@@ -142,8 +142,8 @@ void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint c
                 try {
                     MessageBaseReceived newMessage = deserializeMessage(buf, len);
 
-                    if (newMessage.code == ICEConnectionCodes::Disconnect)
                     // if other user prettily asked to disconnect - disconnect
+                    if (newMessage.code == ICEConnectionCodes::Disconnect)
                     {
                         g_message("Other peer disconnected");
                         iceConnection->disconnect();

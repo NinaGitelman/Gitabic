@@ -5,6 +5,7 @@
 #include "../TorrentFileHandler/TorrentFileHandler.h"
 #include "../PeersConnectionManager/PeersConnectionManager.h"
 #include "../FileIO/FileIO.h"
+#include "../../NetworkUnit/ServerComm/BitTorrentMessages.h"
 #include <mutex>
 
 class TorrentFileHandler;

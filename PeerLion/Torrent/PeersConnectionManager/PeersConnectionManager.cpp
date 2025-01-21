@@ -60,7 +60,10 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
     std::unique_lock<std::mutex> peersConectionLock(_mutexPeerConnections);
 
     // first check if i am connected already from before
-    if (_peerConnections.find(peer) == _peerConnections.end()) {
+    if (_peerConnections.find(peer) == _peerConnections.end())
+        {
+        ThreadSafeCout::cout("PeerManager: Adding peer " + SHA256::hashToString(peer) + "\n");
+
         // create ice connection and send to server the ice data
         std::shared_ptr<ICEConnection> peerConnection = std::make_shared<ICEConnection>(true);
 
@@ -116,6 +119,8 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
     }
     // if the file is not present in the peer files list, add it
     else if (!_registeredPeersFiles[peer].contains(fileID)) {
+        ThreadSafeCout::cout("PeerManager: Adding file for peer " + SHA256::hashToString(fileID) + "\n");
+
         _registeredPeersFiles[peer].insert(fileID);
         addedFile = true;
     }
@@ -199,7 +204,7 @@ void PeersConnectionManager::broadcast(MessageBaseToSend *message) {
     }
 }
 
-// BY M
+
 void PeersConnectionManager::routePackets() {
     while (_isRunning->load()) {
         std::unique_lock<std::mutex> peersConnectionsLock(_mutexPeerConnections);

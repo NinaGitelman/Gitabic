@@ -25,7 +25,7 @@ void PeerManager::updateConnectedPeers() {
 		std::cout << "here";
 		ThreadSafeCout::cout("PeerManager: Updating connected peers\n");
 		for (auto peers = requestForNewPeerList(); const auto peer: peers) {
-			ThreadSafeCout::cout("PeerManager: Adding peer " + SHA256::hashToString(peer) + "\n");
+			//ThreadSafeCout::cout("PeerManager: Adding peer " + SHA256::hashToString(peer) + "\n");
 			addPeer(peer);
 		}
 
@@ -103,6 +103,7 @@ void PeerManager::addPeer(const PeerID &peer) {
 	if (_peerStates.size() >= MAX_PEERS) {
 		_backUpPeers.insert(peer);
 	} else if (!_peerStates.contains(peer)) {
+
 		_peersConnectionManager.addFileForPeer(_fileId, peer);
 		_peerStates[peer] = PeerState();
 		_peerStates[peer].amInterested = !_isSeed;

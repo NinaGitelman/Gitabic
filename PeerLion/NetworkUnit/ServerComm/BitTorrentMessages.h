@@ -106,10 +106,32 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralReceive {
   * @return The size of the deserialized data.
   */
  virtual uint deserialize(const vector<uint8_t> &data) {
+  size_t expectedSize = SHA256_SIZE + SHA256_SIZE + initVector.size();
+
+  if (data.size() < expectedSize) {
+   throw std::runtime_error("Insufficient data size for deserialization");
+  }
+
+  // Check and deserialize fileId
+  if (data.size() < SHA256_SIZE) {
+   throw std::runtime_error("Insufficient data size for fileId");
+  }
   memcpy(fileId.data(), data.data(), SHA256_SIZE);
+
+  // Check and deserialize hash
+  if (data.size() < SHA256_SIZE * 2) {
+   throw std::runtime_error("Insufficient data size for hash");
+  }
   memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
-  memcpy(initVector.data(), data.data() + SIZE - initVector.size(), initVector.size());
-  return SIZE;
+
+  // Check and deserialize initVector
+  size_t initVectorOffset = expectedSize - initVector.size();
+  if (data.size() < initVectorOffset + initVector.size()) {
+   throw std::runtime_error("Insufficient data size for initVector");
+  }
+  memcpy(initVector.data(), data.data() + initVectorOffset, initVector.size());
+
+  return expectedSize;
  }
 
  /**
