@@ -57,10 +57,12 @@ public:
 	PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &serverSocket,
 				bool isSeed);
 
-	~PeerManager(){std::cout<<"Destructing pm"<<std::endl;};
+	~PeerManager() { std::cout << "Destructing pm" << std::endl; };
 
 
 	void addPeer(const PeerID &peer);
+
+	void addConnectedPeer(const PeerID &peer);
 
 	void removePeer(const PeerID &peer);
 

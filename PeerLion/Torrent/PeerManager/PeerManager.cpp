@@ -103,7 +103,21 @@ void PeerManager::addPeer(const PeerID &peer) {
 	if (_peerStates.size() >= MAX_PEERS) {
 		_backUpPeers.insert(peer);
 	} else if (!_peerStates.contains(peer)) {
-		_peersConnectionManager.addFileForPeer(_fileId, peer);
+		if (_peersConnectionManager.addFileForPeer(_fileId, peer)) {
+			_peerStates[peer] = PeerState();
+			_peerStates[peer].amInterested = !_isSeed;
+			if (!_isSeed) {
+				_newPeerList.push_back(peer);
+			}
+		}
+	}
+}
+
+void PeerManager::addConnectedPeer(const PeerID &peer) {
+	std::lock_guard guard(_mutexPeerStates);
+	if (_peerStates.size() >= MAX_PEERS) {
+		_backUpPeers.insert(peer);
+	} else if (!_peerStates.contains(peer)) {
 		_peerStates[peer] = PeerState();
 		_peerStates[peer].amInterested = !_isSeed;
 		if (!_isSeed) {
@@ -159,6 +173,9 @@ void PeerManager::updatePeerState(const PeerID &peer, const PeerState &state) {
 
 PeerState &PeerManager::getPeerState(const PeerID &peer) {
 	std::lock_guard guard(_mutexPeerStates);
+	if (!_peerStates.contains(peer)) {
+		_peerStates[peer] = PeerState();
+	}
 	return _peerStates[peer];
 }
 

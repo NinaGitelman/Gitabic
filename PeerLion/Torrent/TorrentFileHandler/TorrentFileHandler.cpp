@@ -23,7 +23,7 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 																								serverSocket,
 																								fileIo.getMode() ==
 																								FileMode::Seed)),
-																_aesHandler(aesKey) {
+																_aesHandler(aesKey), _isSeed(true) {
 	_running = true;
 
 	_pieceChooser = std::make_unique<RarityTrackerChooser>(
@@ -100,6 +100,9 @@ ResultMessages TorrentFileHandler::handle(const TorrentMessageBase &request) {
 			break;
 		case BitTorrentRequestCodes::fileInterested: {
 			std::unique_lock peerManagerLock(_mutexPeerManager);
+			if (!_peerManager->getPeerState(request.from).amInterested && _isSeed.load()) {
+				_peerManager->addConnectedPeer(request.from);
+			}
 			_peerManager->getPeerState(request.from).peerInterested = true;
 			break;
 		}
@@ -284,6 +287,8 @@ void TorrentFileHandler::downloadFile() {
 		}
 		std::this_thread::sleep_for(WAITING_TIME - (std::chrono::steady_clock::now() - start));
 	}
+	//Test file
+	_isSeed = false;
 	ThreadSafeCout::cout("Finished downloading file!!!");
 }
 

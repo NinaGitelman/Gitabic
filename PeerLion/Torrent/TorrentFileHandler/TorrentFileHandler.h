@@ -59,7 +59,7 @@ private:
 	thread _handleResponsesThread;
 	thread _downloadFileThread;
 
-	atomic<bool> _running = {false};
+	atomic<bool> _running = {false}, _isSeed = {true};
 
 	AESHandler _aesHandler;
 
