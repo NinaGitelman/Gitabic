@@ -23,9 +23,18 @@ PeerManager::PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &ser
 void PeerManager::updateConnectedPeers() {
 	while (true) {
 		std::cout << "here";
+		for (auto &[peer, at]: _blackList) {
+			if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - at) >
+				std::chrono::seconds(60)
+			) {
+				_blackList.erase(peer);
+			}
+		}
 		ThreadSafeCout::cout("PeerManager: Updating connected peers\n");
 		for (auto peers = requestForNewPeerList(); const auto peer: peers) {
 			//ThreadSafeCout::cout("PeerManager: Adding peer " + SHA256::hashToString(peer) + "\n");
+			if (_blackList.contains(peer)) continue;
+
 			addPeer(peer);
 		}
 
@@ -47,8 +56,7 @@ void PeerManager::updateConnectedPeers() {
 				_disconnectedPeers.push_back(it.first);
 			}
 		}
-		std::this_thread::sleep_for(std::chrono::seconds(1
-		));
+		std::this_thread::sleep_for(std::chrono::seconds(5));
 		std::cout << "after wait";
 	}
 	std::cout << "thread ending";
@@ -109,6 +117,8 @@ void PeerManager::addPeer(const PeerID &peer) {
 			if (!_isSeed) {
 				_newPeerList.push_back(peer);
 			}
+		} else {
+			_blackList[peer] = std::chrono::system_clock::now();
 		}
 	}
 }

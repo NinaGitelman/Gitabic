@@ -38,6 +38,8 @@ class PeerManager {
 
 	PeersConnectionManager &_peersConnectionManager;
 
+	unordered_map<PeerID, std::chrono::system_clock::time_point> _blackList;
+
 	ID _fileId;
 
 	mutable mutex _mutexServerSocket;
