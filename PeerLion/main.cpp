@@ -19,7 +19,7 @@
 #include "Utils/VectorUint8Utils.h"
 
 #define SERVER_ADDRESS "0.0.0.0"
-#define SERVER_PORT 4787
+#define SERVER_PORT 4786
 
 /// @brief  Heper function to pritn the DATA
 void printDataAsASCII(vector<uint8_t> data) {
@@ -58,8 +58,7 @@ int main(const int argc, char **argv) {
   TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);
   instanceTorrentManager.addNewFileHandler(fileIO);
 
-  while (true)
-  {
+  while (true) {
     string input;
     std::getline(std::cin, input);
     if (input == "exit") {

@@ -336,7 +336,7 @@ struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
     ID from;
 
     ServerRequestAuthorizeICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId, const ID& from)
-        : MessageBaseToSend(ServerRequestCodes::AuthorizeICEConnection), requestId(requestId), iceCandidateInfo(move(iceCandidateInfo)) {}
+        : MessageBaseToSend(ServerRequestCodes::AuthorizeICEConnection), requestId(requestId), iceCandidateInfo(move(iceCandidateInfo)), from(from) {}
 
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
