@@ -122,12 +122,15 @@ std::string FileUtils::getExpandedPath(const std::string &path) {
 
 std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName) {
     const std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;
+
     std::filesystem::path expandedHashFolder = std::filesystem::absolute(
         getExpandedPath(hashFolder.string()));
 
     // Ensure the directory exists
     if (!std::filesystem::exists(expandedHashFolder)) {
         std::filesystem::create_directories(expandedHashFolder);
+    } else {
+        return expandedHashFolder;
     }
 
     // Create a symbolic link with the friendly name
