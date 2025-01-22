@@ -27,7 +27,7 @@ private:
     // Constructor and Destructor are private
     IceMessagesHandler() : waitIds(0) {}
 
-    std::unordered_map<uint16_t, ID> waitsForResponse;
+    std::unordered_map<uint16_t, std::pair<ID, ID>> waitsForResponse;
     uint16_t waitIds;
     // Static instance
     static std::unique_ptr<IceMessagesHandler> instance;

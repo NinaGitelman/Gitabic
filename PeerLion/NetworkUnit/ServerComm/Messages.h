@@ -67,6 +67,7 @@ enum ServerResponseCodes {
     UserAuthorizedICEData = 11,
     UserAlreadyConnected = 12,
     UserFullCapacity = 13,
+    ExistsOpositeRequest = 14,
 
     NewID = 55,
 

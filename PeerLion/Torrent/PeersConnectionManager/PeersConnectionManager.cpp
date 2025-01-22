@@ -74,7 +74,8 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
         }
         std::cout << "send request of get my ice data\n\n";
         const std::function<bool(uint8_t)> isRelevant = [](const uint8_t code) {
-            return code >= ServerResponseCodes::UserAuthorizedICEData && code <= ServerResponseCodes::UserFullCapacity;
+            return code >= ServerResponseCodes::UserAuthorizedICEData && code <=
+                   ServerResponseCodes::ExistsOpositeRequest;
         };
 
         // send request to server to connect to the other peer and for its ice data
@@ -84,6 +85,9 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
         MessageBaseReceived response = _serverSocket->receive(isRelevant);
         serverSocketLock.unlock();
 
+        if (response.code == ServerResponseCodes::ExistsOpositeRequest) {
+            return false;
+        }
         if (response.code == ServerResponseCodes::UserAlreadyConnected) {
             throw std::runtime_error("Tried to connect to a already connected peer");
         }
