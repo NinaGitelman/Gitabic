@@ -22,7 +22,7 @@ PeerManager::PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &ser
 
 void PeerManager::updateConnectedPeers() {
 	while (true) {
-		std::cout << "here";
+
 		for (auto &[peer, at]: _blackList) {
 			if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - at) >
 				std::chrono::seconds(60)
@@ -30,7 +30,7 @@ void PeerManager::updateConnectedPeers() {
 				_blackList.erase(peer);
 			}
 		}
-		ThreadSafeCout::cout("PeerManager: Updating connected peers\n");
+		ThreadSafeCout::cout("\nPeerManager: Updating connected peers\n");
 		for (auto peers = requestForNewPeerList(); const auto peer: peers) {
 			//ThreadSafeCout::cout("PeerManager: Adding peer " + SHA256::hashToString(peer) + "\n");
 			if (_blackList.contains(peer)) continue;
@@ -57,8 +57,7 @@ void PeerManager::updateConnectedPeers() {
 			}
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(5));
-		std::cout << "after wait";
-	}
+		}
 	std::cout << "thread ending";
 }
 
@@ -120,7 +119,7 @@ void PeerManager::addPeer(const PeerID &peer) {
 		}
 		catch (const std::exception &e)
 		{
-			std::cout << "add peer: "<< e.what() << std::endl;
+			std::cout << "add peer:"<< e.what() << std::endl;
 		}
 
 		if (addFileForPeer) {

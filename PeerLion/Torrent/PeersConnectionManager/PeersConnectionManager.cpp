@@ -52,6 +52,7 @@ static void printDataAsASCII(vector<uint8_t> data) {
     std::cout << std::endl;
 }
 
+
 // TODO divide this into smaller functions maybe...
 bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &peer) {
     bool addedFile = false;
