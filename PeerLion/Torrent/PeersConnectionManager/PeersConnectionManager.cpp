@@ -89,7 +89,8 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
             return false;
         }
         if (response.code == ServerResponseCodes::UserAlreadyConnected) {
-            throw std::runtime_error("Tried to connect to a already connected peer");
+            // TODO URI CHECK - someone gotta catch this error and not just throw it
+            throw std::runtime_error("Tried to connect to an already connected peer");
         }
         if (response.code == ServerResponseCodes::UserFullCapacity) {
             return false;

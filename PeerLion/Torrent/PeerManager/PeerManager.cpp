@@ -110,16 +110,31 @@ void PeerManager::addPeer(const PeerID &peer) {
 	std::lock_guard guard(_mutexPeerStates);
 	if (_peerStates.size() >= MAX_PEERS) {
 		_backUpPeers.insert(peer);
-	} else if (!_peerStates.contains(peer)) {
-		if (_peersConnectionManager.addFileForPeer(_fileId, peer)) {
+	} else if (!_peerStates.contains(peer))
+	{
+		bool addFileForPeer =false;
+		try
+		{
+			addFileForPeer= _peersConnectionManager.addFileForPeer(_fileId, peer);
+
+		}
+		catch (const std::exception &e)
+		{
+			std::cout << "add peer: "<< e.what() << std::endl;
+		}
+
+		if (addFileForPeer) {
 			_peerStates[peer] = PeerState();
 			_peerStates[peer].amInterested = !_isSeed;
 			if (!_isSeed) {
 				_newPeerList.push_back(peer);
 			}
+
 		} else {
 			_blackList[peer] = std::chrono::system_clock::now();
 		}
+
+
 	}
 }
 
