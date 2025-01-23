@@ -53,7 +53,7 @@ void ICEConnection::callbackAgentCloseDone(GObject *source_object, GAsyncResult 
     // Simply quit the main loop
     g_main_loop_quit(agentCloseLoop);
 }
-
+// TODO NINA - check why stops in here an doesnt return
 void ICEConnection::disconnect() {
     if (_isConnected) // in case called twice by accident...
     {
