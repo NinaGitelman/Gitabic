@@ -78,8 +78,8 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralReceive {
   * @param code The message code.
   * @param isDeserialized Flag indicating if the message is deserialized.
   */
- TorrentMessageBase(const MessageBaseReceived &msg, const uint8_t code,
-                    const bool isDeserialized = false) : MessageBaseToSend(code), GeneralReceive(
+ TorrentMessageBase(const MessageBaseReceived &msg,
+                    const bool isDeserialized = false) : MessageBaseToSend(msg.code), GeneralReceive(
                                                           msg.from) {
   if (!isDeserialized) {
    TorrentMessageBase::deserialize(msg.data);
@@ -438,7 +438,7 @@ struct FileBitField : TorrentMessageBase {
 
  uint deserialize(const vector<uint8_t> &data) override {
   const auto offset = TorrentMessageBase::deserialize(data);
-  for (size_t i = 0; i < field.size(); ++i) {
+  for (size_t i = offset; i < data.size(); ++i) {
    field[i] = std::bitset<8>(data[offset + i]);
   }
 

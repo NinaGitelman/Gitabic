@@ -1,6 +1,8 @@
 #ifndef DOWNLOADPROGRESS_H
 #define DOWNLOADPROGRESS_H
 #pragma once
+#include <bitset>
+
 #include "../MetaDataFile/MetaDataFile.h"
 
 /// Represents the current status of a download operation
@@ -118,8 +120,7 @@ public:
         return lastTime;
     }
 
-    int getAmmountOfPieces() const
-    {
+    int getAmmountOfPieces() const {
         return pieces.size();
     }
 
@@ -136,6 +137,7 @@ public:
     DownloadProgress &operator=(DownloadProgress other);
 
     // Swap function
+
     friend void swap(DownloadProgress &first, DownloadProgress &second) noexcept;
 
     /// @brief Constructs a download progress tracker from serialized data
@@ -152,6 +154,8 @@ public:
     /// @brief Deserializes download progress state from data
     /// @param data Vector containing serialized download progress data
     void deserialize(vector<uint8_t> data);
+
+    vector<std::bitset<8> > getBitField() const;
 
     /// @brief Calculates the current download progress as a percentage
     /// @return Progress value between 0.0 and 1.0

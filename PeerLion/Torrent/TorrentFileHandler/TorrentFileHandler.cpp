@@ -43,7 +43,7 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 
 ResultMessages TorrentFileHandler::handle(const DataRequest &request) {
 	ResultMessages res{};
-	res.to = request.from;
+	res.to = request.other;
 	for (auto i = request.blockIndex; i < request.blockIndex + request.blocksCount; i++) {
 		std::unique_lock<mutex> lock(_mutexFileIO);
 		const auto block = _fileIO.loadBlock(request.pieceIndex, i);
@@ -75,13 +75,13 @@ ResultMessages TorrentFileHandler::handle(const PieceOwnershipUpdate &request) {
 			PieceOwnershipUpdate pieceOwnershipUpdate(request);
 
 			std::unique_lock pieceChooserLock(_mutexPieceChooser);
-			_pieceChooser->gotPiece(pieceOwnershipUpdate.from, pieceOwnershipUpdate.pieceIndex);
+			_pieceChooser->gotPiece(pieceOwnershipUpdate.other, pieceOwnershipUpdate.pieceIndex);
 		}
 		break;
 		case BitTorrentRequestCodes::lostPieceUpdate: {
 			PieceOwnershipUpdate pieceOwnershipUpdate(request);
 			std::unique_lock pieceChooserLock(_mutexPieceChooser);
-			_pieceChooser->lostPiece(pieceOwnershipUpdate.from, pieceOwnershipUpdate.pieceIndex);
+			_pieceChooser->lostPiece(pieceOwnershipUpdate.other, pieceOwnershipUpdate.pieceIndex);
 		}
 		break;
 		default:
@@ -92,7 +92,7 @@ ResultMessages TorrentFileHandler::handle(const PieceOwnershipUpdate &request) {
 
 ResultMessages TorrentFileHandler::handle(const TorrentMessageBase &request) {
 	ResultMessages res{};
-	res.to = request.from;
+	res.to = request.other;
 	switch (request.code) {
 		case BitTorrentRequestCodes::keepAlive:
 			res.messages.push_back(
@@ -100,25 +100,30 @@ ResultMessages TorrentFileHandler::handle(const TorrentMessageBase &request) {
 			break;
 		case BitTorrentRequestCodes::fileInterested: {
 			std::unique_lock peerManagerLock(_mutexPeerManager);
-			if (!_peerManager->getPeerState(request.from).amInterested && _isSeed.load()) {
-				_peerManager->addConnectedPeer(request.from);
+			if (!_peerManager->getPeerState(request.other).amInterested && _isSeed.load()) {
+				_peerManager->addConnectedPeer(request.other);
 			}
-			_peerManager->getPeerState(request.from).peerInterested = true;
+			_peerManager->getPeerState(request.other).peerInterested = true;
+			peerManagerLock.unlock();
+			auto bitFieldMsg = std::make_shared<FileBitField>(_fileID, _aesHandler.getKey(),
+															_fileIO.getDownloadProgress().getBitField());
+			bitFieldMsg->other = request.other;
+			res.messages.push_back(bitFieldMsg);
 			break;
 		}
 		case BitTorrentRequestCodes::fileNotInterested: {
 			std::unique_lock peerManagerLock(_mutexPeerManager);
-			_peerManager->getPeerState(request.from).peerInterested = false;
+			_peerManager->getPeerState(request.other).peerInterested = false;
 			break;
 		}
 		case BitTorrentRequestCodes::choke: {
 			std::unique_lock peerManagerLock(_mutexPeerManager);
-			_peerManager->getPeerState(request.from).peerChoking = true;
+			_peerManager->getPeerState(request.other).peerChoking = true;
 			break;
 		}
 		case BitTorrentRequestCodes::unchoke: {
 			std::unique_lock peerManagerLock(_mutexPeerManager);
-			_peerManager->getPeerState(request.from).peerChoking = false;
+			_peerManager->getPeerState(request.other).peerChoking = false;
 			break;
 		}
 		default:
@@ -146,7 +151,7 @@ void TorrentFileHandler::handleRequests() {
 				case BitTorrentRequestCodes::fileNotInterested:
 				case BitTorrentRequestCodes::unchoke:
 				case BitTorrentRequestCodes::choke:
-					resultMessages = handle(TorrentMessageBase(request, request.code));
+					resultMessages = handle(TorrentMessageBase(request));
 					break;
 				case BitTorrentRequestCodes::hasPieceUpdate:
 				case BitTorrentRequestCodes::lostPieceUpdate:
@@ -236,7 +241,7 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 		pieceFinished = _fileIO.saveBlock(blockResponse.pieceIndex, blockResponse.blockIndex, blockResponse.block);
 	} {
 		std::unique_lock pieceChooserLock(_mutexPieceChooser);
-		_pieceChooser->updateBlockReceived(blockResponse.from, blockResponse.pieceIndex, blockResponse.blockIndex);
+		_pieceChooser->updateBlockReceived(blockResponse.other, blockResponse.pieceIndex, blockResponse.blockIndex);
 	}
 
 	// update all interested peers that i got this pice
@@ -309,11 +314,11 @@ void TorrentFileHandler::sendMessages() {
 
 			// Send the message
 			auto &torrentMsg = *reinterpret_cast<TorrentMessageBase *>(&*message);
-			_peersConnectionManager.sendMessage(torrentMsg.from, message);
+			_peersConnectionManager.sendMessage(torrentMsg.other, message);
 
 			guard.lock(); // Re-lock for the next iteration
 			ThreadSafeCout::cout(
-				"Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.from));
+				"Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.other));
 		}
 	}
 }
