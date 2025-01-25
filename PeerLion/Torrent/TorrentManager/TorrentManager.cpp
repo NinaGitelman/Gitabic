@@ -59,7 +59,7 @@ void TorrentManager::removeFileHandler(const FileID &fileID) {
 }
 
 void TorrentManager::handleMessage(MessageBaseReceived &message) {
-    TorrentMessageBase torrentMessage(message, message.code);
+    TorrentMessageBase torrentMessage(message);
     //TODO nina check - for some reason comes with empty buffer, which result crash. maybe problem in ice
 
     std::unique_lock<std::mutex> lockFileHandlers(_mutexFileHandlers);
