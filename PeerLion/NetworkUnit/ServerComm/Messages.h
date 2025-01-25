@@ -93,10 +93,10 @@ enum ICEConnectionCodes // codes used by ice p2p connection  60-65
 #define ICE_CONNECTION_CODES_MAX 65
 
 struct GeneralReceive {
-    ID from{};
+    ID other{};
 
     explicit GeneralReceive(const ID &from) {
-        this->from = from;
+        this->other = from;
     }
 
     GeneralReceive() = default;

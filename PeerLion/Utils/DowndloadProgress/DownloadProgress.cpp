@@ -127,6 +127,17 @@ void DownloadProgress::deserialize(vector<uint8_t> data) {
     }
 }
 
+vector<std::bitset<8> > DownloadProgress::getBitField() const {
+    vector<std::bitset<8> > bitField;
+    for (int i = 0; i < pieces.size(); ++i) {
+        if (i % 8 == 0) {
+            bitField.push_back(std::bitset<8>());
+        }
+        bitField.back()[i % 8] = pieces[i].status == DownloadStatus::Verified;
+    }
+    return bitField;
+}
+
 double DownloadProgress::progress() const {
     std::lock_guard<std::mutex> guard(mut);
     return totalDownloadBytes / static_cast<double>(fileSize);
