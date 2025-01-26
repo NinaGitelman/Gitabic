@@ -28,8 +28,8 @@ ICEConnection::ICEConnection(const bool isControlling) {
         // Enable verbose logging
         g_object_set(_agent, "stun-max-retransmissions", 3, NULL);
         g_object_set(_agent, "stun-initial-timeout", 500, NULL);
-        nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 10244, 65535);
         _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
+        nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 10244, 65535);
 
         if (_streamId == 0) {
             throw std::runtime_error("Failed to add stream");

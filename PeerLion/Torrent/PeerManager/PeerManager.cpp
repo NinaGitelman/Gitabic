@@ -32,7 +32,6 @@ void PeerManager::updateConnectedPeers() {
 		}
 		ThreadSafeCout::cout("\nPeerManager: Updating connected peers\n");
 		for (auto peers = requestForNewPeerList(); const auto peer: peers) {
-			//ThreadSafeCout::cout("PeerManager: Adding peer " + SHA256::hashToString(peer) + "\n");
 			if (_blackList.contains(peer)) continue;
 
 			addPeer(peer);
@@ -72,7 +71,6 @@ vector<ID> PeerManager::requestForNewPeerList() const {
 
 		try {
 			std::unique_lock<mutex> lockServerSock(_mutexServerSocket);
-			// TODO WAITS - forever waits in here (actually in the receive function). ..
 			const MessageBaseReceived received = _serverSocket->receive(isRelevant);
 			lockServerSock.unlock();
 
@@ -109,7 +107,8 @@ void PeerManager::addPeer(const PeerID &peer) {
 	std::lock_guard guard(_mutexPeerStates);
 	if (_peerStates.size() >= MAX_PEERS) {
 		_backUpPeers.insert(peer);
-	} else if (!_peerStates.contains(peer))
+	}
+	else if (!_peerStates.contains(peer))
 	{
 		bool addFileForPeer =false;
 		try
