@@ -288,7 +288,7 @@ void TorrentFileHandler::downloadFile() {
 					_cvMessagesToSend.notify_one();
 				}
 			}
-			ThreadSafeCout::cout("Sent packets to " + std::to_string(requestablePeers.size()) + " peers");
+			ThreadSafeCout::cout("Amount of requestable peers: " + std::to_string(requestablePeers.size()) + "\n");
 		}
 		std::this_thread::sleep_for(WAITING_TIME - (std::chrono::steady_clock::now() - start));
 	}
@@ -314,11 +314,20 @@ void TorrentFileHandler::sendMessages() {
 
 			// Send the message
 			auto &torrentMsg = *reinterpret_cast<TorrentMessageBase *>(&*message);
-			_peersConnectionManager.sendMessage(torrentMsg.other, message);
 
-			guard.lock(); // Re-lock for the next iteration
-			ThreadSafeCout::cout(
-				"Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.other));
+
+			try
+			{
+				_peersConnectionManager.sendMessage(torrentMsg.other, message);
+				guard.lock(); // Re-lock for the next iteration
+				ThreadSafeCout::cout(
+					"Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.other));
+			}
+			catch (std::exception &e)
+			{
+				std::cout << "Exception sending message to peer: "<< e.what() << std::endl;
+			}
+
 		}
 	}
 }

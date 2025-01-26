@@ -53,10 +53,13 @@ void ICEConnection::callbackAgentCloseDone(GObject *source_object, GAsyncResult 
     // Simply quit the main loop
     g_main_loop_quit(agentCloseLoop);
 }
-// TODO NINA - check why stops in here an doesnt return
-void ICEConnection::disconnect() {
-    if (_isConnected) // in case called twice by accident...
+// sometimes it gets here if one tries to connect too fast to the other one but its okay as _isConnected is then as false
+void ICEConnection::disconnect()
+{
+   if (_isConnected) // in case called twice by accident...
     {
+        g_message("is connected");
+
         std::cout << "Disconnecting from ICEConnection" << std::endl;
 
         // send a disconnect message
@@ -136,7 +139,7 @@ void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint c
             if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr)
             // if the connection finished this is what libnice should send (it didnt by now but leaving it...)
             {
-                g_message("Other peer disconnected");
+                g_message("Other peer disconnected in callback received from lib nice");
                 iceConnection->disconnect();
             } else {
                 try {
@@ -144,7 +147,7 @@ void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint c
 
                     // if other user prettily asked to disconnect - disconnect
                     if (newMessage.code == ICEConnectionCodes::Disconnect) {
-                        g_message("Other peer disconnected");
+                        g_message("Other peer disconnected in receive from code");
                         iceConnection->disconnect();
                     } else {
                         // add the new received message to the messages queue
@@ -295,6 +298,7 @@ end:
 
 bool ICEConnection::connectToPeer(const vector<uint8_t> remoteDataVec) {
     // call thread
+    bool connected = false;
     std::thread peerThread([this, remoteDataVec]() {
         connectToPeerThread(remoteDataVec);
     });
@@ -318,12 +322,14 @@ bool ICEConnection::connectToPeer(const vector<uint8_t> remoteDataVec) {
 
         // Check if peer is connected
         if (_isConnected.load()) {
-            return true; // Successfully connected
+            connected = true;
+            break;
         }
 
         // Wait for the next check interval
         std::this_thread::sleep_for(checkInterval);
     }
+    return connected;
 }
 
 int ICEConnection::connectToPeerThread(const vector<uint8_t> remoteDataVec) {

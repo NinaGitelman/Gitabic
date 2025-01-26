@@ -2746,6 +2746,7 @@ CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o: ../Torrent/FileIO/FileIO.cp
   /usr/include/c++/11/bits/unordered_map.h \
   /usr/include/c++/11/bits/erase_if.h \
   ../Utils/DowndloadProgress/DownloadProgress.h \
+  /usr/include/c++/11/bitset \
   ../Utils/ThreadSafeCout.h
 
 CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o: ../Torrent/PeerManager/PeerManager.cpp \
@@ -4102,15 +4103,16 @@ CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cp
   /usr/include/c++/11/bits/stl_numeric.h \
   /usr/include/c++/11/pstl/glue_numeric_defs.h \
   ../Utils/DowndloadProgress/DownloadProgress.h \
-  ../Torrent/PeerManager/PeerManager.h \
   /usr/include/c++/11/bitset \
+  ../Torrent/PeerManager/PeerManager.h \
   /usr/include/c++/11/list \
   /usr/include/c++/11/bits/stl_list.h \
   /usr/include/c++/11/bits/list.tcc \
   ../NetworkUnit/ServerComm/BitTorrentMessages.h \
   ../Torrent/PieceManagement/IPieceChooser.h \
   ../NetworkUnit/ServerComm/BitTorrentMessages.h \
-  ../Torrent/FileIO/FileIO.h
+  ../Torrent/FileIO/FileIO.h \
+  ../NetworkUnit/ServerComm/BitTorrentMessages.h
 
 CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o: ../Torrent/PieceManagement/RarityTrackerChooser.cpp \
   /usr/include/stdc-predef.h \
@@ -4876,6 +4878,7 @@ CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o: ../
   /usr/include/c++/11/bits/unordered_map.h \
   /usr/include/c++/11/bits/erase_if.h \
   ../Utils/DowndloadProgress/DownloadProgress.h \
+  /usr/include/c++/11/bitset \
   ../Torrent/PeersConnectionManager/PeersConnectionManager.h \
   /usr/include/c++/11/algorithm \
   /usr/include/c++/11/bits/ranges_algo.h \
@@ -5200,7 +5203,6 @@ CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o: ../
   /usr/include/x86_64-linux-gnu/sys/un.h \
   ../NetworkUnit/ServerComm/TCPSocket/TCPSocket.h \
   ../Torrent/PeerManager/PeerManager.h \
-  /usr/include/c++/11/bitset \
   /usr/include/c++/11/list \
   /usr/include/c++/11/bits/stl_list.h \
   /usr/include/c++/11/bits/list.tcc \
@@ -5588,6 +5590,7 @@ CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o: ../Torrent/
   /usr/include/c++/11/bits/unordered_map.h \
   /usr/include/c++/11/bits/erase_if.h \
   ../Utils/DowndloadProgress/DownloadProgress.h \
+  /usr/include/c++/11/bitset \
   ../Torrent/PeersConnectionManager/PeersConnectionManager.h \
   /usr/include/c++/11/algorithm \
   /usr/include/c++/11/bits/ranges_algo.h \
@@ -5912,19 +5915,19 @@ CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o: ../Torrent/
   /usr/include/x86_64-linux-gnu/sys/un.h \
   ../NetworkUnit/ServerComm/TCPSocket/TCPSocket.h \
   ../Torrent/PeerManager/PeerManager.h \
-  /usr/include/c++/11/bitset \
   /usr/include/c++/11/list \
   /usr/include/c++/11/bits/stl_list.h \
   /usr/include/c++/11/bits/list.tcc \
   ../NetworkUnit/ServerComm/BitTorrentMessages.h \
   ../Torrent/PieceManagement/IPieceChooser.h \
   ../NetworkUnit/ServerComm/BitTorrentMessages.h \
-  ../Torrent/FileIO/FileIO.h
+  ../Torrent/FileIO/FileIO.h \
+  ../NetworkUnit/ServerComm/BitTorrentMessages.h
 
 CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o: ../Utils/DowndloadProgress/DownloadProgress.cpp \
   /usr/include/stdc-predef.h \
   ../Utils/DowndloadProgress/DownloadProgress.h \
-  ../Utils/MetaDataFile/MetaDataFile.h \
+  /usr/include/c++/11/bitset \
   /usr/include/c++/11/string \
   /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -6086,6 +6089,7 @@ CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o: ../Utils
   /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
   /usr/include/c++/11/bits/charconv.h \
   /usr/include/c++/11/bits/basic_string.tcc \
+  ../Utils/MetaDataFile/MetaDataFile.h \
   /usr/include/c++/11/vector \
   /usr/include/c++/11/bits/stl_uninitialized.h \
   /usr/include/c++/11/bits/stl_vector.h \
@@ -8277,15 +8281,17 @@ CMakeFiles/PeerLion.dir/main.cpp.o: ../main.cpp \
   /usr/include/c++/11/bits/stl_numeric.h \
   /usr/include/c++/11/pstl/glue_numeric_defs.h \
   ../Utils/DowndloadProgress/DownloadProgress.h \
-  ../Torrent/PeerManager/PeerManager.h \
   /usr/include/c++/11/bitset \
+  ../Torrent/PeerManager/PeerManager.h \
   /usr/include/c++/11/list \
   /usr/include/c++/11/bits/stl_list.h \
   /usr/include/c++/11/bits/list.tcc \
   ../NetworkUnit/ServerComm/BitTorrentMessages.h \
   ../Torrent/PieceManagement/IPieceChooser.h \
   ../NetworkUnit/ServerComm/BitTorrentMessages.h \
-  ../Torrent/FileIO/FileIO.h
+  ../Torrent/FileIO/FileIO.h \
+  ../NetworkUnit/ServerComm/BitTorrentMessages.h \
+  /usr/include/c++/11/csignal
 
 
 ../main.cpp:
@@ -8799,6 +8805,8 @@ CMakeFiles/PeerLion.dir/main.cpp.o: ../main.cpp \
 /usr/include/c++/11/bits/basic_string.h:
 
 /usr/include/c++/11/bits/shared_ptr_base.h:
+
+/usr/include/c++/11/csignal:
 
 /usr/include/c++/11/bits/ranges_algo.h:
 

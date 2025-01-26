@@ -30,6 +30,7 @@ void PeerManager::updateConnectedPeers() {
 				_blackList.erase(peer);
 			}
 		}
+		// TODO for some reason after some point PeerLion args stop coming here
 		ThreadSafeCout::cout("\nPeerManager: Updating connected peers\n");
 		for (auto peers = requestForNewPeerList(); const auto peer: peers) {
 			if (_blackList.contains(peer)) continue;

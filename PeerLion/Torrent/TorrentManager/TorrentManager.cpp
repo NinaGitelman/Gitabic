@@ -10,6 +10,8 @@
 std::mutex TorrentManager::mutexInstance;
 std::unique_ptr<TorrentManager> TorrentManager::instance;
 
+
+
 TorrentManager &TorrentManager::getInstance(std::shared_ptr<TCPSocket> socket) {
     std::lock_guard<std::mutex> lock(mutexInstance);
 

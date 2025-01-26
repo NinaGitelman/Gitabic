@@ -2755,6 +2755,7 @@ CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o
  /usr/include/c++/11/bits/unordered_map.h
  /usr/include/c++/11/bits/erase_if.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.h
+ /usr/include/c++/11/bitset
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/ThreadSafeCout.h
 
 CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o
@@ -4113,8 +4114,8 @@ CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cp
  /usr/include/c++/11/bits/stl_numeric.h
  /usr/include/c++/11/pstl/glue_numeric_defs.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.h
- /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.h
  /usr/include/c++/11/bitset
+ /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.h
  /usr/include/c++/11/list
  /usr/include/c++/11/bits/stl_list.h
  /usr/include/c++/11/bits/list.tcc
@@ -4122,6 +4123,7 @@ CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cp
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/IPieceChooser.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/BitTorrentMessages.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileIO/FileIO.h
+ /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/BitTorrentMessages.h
 
 CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/RarityTrackerChooser.cpp
@@ -4889,6 +4891,7 @@ CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o
  /usr/include/c++/11/bits/unordered_map.h
  /usr/include/c++/11/bits/erase_if.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.h
+ /usr/include/c++/11/bitset
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeersConnectionManager/PeersConnectionManager.h
  /usr/include/c++/11/algorithm
  /usr/include/c++/11/bits/ranges_algo.h
@@ -5213,7 +5216,6 @@ CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o
  /usr/include/x86_64-linux-gnu/sys/un.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/TCPSocket/TCPSocket.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.h
- /usr/include/c++/11/bitset
  /usr/include/c++/11/list
  /usr/include/c++/11/bits/stl_list.h
  /usr/include/c++/11/bits/list.tcc
@@ -5602,6 +5604,7 @@ CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o
  /usr/include/c++/11/bits/unordered_map.h
  /usr/include/c++/11/bits/erase_if.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.h
+ /usr/include/c++/11/bitset
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeersConnectionManager/PeersConnectionManager.h
  /usr/include/c++/11/algorithm
  /usr/include/c++/11/bits/ranges_algo.h
@@ -5926,7 +5929,6 @@ CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o
  /usr/include/x86_64-linux-gnu/sys/un.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/TCPSocket/TCPSocket.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.h
- /usr/include/c++/11/bitset
  /usr/include/c++/11/list
  /usr/include/c++/11/bits/stl_list.h
  /usr/include/c++/11/bits/list.tcc
@@ -5934,12 +5936,13 @@ CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/IPieceChooser.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/BitTorrentMessages.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileIO/FileIO.h
+ /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/BitTorrentMessages.h
 
 CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.cpp
  /usr/include/stdc-predef.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.h
- /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/MetaDataFile/MetaDataFile.h
+ /usr/include/c++/11/bitset
  /usr/include/c++/11/string
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h
@@ -6101,6 +6104,7 @@ CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h
  /usr/include/c++/11/bits/charconv.h
  /usr/include/c++/11/bits/basic_string.tcc
+ /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/MetaDataFile/MetaDataFile.h
  /usr/include/c++/11/vector
  /usr/include/c++/11/bits/stl_uninitialized.h
  /usr/include/c++/11/bits/stl_vector.h
@@ -8298,8 +8302,8 @@ CMakeFiles/PeerLion.dir/main.cpp.o
  /usr/include/c++/11/bits/stl_numeric.h
  /usr/include/c++/11/pstl/glue_numeric_defs.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.h
- /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.h
  /usr/include/c++/11/bitset
+ /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.h
  /usr/include/c++/11/list
  /usr/include/c++/11/bits/stl_list.h
  /usr/include/c++/11/bits/list.tcc
@@ -8307,4 +8311,6 @@ CMakeFiles/PeerLion.dir/main.cpp.o
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/IPieceChooser.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/BitTorrentMessages.h
  /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileIO/FileIO.h
+ /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/ServerComm/BitTorrentMessages.h
+ /usr/include/c++/11/csignal
 

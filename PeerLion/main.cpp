@@ -17,9 +17,21 @@
 #include "Torrent/TorrentManager/TorrentManager.h"
 #include "Utils/MetaDataFile/MetaDataFile.h"
 #include "Utils/VectorUint8Utils.h"
+#include <csignal>
+#include <iostream>
+#include <csignal>
+#include <iostream>
 
 #define SERVER_ADDRESS "0.0.0.0"
 #define SERVER_PORT 4786
+
+// TODO - talk about - the singletons dont cleanup because the constructors are not called. check this
+// TODO - after a while it keeps connected - add smthing to torren tmanager so it ill check who hasnt talked to us in a while
+void signalHandler(int signal) {
+  std::cout << "Signal caught: " << signal << ". Cleaning up..." << std::endl;
+  // Perform cleanup here or ensure objects are destroyed properly
+  exit(signal);
+}
 
 /// @brief  Heper function to pritn the DATA
 void printDataAsASCII(vector<uint8_t> data) {
@@ -36,6 +48,9 @@ void printDataAsASCII(vector<uint8_t> data) {
 void main2();
 
 int main(const int argc, char **argv) {
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
+
   if (argc == 2) {
     main2();
     return 0;

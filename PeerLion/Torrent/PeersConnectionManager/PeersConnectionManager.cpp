@@ -37,6 +37,19 @@ PeersConnectionManager::~PeersConnectionManager() {
     if (_routePacketThread.joinable()) {
         _routePacketThread.join(); // Wait for thread to finish
     }
+    if (_shareIceDataThread.joinable())
+    {
+        _shareIceDataThread.join();
+    }
+
+    // not really necessary but just tp be safe///
+    std::lock_guard<std::mutex> lock(_mutexPeerConnections);
+
+    // disconnect every connection when closing
+    for (const auto& [peerID, connectionAndMutex] : _peerConnections) {
+            connectionAndMutex.connection->disconnect();
+
+    }
 }
 
 
@@ -54,6 +67,7 @@ static void printDataAsASCII(vector<uint8_t> data) {
 
 
 // TODO divide this into smaller functions maybe...
+// TODO - this gotta be a thread because it can block the whole program
 bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &peer) {
     bool addedFile = false;
     std::cout << "Debug Peers Connection Manager add peer" << std::endl;
@@ -70,7 +84,7 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
         // gets local ice data and sends to server on the request
         std::vector<uint8_t> myIceData = peerConnection->getLocalICEData();
         ClientRequestGetUserICEInfo requestIce = ClientRequestGetUserICEInfo(peer, myIceData); {
-            std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
+         //   std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
             _serverSocket->sendRequest(requestIce);
         }
         std::cout << "send request of get my ice data\n\n";
@@ -82,9 +96,9 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
         // send request to server to connect to the other peer and for its ice data
 
 
-        std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
+       // std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
         MessageBaseReceived response = _serverSocket->receive(isRelevant);
-        serverSocketLock.unlock();
+   //     serverSocketLock.unlock();
 
         if (response.code == ServerResponseCodes::ExistsOpositeRequest) {
             return false;
@@ -179,9 +193,22 @@ void PeersConnectionManager::sendMessage(const PeerID &peer, const std::shared_p
 
     auto itPeerConnection = _peerConnections.find(peer);
 
+    std::unique_lock<std::mutex> lock((itPeerConnection->second).mutex);
+
     if (itPeerConnection != _peerConnections.end()) // if finds the peer
     {
-        (itPeerConnection->second).connection->sendMessage(message);
+        if (itPeerConnection->second.connection->isConnected())
+        {
+            (itPeerConnection->second).connection->sendMessage(message);
+
+        }
+        else
+        {
+            _peerConnections.erase(itPeerConnection);
+            throw std::runtime_error("Peer disconnected");
+
+        }
+
     } else {
         throw std::runtime_error("Peer not found");
     }
@@ -233,31 +260,50 @@ void PeersConnectionManager::routePackets() {
         }
     }
 }
-
 void PeersConnectionManager::shareIceData() {
     while (_isRunning->load()) {
-        const auto req = _serverSocket->receive([](const uint8_t code) {
-            return code == ServerRequestCodes::AuthorizeICEConnection;
-        });
+        MessageBaseReceived req;
+
+        {
+            // Scoped lock for server socket receive
+          //  std::lock_guard<std::mutex> serverLock(_mutexServerSocket);
+            req = _serverSocket->receive([](const uint8_t code) {
+                return code == ServerRequestCodes::AuthorizeICEConnection;
+            });
+        }
+
+        // Use a single lock for checking and modifying peer connections
+        std::lock_guard<std::mutex> peersConnectionsLock(_mutexPeerConnections);
 
         const auto authIceReq = ServerRequestAuthorizeICEConnection(req);
+
         if (_peerConnections.contains(authIceReq.from)) {
+            // Scoped lock for sending response
+        //    std::lock_guard<std::mutex> serverLock(_mutexServerSocket);
             _serverSocket->sendRequest(ClientResponseAlreadyConnected(authIceReq.requestId));
             continue;
         }
+
         if (_peerConnections.size() > MAXIMUM_CONNECTED_USERS) {
+            // Scoped lock for sending response
+     //       std::lock_guard<std::mutex> serverLock(_mutexServerSocket);
             _serverSocket->sendRequest(ClientResponseFullCapacity(authIceReq.requestId));
             continue;
         }
+
         const auto peerConnection = std::make_shared<ICEConnection>(false);
         const auto response = ClientResponseAuthorizedICEConnection(peerConnection->getLocalICEData(),
                                                                     authIceReq.requestId);
-        _serverSocket->sendRequest(response);
+        {
+            // Scoped lock for sending response
+       //     std::lock_guard<std::mutex> serverLock(_mutexServerSocket);
+            _serverSocket->sendRequest(response);
+        }
 
         if (peerConnection->connectToPeer(authIceReq.iceCandidateInfo)) {
-            ThreadSafeCout::cout("SUCESSFULLY CONNECTED to peer in share ice data\n");
-            std::lock_guard guard(_mutexPeerConnections);
-            _peerConnections.emplace(authIceReq.from, PeerConnectionAndMutex(peerConnection));
+            ThreadSafeCout::cout("SUCCESSFULLY CONNECTED to peer in share ice data\n");
+            // Lock already held from earlier
+            _peerConnections[authIceReq.from] = PeerConnectionAndMutex(peerConnection);
         }
     }
 }
