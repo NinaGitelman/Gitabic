@@ -436,13 +436,32 @@ struct FileBitField : TorrentMessageBase {
   return baseSerialized;
  }
 
- uint deserialize(const vector<uint8_t> &data) override {
+ uint deserialize(const std::vector<uint8_t> &data) override {
+  // Validate that data is not empty
+  if (data.empty()) {
+   throw std::runtime_error("Input data is empty");
+  }
+
+  // Call base class deserialize and get the offset
   const auto offset = TorrentMessageBase::deserialize(data);
-  for (size_t i = offset; i < data.size(); ++i) {
+
+  // Validate that offset is within bounds
+  if (offset >= data.size()) {
+   throw std::runtime_error("Invalid offset returned by TorrentMessageBase::deserialize");
+  }
+
+  // Resize field to accommodate data
+  field.resize(data.size() - offset);
+
+  // Safely populate field
+  for (size_t i = 0; i < field.size(); ++i) {
+   if (offset + i >= data.size()) {
+    throw std::runtime_error("Index out of bounds while deserializing");
+   }
    field[i] = std::bitset<8>(data[offset + i]);
   }
 
-  return offset + field.size();
+  return offset;
  }
 };
 
