@@ -61,9 +61,17 @@ int main(const int argc, char **argv) {
   MetaDataFile mdFile1 = MetaDataFile::createMetaData(
     filePath, "1234", b, "nina");
 
+
   auto fileHash = mdFile1.getFileHash();
   auto hashString = SHA256::hashToString(fileHash);
   auto fileIO = FileIO(hashString);
+
+  // int half = fileIO.getDownloadProgress().getAmmountOfPieces() / 2;
+  // for (int i = 0; i < half; ++i) {
+  //   fileIO.getDownloadProgress().updatePieceStatus(i, DownloadStatus::Verified);
+  // }
+  // fileIO.saveProgressToFile();
+  // return 0;
 
   auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
   auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });

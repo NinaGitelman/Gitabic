@@ -137,6 +137,13 @@ vector<uint8_t> FileIO::loadBlock(const uint32_t pieceIndex, const uint32_t bloc
                                            Utils::FileSplitter::BLOCK_SIZE);
 }
 
+void FileIO::saveProgressToFile() {
+    FileUtils::writeVectorToFile(downloadProgress.serialize(),
+                                 getCurrentDirPath().append(
+                                     ("." + downloadProgress.getFileName() +
+                                      ".gitabic")));
+}
+
 vector<FileIO> FileIO::getAllFileIO() {
     vector<FileIO> handlers;
     for (const auto &dir: FileUtils::listDirectories(dirPath)) {

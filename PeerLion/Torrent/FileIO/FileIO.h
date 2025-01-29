@@ -77,6 +77,8 @@ public:
 	 */
 	[[nodiscard]] vector<uint8_t> loadBlock(uint32_t pieceIndex, uint32_t blockIndex) const;
 
+	void saveProgressToFile();
+
 	/**
 	 * initiates all files io
 	 * @return
