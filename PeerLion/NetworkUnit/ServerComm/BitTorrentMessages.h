@@ -461,7 +461,7 @@ struct FileBitField : TorrentMessageBase {
    field[i] = std::bitset<8>(data[offset + i]);
   }
 
-  return offset;
+  return offset + field.size();
  }
 };
 

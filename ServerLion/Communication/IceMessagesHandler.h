@@ -8,6 +8,7 @@
 #include "../NetworkUnit/ServerCom/Messages.h"
 #include <unordered_map>
 
+//TODO remove old unanswered requests
 class IceMessagesHandler
 {
 public:
@@ -28,6 +29,7 @@ private:
     IceMessagesHandler() : waitIds(0) {}
 
     std::unordered_map<uint16_t, std::pair<ID, ID>> waitsForResponse;
+    std::unordered_map<uint16_t, std::chrono::system_clock::time_point> requestsTime;
     uint16_t waitIds;
     // Static instance
     static std::unique_ptr<IceMessagesHandler> instance;

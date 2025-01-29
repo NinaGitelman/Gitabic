@@ -169,11 +169,11 @@ void TorrentFileHandler::handleRequests() {
 			guard.lock();
 			ThreadSafeCout::cout(
 				"Handled " + std::to_string(request.code) + " response From " + SHA256::hashToString(request.from));
-		}
-		for (const auto &msg: resultMessages.messages) {
-			std::lock_guard guard1(_mutexMessagesToSend);
-			_messagesToSend.push_back(msg);
-			_cvMessagesToSend.notify_one();
+			for (const auto &msg: resultMessages.messages) {
+				std::lock_guard guard1(_mutexMessagesToSend);
+				_messagesToSend.push_back(msg);
+				_cvMessagesToSend.notify_one();
+			}
 		}
 	}
 }
@@ -316,18 +316,14 @@ void TorrentFileHandler::sendMessages() {
 			auto &torrentMsg = *reinterpret_cast<TorrentMessageBase *>(&*message);
 
 
-			try
-			{
+			try {
 				_peersConnectionManager.sendMessage(torrentMsg.other, message);
 				guard.lock(); // Re-lock for the next iteration
 				ThreadSafeCout::cout(
 					"Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.other));
+			} catch (std::exception &e) {
+				std::cout << "Exception sending message to peer: " << e.what() << std::endl;
 			}
-			catch (std::exception &e)
-			{
-				std::cout << "Exception sending message to peer: "<< e.what() << std::endl;
-			}
-
 		}
 	}
 }
