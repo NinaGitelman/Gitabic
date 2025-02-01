@@ -192,6 +192,7 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 						PieceProgress::getBlockIndex(block.offset),
 						1
 					);
+					request->other = peer;
 					piece.updateBlockStatus(PieceProgress::getBlockIndex(block.offset), DownloadStatus::Downloading);
 					_downloadProgress.updateBlockStatus(_downloadProgress.getPieceIndex(piece.offset),
 														PieceProgress::getBlockIndex(block.offset),
@@ -225,6 +226,8 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 					PieceProgress::getBlockIndex(block.offset),
 					1
 				);
+				request->other = peer;
+
 
 				res.messages.push_back(request);
 				activeRequests[peer].push_back({
@@ -250,6 +253,7 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 		});
 
 		vector<std::shared_ptr<TorrentMessageBase> > newMessages;
+
 		for (auto it = messages.begin(); it != messages.end();) {
 			auto &req = *reinterpret_cast<DataRequest *>(&**it);
 			auto nextIt = it + 1;
@@ -262,6 +266,7 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 					break;
 				}
 			}
+			(*it)->other = req.other;
 			newMessages.push_back(*it);
 			it = nextIt;
 		}
