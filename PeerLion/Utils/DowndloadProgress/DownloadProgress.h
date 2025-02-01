@@ -69,7 +69,7 @@ struct PieceProgress {
 
     [[nodiscard]] BlockInfo getBlockInfo(uint16_t block) const;
 
-    [[nodiscard]] PieceProgress getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
+    [[nodiscard]] vector<BlockInfo> getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
 
     static uint16_t getBlockIndex(uint64_t offset);
 
@@ -181,8 +181,6 @@ public:
     void updateBlockStatus(uint32_t piece, uint16_t block, DownloadStatus status);
 
     vector<PieceProgress> getPiecesStatused(DownloadStatus status = DownloadStatus::Empty);
-
-    [[nodiscard]] vector<PieceProgress> getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
 
     [[nodiscard]] PieceProgress getPiece(uint32_t index) const;
 

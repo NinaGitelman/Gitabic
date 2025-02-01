@@ -46,7 +46,7 @@ private:
 
 	condition_variable _cvMessagesToSend;
 
-	ResultMessages handle(const DataRequest &request);
+	ResultMessages handle(const DataRequest &request) const;
 
 	ResultMessages handle(const CancelDataRequest &request);
 

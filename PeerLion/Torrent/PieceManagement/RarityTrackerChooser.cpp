@@ -136,7 +136,7 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 				now - it->requestTime).count();
 			if (elapsed > REQUEST_TIMEOUT_MS) {
 				_downloadProgress.updateBlockStatus(it->pieceIndex, it->blockIndex, DownloadStatus::Empty);
-				it = requests.erase(it);
+				it = requests.erase(it); // TODO return after debug
 			} else {
 				++it;
 			}
@@ -180,7 +180,7 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 
 			if (!hasPiece(peer, _downloadProgress.getPieceIndex(piece.offset))) continue;
 
-			for (auto missingBlocks = piece.getBlocksStatused(DownloadStatus::Empty).blocks;
+			for (auto missingBlocks = piece.getBlocksStatused(DownloadStatus::Empty);
 				const auto &block: missingBlocks) {
 				if (availableSlots == 0) break;
 
@@ -215,7 +215,7 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 
 			if (!hasPiece(peer, _downloadProgress.getPieceIndex(piece.offset))) continue;
 
-			for (auto emptyBlocks = piece.getBlocksStatused(DownloadStatus::Empty).blocks;
+			for (auto emptyBlocks = piece.getBlocksStatused(DownloadStatus::Empty);
 				const auto &block: emptyBlocks) {
 				if (availableSlots == 0) break;
 
@@ -236,6 +236,9 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 					PieceProgress::getBlockIndex(block.offset)
 				});
 				availableSlots--;
+				_downloadProgress.updateBlockStatus(_downloadProgress.getPieceIndex(piece.offset),
+													PieceProgress::getBlockIndex(block.offset),
+													DownloadStatus::Downloading);
 			}
 		}
 

@@ -41,7 +41,7 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 }
 
 
-ResultMessages TorrentFileHandler::handle(const DataRequest &request) {
+ResultMessages TorrentFileHandler::handle(const DataRequest &request) const {
 	ResultMessages res{};
 	res.to = request.other;
 	for (auto i = request.blockIndex; i < request.blockIndex + request.blocksCount; i++) {
@@ -49,6 +49,7 @@ ResultMessages TorrentFileHandler::handle(const DataRequest &request) {
 		const auto block = _fileIO.loadBlock(request.pieceIndex, i);
 		res.messages.push_back(
 			std::make_shared<BlockResponse>(request.fileId, AESKey{}, request.pieceIndex, i, block));
+		res.messages.back()->other = request.other;
 	}
 	return res;
 }
@@ -239,14 +240,15 @@ void TorrentFileHandler::handleResponses() {
 }
 
 void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
-	bool pieceFinished = false;
-	std::unique_lock guard(_mutexFileIO); {
+	bool pieceFinished = false; {
 		std::unique_lock fileIOLock(_mutexFileIO);
 		pieceFinished = _fileIO.saveBlock(blockResponse.pieceIndex, blockResponse.blockIndex, blockResponse.block);
 	} {
 		std::unique_lock pieceChooserLock(_mutexPieceChooser);
 		_pieceChooser->updateBlockReceived(blockResponse.other, blockResponse.pieceIndex, blockResponse.blockIndex);
 	}
+	ThreadSafeCout::cout("Saved block " + std::to_string(blockResponse.blockIndex) + " of piece " +
+						std::to_string(blockResponse.pieceIndex));
 
 	// update all interested peers that i got this pice
 	if (pieceFinished) {
@@ -324,7 +326,8 @@ void TorrentFileHandler::sendMessages() {
 				_peersConnectionManager.sendMessage(torrentMsg.other, message);
 				guard.lock(); // Re-lock for the next iteration
 				ThreadSafeCout::cout(
-					"Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.other));
+					"Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.other) +
+					"\n");
 			} catch (std::exception &e) {
 				std::cout << "Exception sending message to peer: " << e.what() << std::endl;
 			}

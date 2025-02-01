@@ -135,7 +135,7 @@ void FileIO::savePiece(const uint32_t pieceIndex, const vector<uint8_t> &pieceDa
 
 bool FileIO::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex, const vector<uint8_t> &data) {
     std::lock_guard<std::mutex> lock(mutex_);
-    Utils::FileUtils::writeChunkToFile(data, fileName, getOffset(pieceIndex, blockIndex));
+    Utils::FileUtils::writeChunkToFile(data, getCurrentDirPath() + fileName, getOffset(pieceIndex, blockIndex));
     if (downloadProgress.downloadedBlock(pieceIndex, blockIndex)) {
         const bool isGood = Utils::FileUtils::verifyPiece(getCurrentDirPath() + fileName, getOffset(pieceIndex),
                                                           pieceSize,

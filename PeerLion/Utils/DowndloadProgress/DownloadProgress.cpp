@@ -184,21 +184,14 @@ vector<PieceProgress> DownloadProgress::getPiecesStatused(const DownloadStatus s
     vector<PieceProgress> pieces;
 
     for (const auto &piece: this->pieces) {
-        if (piece.status == status) { pieces.push_back(piece); }
+        if (piece.status == status) {
+            pieces.push_back(piece);
+        }
     }
 
     return pieces;
 }
 
-vector<PieceProgress> DownloadProgress::getBlocksStatused(DownloadStatus status) const {
-    std::lock_guard<std::mutex> guard(mut);
-    vector<PieceProgress> res;
-    res.reserve(this->pieces.size());
-    for (const auto &piece: this->pieces) {
-        res.push_back(piece.getBlocksStatused());
-    }
-    return res;
-}
 
 PieceProgress DownloadProgress::getPiece(const uint32_t index) const {
     std::lock_guard<mutex> guard(mut);
@@ -237,21 +230,19 @@ void DownloadProgress::init(const MetaDataFile &metaData) {
 PieceProgress::PieceProgress(const uint64_t offset, const uint32_t size, const HashResult &hash) : offset(offset),
                                                                                                    size(size),
                                                                                                    hash(hash) {
-    {
-        this->bytesDownloaded = 0;
-        lastAccess = time(nullptr);
-        status = DownloadStatus::Empty;
-        blocks = vector<BlockInfo>();
-        auto temp = size;
-        this->hash = hash;
-        while (temp > 0) {
-            BlockInfo block{};
-            block.offset = size - temp;
-            block.size = Utils::FileSplitter::BLOCK_SIZE < temp ? Utils::FileSplitter::BLOCK_SIZE : temp;
-            temp -= block.size;
-            block.isLastBlock = temp == 0;
-            blocks.push_back(block);
-        }
+    this->bytesDownloaded = 0;
+    lastAccess = time(nullptr);
+    status = DownloadStatus::Empty;
+    blocks = vector<BlockInfo>();
+    auto temp = size;
+    this->hash = hash;
+    while (temp > 0) {
+        BlockInfo block{};
+        block.offset = size - temp;
+        block.size = Utils::FileSplitter::BLOCK_SIZE < temp ? Utils::FileSplitter::BLOCK_SIZE : temp;
+        temp -= block.size;
+        block.isLastBlock = temp == 0;
+        blocks.push_back(block);
     }
 }
 
@@ -340,6 +331,9 @@ void PieceProgress::updateBlockStatus(const uint16_t block, const DownloadStatus
     if (status == DownloadStatus::Downloaded && allBlocksDownloaded()) {
         this->status = DownloadStatus::Downloaded;
     }
+    if (status == DownloadStatus::Downloading) {
+        this->status = DownloadStatus::Downloading;
+    }
 }
 
 BlockInfo PieceProgress::getBlockInfo(const uint16_t block) const {
@@ -348,15 +342,14 @@ BlockInfo PieceProgress::getBlockInfo(const uint16_t block) const {
     return blocks[block];
 }
 
-PieceProgress PieceProgress::getBlocksStatused(const DownloadStatus status) const {
-    PieceProgress piece_progress(offset, size, hash);
-    piece_progress.status = status;
+vector<BlockInfo> PieceProgress::getBlocksStatused(const DownloadStatus status) const {
+    vector<BlockInfo> relevantBlcoks;
     for (auto &&i: blocks) {
         if (i.status == status) {
-            piece_progress.blocks.push_back(i);
+            relevantBlcoks.push_back(i);
         }
     }
-    return piece_progress;
+    return relevantBlcoks;
 }
 
 uint16_t PieceProgress::getBlockIndex(const uint64_t offset) {

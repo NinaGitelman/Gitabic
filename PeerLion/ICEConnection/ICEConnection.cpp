@@ -521,7 +521,7 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent *_agent, guint strea
 }
 
 void ICEConnection::sendMessage(const std::shared_ptr<MessageBaseToSend> &message) {
-    std::cout << "ICEConnection sending message" << std::endl; {
+    {
         std::lock_guard<std::mutex> lock(_mutexMessagesToSend);
         _messagesToSend.push(message);
     }
