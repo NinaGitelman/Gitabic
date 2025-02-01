@@ -165,7 +165,7 @@ void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadSta
     // Update last access time
     lastTime = time(nullptr);
 
-    totalDownloadBytes -= pieces[piece].setStatus(status);
+    totalDownloadBytes += pieces[piece].setStatus(status);
 }
 
 void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t block, const DownloadStatus status) {
@@ -306,22 +306,27 @@ bool PieceProgress::allBlocksDownloaded() const {
     return true;
 }
 
-uint32_t PieceProgress::setStatus(const DownloadStatus status) {
-    uint32_t sizeRemoved = 0;
+int32_t PieceProgress::setStatus(const DownloadStatus status) {
+    int32_t sizeChanged = 0;
     const bool toRemove = status == DownloadStatus::Empty && this->status != DownloadStatus::Empty;
+    const bool toAdd = (status == DownloadStatus::Verified || status == DownloadStatus::Downloaded) && (
+                           this->status == DownloadStatus::Empty || this->status == DownloadStatus::Downloading);
     // Update last access time
     lastAccess = time(nullptr);
 
     this->status = status;
     if (status != DownloadStatus::Downloading) {
         for (auto &&i: blocks) {
-            if (toRemove && i.status == DownloadStatus::Downloaded) {
-                sizeRemoved += i.size;
+            if (toRemove && (i.status == DownloadStatus::Downloaded || i.status == DownloadStatus::Verified)) {
+                sizeChanged -= i.size;
+            }
+            if (toAdd && (i.status == DownloadStatus::Empty || i.status == DownloadStatus::Downloading)) {
+                sizeChanged += i.size;
             }
             i.status = status;
         }
     }
-    return sizeRemoved;
+    return sizeChanged;
 }
 
 void PieceProgress::updateBlockStatus(const uint16_t block, const DownloadStatus status) {

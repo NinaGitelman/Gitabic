@@ -120,8 +120,10 @@ std::string FileUtils::getExpandedPath(const std::string &path) {
     return path; // Return unchanged if no '~' at the beginning
 }
 
-std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName) {
-    const std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;
+std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName,
+                                                      const uint8_t n) {
+    std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;
+    if (n) hashFolder = "~/Gitabic" + std::to_string(n) + "/.filesFolders/" + fileHash;
 
     std::filesystem::path expandedHashFolder = std::filesystem::absolute(
         getExpandedPath(hashFolder.string()));
@@ -134,7 +136,7 @@ std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHas
     }
 
     // Create a symbolic link with the friendly name
-    const std::filesystem::path symlink = "~/Gitabic/" + friendlyName;
+    const std::filesystem::path symlink = "~/Gitabic" + (n ? std::to_string(n) : "") + "/" + friendlyName;
     std::filesystem::path expandedSymlink = std::filesystem::absolute(getExpandedPath(symlink.string()));
 
     // Remove existing symlink if it exists

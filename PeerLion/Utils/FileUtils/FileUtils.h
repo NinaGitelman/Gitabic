@@ -62,7 +62,8 @@ namespace Utils {
 
         static bool dirExists(const std::string &filePath);
 
-        static std::filesystem::path createDownloadFolder(const std::string &fileHash, const std::string &friendlyName);
+        static std::filesystem::path createDownloadFolder(const std::string &fileHash, const std::string &friendlyName,
+                                                          uint8_t n = 0);
 
         static vector<std::string> listDirectories(const std::string &path);
 

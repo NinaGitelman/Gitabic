@@ -13,6 +13,7 @@ class FileIO {
 	DownloadProgress downloadProgress;
 	size_t pieceSize;
 	mutable mutex mutex_;
+	uint8_t _n;
 
 	[[nodiscard]] size_t getOffset(uint32_t pieceIndex, uint16_t blockIndex = 0) const;
 
@@ -22,6 +23,7 @@ public:
 	// Rule of five
 	FileIO(const FileIO &other); // Copy constructor
 	FileIO(FileIO &&other) noexcept; // Move constructor
+
 	FileIO &operator=(FileIO other); // Unified assignment operator
 	~FileIO() = default; // Destructor
 	// Swap function
@@ -47,7 +49,9 @@ public:
 
 	explicit FileIO(const string &hash);
 
-	explicit FileIO(const MetaDataFile &metaData);
+	FileIO(const string &hash, uint8_t n);
+
+	explicit FileIO(const MetaDataFile &metaData, uint8_t n = 0);
 
 	/**
 	 *
