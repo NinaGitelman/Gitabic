@@ -57,6 +57,7 @@ void RarityTrackerChooser::updatePeerBitfield(const PeerID &peer, const vector<s
 		removePeerRarity(peerBitfield);
 	}
 	_peersBitfields[peer] = peerBitfield;
+	addPeerRarity(peerBitfield);
 }
 
 void RarityTrackerChooser::removePeer(const PeerID &peer) {

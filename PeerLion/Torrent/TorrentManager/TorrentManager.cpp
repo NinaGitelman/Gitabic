@@ -11,7 +11,6 @@ std::mutex TorrentManager::mutexInstance;
 std::unique_ptr<TorrentManager> TorrentManager::instance;
 
 
-
 TorrentManager &TorrentManager::getInstance(std::shared_ptr<TCPSocket> socket) {
     std::lock_guard<std::mutex> lock(mutexInstance);
 
@@ -67,7 +66,8 @@ void TorrentManager::handleMessage(MessageBaseReceived &message) {
     std::unique_lock<std::mutex> lockFileHandlers(_mutexFileHandlers);
     auto fileHandlerIt = fileHandlers.find(torrentMessage.fileId);
     if (fileHandlerIt != fileHandlers.end()) {
-        fileHandlerIt->second->mutex.lock();
+        lockFileHandlers.unlock();
+        std::lock_guard guard(fileHandlerIt->second->mutex);
         /// TODO - this isnt the smartest thing as we already make it a TorrentMessgeBase but it made a mess to do differently...
         fileHandlerIt->second->fileHandler->addMessage(message);
     } else {

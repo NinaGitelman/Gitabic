@@ -101,6 +101,10 @@ ResultMessages TorrentFileHandler::handle(const TorrentMessageBase &request) {
 		case BitTorrentRequestCodes::fileInterested: {
 			std::unique_lock peerManagerLock(_mutexPeerManager);
 			if (!_peerManager->getPeerState(request.other).amInterested && _isSeed.load()) {
+				res.messages.push_back(
+					std::make_shared<TorrentMessageBase>(_fileID, _aesHandler.getKey(),
+														BitTorrentRequestCodes::fileInterested));
+				res.messages[0]->other = request.other;
 				_peerManager->addConnectedPeer(request.other);
 			}
 			_peerManager->getPeerState(request.other).peerInterested = true;
@@ -168,7 +172,7 @@ void TorrentFileHandler::handleRequests() {
 			}
 			guard.lock();
 			ThreadSafeCout::cout(
-				"Handled " + std::to_string(request.code) + " response From " + SHA256::hashToString(request.from));
+				"Handled " + std::to_string(request.code) + " request From " + SHA256::hashToString(request.from));
 			for (const auto &msg: resultMessages.messages) {
 				std::lock_guard guard1(_mutexMessagesToSend);
 				_messagesToSend.push_back(msg);
@@ -299,9 +303,9 @@ void TorrentFileHandler::downloadFile() {
 
 void TorrentFileHandler::sendMessages() {
 	while (_running) {
+		// Wait for messages to be available
 		std::unique_lock guard(_mutexMessagesToSend);
 
-		// Wait for messages to be available
 		_cvMessagesToSend.wait(guard, [this]() {
 			return !_messagesToSend.empty() || !_running; // Stop waiting if _running is false
 		});
