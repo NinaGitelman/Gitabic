@@ -45,15 +45,23 @@ void printDataAsASCII(vector<uint8_t> data) {
   std::cout << std::endl;
 }
 
-void main2();
+void fakeProgress(const double percentage, FileIO &file_io) {
+  for (uint i = 0; i < file_io.getDownloadProgress().getAmmountOfPieces() * percentage; i++) {
+    file_io.getDownloadProgress().updatePieceStatus(i, DownloadStatus::Verified);
+  }
+  file_io.saveProgressToFile();
+}
+
+void main2(uint8_t n);
 
 
 int main(const int argc, char **argv) {
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
 
+
   if (argc == 2) {
-    main2();
+    main2(atoi(argv[1]));
     return 0;
   }
   string filePath = getenv("HOME");
@@ -76,7 +84,7 @@ int main(const int argc, char **argv) {
   }
 }
 
-void main2() {
+void main2(uint8_t n) {
   string filePath = getenv("HOME");
   filePath += "/Gitabic/a.txt.gitabic";
   MetaDataFile mdFile1(filePath);
@@ -89,7 +97,7 @@ void main2() {
   TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);
 
   std::cout << "in main" << std::endl;
-  auto fileIO = FileIO(mdFile1, 1);
+  auto fileIO = FileIO(mdFile1, n);
   instanceTorrentManager.addNewFileHandler(fileIO);
 
   while (true) {

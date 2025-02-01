@@ -11,9 +11,9 @@ void RarityTrackerChooser::addPeerRarity(const vector<std::bitset<8> > &vec) {
 	}
 }
 
-void RarityTrackerChooser::removePeerRarity(const vector<std::bitset<8> > &vec) {
+void RarityTrackerChooser::removePeerRarity(const PeerID &peer) {
 	for (int i = 0; i < _pieceCount; ++i) {
-		_rarity[i] -= vec[i / 8].test(i % 8) ? 1 : 0;
+		_rarity[i] -= _peersBitfields[peer][i / 8].test(i % 8) ? 1 : 0;
 	}
 }
 
@@ -54,7 +54,7 @@ RarityTrackerChooser::RarityTrackerChooser(const uint pieceCount,
 
 void RarityTrackerChooser::updatePeerBitfield(const PeerID &peer, const vector<std::bitset<8> > &peerBitfield) {
 	if (_peersBitfields.contains(peer)) {
-		removePeerRarity(peerBitfield);
+		removePeerRarity(peer);
 	}
 	_peersBitfields[peer] = peerBitfield;
 	addPeerRarity(peerBitfield);
@@ -62,7 +62,7 @@ void RarityTrackerChooser::updatePeerBitfield(const PeerID &peer, const vector<s
 
 void RarityTrackerChooser::removePeer(const PeerID &peer) {
 	if (_peersBitfields.contains(peer)) {
-		removePeerRarity(_peersBitfields[peer]);
+		removePeerRarity(peer);
 		_peersBitfields.erase(peer);
 	}
 	activeRequests.erase(peer);
@@ -255,7 +255,7 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 			auto nextIt = it + 1;
 			while (nextIt != messages.end()) {
 				if (const auto &nextReq = *reinterpret_cast<DataRequest *>(&**nextIt);
-					req.pieceIndex == nextReq.pieceIndex && req.blockIndex + 1 == nextReq.blockIndex) {
+					req.pieceIndex == nextReq.pieceIndex && req.blockIndex + req.blocksCount == nextReq.blockIndex) {
 					req.blocksCount++;
 					++nextIt;
 				} else {

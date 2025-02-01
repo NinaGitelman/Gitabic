@@ -21,6 +21,7 @@ void swap(FileIO &first, FileIO &second) noexcept {
     swap(first.mode, second.mode);
     swap(first.downloadProgress, second.downloadProgress);
     swap(first.pieceSize, second.pieceSize);
+    swap(first._n, second._n);
     // `std::mutex` is not swappable, so it remains as is for both objects
 }
 
@@ -29,7 +30,7 @@ FileIO::FileIO(const FileIO &other)
     : fileName(other.fileName),
       mode(other.mode),
       downloadProgress(other.downloadProgress),
-      pieceSize(other.pieceSize) {
+      pieceSize(other.pieceSize), _n(other._n) {
     // Note: `std::mutex` is not copied
 }
 
@@ -38,7 +39,7 @@ FileIO::FileIO(FileIO &&other) noexcept
     : fileName(std::move(other.fileName)),
       mode(other.mode),
       downloadProgress(other.downloadProgress),
-      pieceSize(other.pieceSize) {
+      pieceSize(other.pieceSize), _n(other._n) {
     // `std::mutex` remains default-initialized in the moved-from object
 }
 

@@ -55,9 +55,9 @@ class RarityTrackerChooser : public IPieceChooser {
 
     /**
      * @brief Removes peer rarity information.
-     * @param vec Vector of bitsets representing the pieces a peer has.
+     * @param peer the peer to remove
      */
-    void removePeerRarity(const vector<std::bitset<8> > &vec);
+    void removePeerRarity(const PeerID &peer);
 
     /**
      * @brief Recalculates the rarity of pieces.
