@@ -84,20 +84,17 @@ int main(const int argc, char **argv) {
   }
 }
 
-void main2(uint8_t n) {
-  string filePath = getenv("HOME");
-  filePath += "/Gitabic/a.txt.gitabic";
-  MetaDataFile mdFile1(filePath);
+void main2(const uint8_t n) {
+  auto fileIO = FileIO("9e3d83b20958de1c578693a2df03f13869f7e4027a6d3bb166ba3e51a1b671f7", n);
 
-  auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
-  auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
+  const auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
+  const auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
   auto &dataRepublish = DataRepublish::getInstance(serverSocket);
-  dataRepublish.saveData(mdFile1.getFileHash(), ServerResponseNewId(res).id);
+  dataRepublish.saveData(fileIO.getDownloadProgress().getFileHash(), ServerResponseNewId(res).id);
 
   TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);
 
   std::cout << "in main" << std::endl;
-  auto fileIO = FileIO(mdFile1, n);
   instanceTorrentManager.addNewFileHandler(fileIO);
 
   while (true) {

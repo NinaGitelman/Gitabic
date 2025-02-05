@@ -102,7 +102,7 @@ FileIO::FileIO(const string &hash)
 FileIO::FileIO(const string &hash, uint8_t n) : mode(FileMode::Default),
                                                 pieceSize(FileSplitter::pieceSize(downloadProgress.getFileSize())),
                                                 _n(n) {
-    string dir = dirPath + hash + '/';
+    string dir = FileUtils::getExpandedPath("~/Gitabic" + std::to_string(n) + "/.filesFolders/") + hash + '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
         string name = entry.path().filename().string();
         if (name.find(".gitabic") == string::npos) {
@@ -112,7 +112,9 @@ FileIO::FileIO(const string &hash, uint8_t n) : mode(FileMode::Default),
     }
     auto path = dirPath + hash + "/" + fileName;
     downloadProgress =
-            DownloadProgress(FileUtils::readFileToVector(dirPath + hash + "/." + fileName + ".gitabic"));
+            DownloadProgress(FileUtils::readFileToVector(
+                FileUtils::getExpandedPath("~/Gitabic" + std::to_string(n) + "/.filesFolders/") + hash + "/." + fileName
+                + ".gitabic"));
 }
 
 FileIO::FileIO(const MetaDataFile &metaData, const uint8_t n) : _n(n) {
