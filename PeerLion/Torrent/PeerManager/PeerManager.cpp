@@ -21,8 +21,7 @@ PeerManager::PeerManager(const ID &fileId, const std::shared_ptr<TCPSocket> &ser
 }
 
 void PeerManager::updateConnectedPeers() {
-	while (true) {
-
+	while (!_isSeed) {
 		for (auto &[peer, at]: _blackList) {
 			if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - at) >
 				std::chrono::seconds(60)
@@ -57,7 +56,7 @@ void PeerManager::updateConnectedPeers() {
 			}
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(5));
-		}
+	}
 	std::cout << "thread ending";
 }
 
@@ -108,18 +107,12 @@ void PeerManager::addPeer(const PeerID &peer) {
 	std::lock_guard guard(_mutexPeerStates);
 	if (_peerStates.size() >= MAX_PEERS) {
 		_backUpPeers.insert(peer);
-	}
-	else if (!_peerStates.contains(peer))
-	{
-		bool addFileForPeer =false;
-		try
-		{
-			addFileForPeer= _peersConnectionManager.addFileForPeer(_fileId, peer);
-
-		}
-		catch (const std::exception &e)
-		{
-			std::cout << "add peer:"<< e.what() << std::endl;
+	} else if (!_peerStates.contains(peer)) {
+		bool addFileForPeer = false;
+		try {
+			addFileForPeer = _peersConnectionManager.addFileForPeer(_fileId, peer);
+		} catch (const std::exception &e) {
+			std::cout << "add peer:" << e.what() << std::endl;
 		}
 
 		if (addFileForPeer) {
@@ -128,12 +121,9 @@ void PeerManager::addPeer(const PeerID &peer) {
 			if (!_isSeed) {
 				_newPeerList.push_back(peer);
 			}
-
 		} else {
 			_blackList[peer] = std::chrono::system_clock::now();
 		}
-
-
 	}
 }
 
@@ -201,5 +191,10 @@ PeerState &PeerManager::getPeerState(const PeerID &peer) {
 		_peerStates[peer] = PeerState();
 	}
 	return _peerStates[peer];
+}
+
+void PeerManager::finishedFile() {
+	_isSeed = true;
+	ThreadSafeCout::cout("Stopped asking for users\n");
 }
 

@@ -77,6 +77,8 @@ public:
 	void updatePeerState(const PeerID &peer, const PeerState &state);
 
 	PeerState &getPeerState(const PeerID &peer);
+
+	void finishedFile();
 };
 
 

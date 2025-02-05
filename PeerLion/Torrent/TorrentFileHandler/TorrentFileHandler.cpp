@@ -23,7 +23,7 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 																								serverSocket,
 																								fileIo.getMode() ==
 																								FileMode::Seed)),
-																_aesHandler(aesKey), _isSeed(true) {
+																_isSeed(true), _aesHandler(aesKey) {
 	_running = true;
 
 	_pieceChooser = std::make_unique<RarityTrackerChooser>(
@@ -39,7 +39,6 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 	_downloadFileThread.detach();
 	_sendMessagesThread.detach();
 }
-
 
 ResultMessages TorrentFileHandler::handle(const DataRequest &request) const {
 	ResultMessages res{};
@@ -172,8 +171,8 @@ void TorrentFileHandler::handleRequests() {
 					throw std::runtime_error("Unknown message code");
 			}
 			guard.lock();
-			ThreadSafeCout::cout(
-				"Handled " + std::to_string(request.code) + " request From " + SHA256::hashToString(request.from));
+			// ThreadSafeCout::cout(
+			// 	"Handled " + std::to_string(request.code) + " request From " + SHA256::hashToString(request.from));
 			for (const auto &msg: resultMessages.messages) {
 				std::lock_guard guard1(_mutexMessagesToSend);
 				_messagesToSend.push_back(msg);
@@ -233,8 +232,8 @@ void TorrentFileHandler::handleResponses() {
 			}
 
 			guard.lock();
-			ThreadSafeCout::cout(
-				"Handled " + std::to_string(response.code) + " response From " + SHA256::hashToString(response.from));
+			// ThreadSafeCout::cout(
+			// 	"Handled " + std::to_string(response.code) + " response From " + SHA256::hashToString(response.from));
 		}
 	}
 }
@@ -247,8 +246,8 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 		std::unique_lock pieceChooserLock(_mutexPieceChooser);
 		_pieceChooser->updateBlockReceived(blockResponse.other, blockResponse.pieceIndex, blockResponse.blockIndex);
 	}
-	ThreadSafeCout::cout("Saved block " + std::to_string(blockResponse.blockIndex) + " of piece " +
-						std::to_string(blockResponse.pieceIndex));
+	// ThreadSafeCout::cout("Saved block " + std::to_string(blockResponse.blockIndex) + " of piece " +
+	// 					std::to_string(blockResponse.pieceIndex));
 
 	// update all interested peers that i got this pice
 	if (pieceFinished) {
@@ -258,6 +257,7 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 		PieceOwnershipUpdate hasPieceUpdate(_fileID, _aesHandler.getKey(), blockResponse.pieceIndex);
 
 		_peersConnectionManager.sendMessage(interestedPeers, std::make_shared<PieceOwnershipUpdate>(hasPieceUpdate));
+		ThreadSafeCout::cout("Verified piece #" + std::to_string(blockResponse.pieceIndex) + "/n");
 	}
 }
 
@@ -301,6 +301,7 @@ void TorrentFileHandler::downloadFile() {
 	//Test file
 	_isSeed = false;
 	ThreadSafeCout::cout("Finished downloading file!!!");
+	_peerManager->finishedFile();
 }
 
 void TorrentFileHandler::sendMessages() {
@@ -325,9 +326,9 @@ void TorrentFileHandler::sendMessages() {
 			try {
 				_peersConnectionManager.sendMessage(torrentMsg.other, message);
 				guard.lock(); // Re-lock for the next iteration
-				ThreadSafeCout::cout(
-					"Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.other) +
-					"\n");
+				// ThreadSafeCout::cout(
+				// "Sends " + std::to_string(message->code) + " message to " + SHA256::hashToString(torrentMsg.other) +
+				// "\n");
 			} catch (std::exception &e) {
 				std::cout << "Exception sending message to peer: " << e.what() << std::endl;
 			}
