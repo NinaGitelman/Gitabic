@@ -20,8 +20,8 @@
  */
 class RarityTrackerChooser : public IPieceChooser {
     static constexpr uint8_t MIN_WINDOW = 2; ///< Minimum window size for requests.
-    static constexpr uint8_t MAX_WINDOW = 15; ///< Maximum window size for requests.
-    static constexpr uint8_t INITIAL_WINDOW = 5; ///< Initial window size for requests.
+    static constexpr uint8_t MAX_WINDOW = 40; ///< Maximum window size for requests.
+    static constexpr uint8_t INITIAL_WINDOW = 10; ///< Initial window size for requests.
     static constexpr uint16_t REQUEST_TIMEOUT_MS = 5000; ///< Timeout for requests in milliseconds.
     static constexpr uint8_t MAXIMUM_REQUESTS = 12; ///< Timeout for requests in milliseconds.
     static constexpr uint8_t MINIMUM_REQUESTS = 5; ///< Timeout for requests in milliseconds.

@@ -246,8 +246,8 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 		std::unique_lock pieceChooserLock(_mutexPieceChooser);
 		_pieceChooser->updateBlockReceived(blockResponse.other, blockResponse.pieceIndex, blockResponse.blockIndex);
 	}
-	// ThreadSafeCout::cout("Saved block " + std::to_string(blockResponse.blockIndex) + " of piece " +
-	// 					std::to_string(blockResponse.pieceIndex));
+	ThreadSafeCout::cout("Saved block " + std::to_string(blockResponse.blockIndex) + " of piece " +
+						std::to_string(blockResponse.pieceIndex));
 
 	// update all interested peers that i got this pice
 	if (pieceFinished) {
@@ -257,7 +257,7 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 		PieceOwnershipUpdate hasPieceUpdate(_fileID, _aesHandler.getKey(), blockResponse.pieceIndex);
 
 		_peersConnectionManager.sendMessage(interestedPeers, std::make_shared<PieceOwnershipUpdate>(hasPieceUpdate));
-		ThreadSafeCout::cout("Verified piece #" + std::to_string(blockResponse.pieceIndex) + "/n");
+		ThreadSafeCout::cout("Verified piece #" + std::to_string(blockResponse.pieceIndex) + "\n");
 	}
 }
 
@@ -271,8 +271,14 @@ void TorrentFileHandler::downloadFile() {
 	 */
 	const auto WAITING_TIME = std::chrono::seconds(1);
 	while (_running) {
-		if (_fileIO.getDownloadProgress().progress() == 1) {
-			break;
+		if (_fileIO.getDownloadProgress().progress() >= 1) {
+			const auto illegalPieces = _fileIO.getIllegalPieces();
+			if (illegalPieces.size() == 0) {
+				break;
+			}
+			for (auto &pieceIndex: illegalPieces) {
+				_fileIO.getDownloadProgress().updatePieceStatus(pieceIndex, DownloadStatus::Empty);
+			}
 		}
 		for (const auto &peer: _peerManager->getNewPeerList()) {
 			std::lock_guard guard(_mutexMessagesToSend);

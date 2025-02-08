@@ -83,6 +83,8 @@ public:
 
 	void saveProgressToFile();
 
+	[[nodiscard]] vector<uint16_t> getIllegalPieces() const;
+
 	/**
 	 * initiates all files io
 	 * @return

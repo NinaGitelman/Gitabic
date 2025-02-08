@@ -85,7 +85,7 @@ void FileIO::initNew(const MetaDataFile &metaData) {
 
 FileIO::FileIO(const string &hash)
     : mode(FileMode::Default),
-      pieceSize(FileSplitter::pieceSize(downloadProgress.getFileSize())), _n(0) {
+      _n(0) {
     string dir = dirPath + hash + '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
         string name = entry.path().filename().string();
@@ -97,10 +97,10 @@ FileIO::FileIO(const string &hash)
     auto path = dirPath + hash + "/" + fileName;
     downloadProgress =
             DownloadProgress(FileUtils::readFileToVector(dirPath + hash + "/." + fileName + ".gitabic"));
+    pieceSize = FileSplitter::pieceSize(downloadProgress.getFileSize());
 }
 
 FileIO::FileIO(const string &hash, uint8_t n) : mode(FileMode::Default),
-                                                pieceSize(FileSplitter::pieceSize(downloadProgress.getFileSize())),
                                                 _n(n) {
     string dir = FileUtils::getExpandedPath("~/Gitabic" + std::to_string(n) + "/.filesFolders/") + hash + '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
@@ -115,6 +115,7 @@ FileIO::FileIO(const string &hash, uint8_t n) : mode(FileMode::Default),
             DownloadProgress(FileUtils::readFileToVector(
                 FileUtils::getExpandedPath("~/Gitabic" + std::to_string(n) + "/.filesFolders/") + hash + "/." + fileName
                 + ".gitabic"));
+    pieceSize = FileSplitter::pieceSize(downloadProgress.getFileSize());
 }
 
 FileIO::FileIO(const MetaDataFile &metaData, const uint8_t n) : _n(n) {
@@ -140,7 +141,7 @@ bool FileIO::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex, con
     Utils::FileUtils::writeChunkToFile(data, getCurrentDirPath() + fileName, getOffset(pieceIndex, blockIndex));
     if (downloadProgress.downloadedBlock(pieceIndex, blockIndex)) {
         const bool isGood = Utils::FileUtils::verifyPiece(getCurrentDirPath() + fileName, getOffset(pieceIndex),
-                                                          pieceSize,
+                                                          downloadProgress.getPiece(pieceIndex).size,
                                                           downloadProgress.getPiece(pieceIndex).hash);
         downloadProgress.updatePieceStatus(pieceIndex, isGood ? DownloadStatus::Verified : DownloadStatus::Empty);
         return isGood;
@@ -164,6 +165,19 @@ void FileIO::saveProgressToFile() {
                                  getCurrentDirPath().append(
                                      ("." + downloadProgress.getFileName() +
                                       ".gitabic")));
+}
+
+vector<uint16_t> FileIO::getIllegalPieces() const {
+    vector<uint16_t> res;
+    for (uint32_t i = 0; i < downloadProgress.getAmmountOfPieces(); i++) {
+        const PieceProgress piece = downloadProgress.getPiece(i);
+        if (!Utils::FileUtils::verifyPiece(getCurrentDirPath() + fileName, piece.offset,
+                                           piece.size,
+                                           piece.hash)) {
+            res.push_back(i);
+        }
+    }
+    return res;
 }
 
 vector<FileIO> FileIO::getAllFileIO() {
