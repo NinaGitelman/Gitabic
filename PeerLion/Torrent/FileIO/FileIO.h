@@ -7,11 +7,11 @@
 enum FileMode { Download, Seed, Hybrid, Default };
 
 class FileIO {
-	static const std::string dirPath;
-	string fileName;
-	FileMode mode;
-	DownloadProgress downloadProgress;
-	size_t pieceSize;
+	static const std::string _dirPath;
+	string _fileName;
+	FileMode _mode;
+	DownloadProgress _downloadProgress;
+	size_t _pieceSize;
 	mutable mutex mutex_;
 	uint8_t _n;
 
@@ -32,19 +32,19 @@ public:
 	void initNew(const MetaDataFile &metaData);
 
 	[[nodiscard]] string getFileName() const {
-		return fileName;
+		return _fileName;
 	}
 
 	[[nodiscard]] FileMode getMode() const {
-		return mode;
+		return _mode;
 	}
 
 	[[nodiscard]] DownloadProgress &getDownloadProgress() {
-		return downloadProgress;
+		return _downloadProgress;
 	}
 
 	void setFileMode(const FileMode mode) {
-		this->mode = mode;
+		this->_mode = mode;
 	}
 
 	explicit FileIO(const string &hash);

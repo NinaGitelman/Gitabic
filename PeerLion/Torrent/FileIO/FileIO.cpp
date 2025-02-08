@@ -12,34 +12,34 @@ using Utils::FileUtils;
 using Utils::FileSplitter;
 
 
-const std::string FileIO::dirPath = FileUtils::getExpandedPath("~/Gitabic/.filesFolders/");
+const std::string FileIO::_dirPath = FileUtils::getExpandedPath("~/Gitabic/.filesFolders/");
 
 // Swap function definition
 void swap(FileIO &first, FileIO &second) noexcept {
     using std::swap;
-    swap(first.fileName, second.fileName);
-    swap(first.mode, second.mode);
-    swap(first.downloadProgress, second.downloadProgress);
-    swap(first.pieceSize, second.pieceSize);
+    swap(first._fileName, second._fileName);
+    swap(first._mode, second._mode);
+    swap(first._downloadProgress, second._downloadProgress);
+    swap(first._pieceSize, second._pieceSize);
     swap(first._n, second._n);
     // `std::mutex` is not swappable, so it remains as is for both objects
 }
 
 // Copy constructor
 FileIO::FileIO(const FileIO &other)
-    : fileName(other.fileName),
-      mode(other.mode),
-      downloadProgress(other.downloadProgress),
-      pieceSize(other.pieceSize), _n(other._n) {
+    : _fileName(other._fileName),
+      _mode(other._mode),
+      _downloadProgress(other._downloadProgress),
+      _pieceSize(other._pieceSize), _n(other._n) {
     // Note: `std::mutex` is not copied
 }
 
 // Move constructor
 FileIO::FileIO(FileIO &&other) noexcept
-    : fileName(std::move(other.fileName)),
-      mode(other.mode),
-      downloadProgress(other.downloadProgress),
-      pieceSize(other.pieceSize), _n(other._n) {
+    : _fileName(std::move(other._fileName)),
+      _mode(other._mode),
+      _downloadProgress(other._downloadProgress),
+      _pieceSize(other._pieceSize), _n(other._n) {
     // `std::mutex` remains default-initialized in the moved-from object
 }
 
@@ -50,15 +50,15 @@ FileIO &FileIO::operator=(FileIO other) {
 }
 
 size_t FileIO::getOffset(const uint32_t pieceIndex, const uint16_t blockIndex) const {
-    return pieceSize * pieceIndex + blockIndex * Utils::FileSplitter::BLOCK_SIZE;
+    return _pieceSize * pieceIndex + blockIndex * Utils::FileSplitter::BLOCK_SIZE;
 }
 
 string FileIO::getCurrentDirPath() const {
     if (_n) {
         return FileUtils::getExpandedPath("~/Gitabic" + std::to_string(_n) + "/.filesFolders/") + SHA256::hashToString(
-                   downloadProgress.getFileHash()) + '/';
+                   _downloadProgress.getFileHash()) + '/';
     }
-    return dirPath + SHA256::hashToString(downloadProgress.getFileHash()) + '/';
+    return _dirPath + SHA256::hashToString(_downloadProgress.getFileHash()) + '/';
 }
 
 
@@ -76,74 +76,75 @@ void FileIO::initNew(const MetaDataFile &metaData) {
         throw std::runtime_error("Not enough storage space to create file");
     }
 
-    downloadProgress = metaData;
-    FileUtils::writeVectorToFile(downloadProgress.serialize(),
+    _downloadProgress = metaData;
+    FileUtils::writeVectorToFile(_downloadProgress.serialize(),
                                  path.append(
                                      ("." + metaData.getFileName() +
                                       ".gitabic")));
 }
 
 FileIO::FileIO(const string &hash)
-    : mode(FileMode::Default),
+    : _mode(FileMode::Default),
       _n(0) {
-    string dir = dirPath + hash + '/';
+    string dir = _dirPath + hash + '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
         string name = entry.path().filename().string();
         if (name.find(".gitabic") == string::npos) {
-            fileName = name;
+            _fileName = name;
             break;
         }
     }
-    auto path = dirPath + hash + "/" + fileName;
-    downloadProgress =
-            DownloadProgress(FileUtils::readFileToVector(dirPath + hash + "/." + fileName + ".gitabic"));
-    pieceSize = FileSplitter::pieceSize(downloadProgress.getFileSize());
+    auto path = _dirPath + hash + "/" + _fileName;
+    _downloadProgress =
+            DownloadProgress(FileUtils::readFileToVector(_dirPath + hash + "/." + _fileName + ".gitabic"));
+    _pieceSize = FileSplitter::pieceSize(_downloadProgress.getFileSize());
 }
 
-FileIO::FileIO(const string &hash, uint8_t n) : mode(FileMode::Default),
+FileIO::FileIO(const string &hash, uint8_t n) : _mode(FileMode::Default),
                                                 _n(n) {
     string dir = FileUtils::getExpandedPath("~/Gitabic" + std::to_string(n) + "/.filesFolders/") + hash + '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
         string name = entry.path().filename().string();
         if (name.find(".gitabic") == string::npos) {
-            fileName = name;
+            _fileName = name;
             break;
         }
     }
-    auto path = dirPath + hash + "/" + fileName;
-    downloadProgress =
+    auto path = _dirPath + hash + "/" + _fileName;
+    _downloadProgress =
             DownloadProgress(FileUtils::readFileToVector(
-                FileUtils::getExpandedPath("~/Gitabic" + std::to_string(n) + "/.filesFolders/") + hash + "/." + fileName
+                FileUtils::getExpandedPath("~/Gitabic" + std::to_string(n) + "/.filesFolders/") + hash + "/." +
+                _fileName
                 + ".gitabic"));
-    pieceSize = FileSplitter::pieceSize(downloadProgress.getFileSize());
+    _pieceSize = FileSplitter::pieceSize(_downloadProgress.getFileSize());
 }
 
 FileIO::FileIO(const MetaDataFile &metaData, const uint8_t n) : _n(n) {
     initNew(metaData);
-    this->mode = FileMode::Default;
-    fileName = downloadProgress.getFileName();
-    pieceSize = FileSplitter::pieceSize(downloadProgress.getFileSize());
+    this->_mode = FileMode::Default;
+    _fileName = _downloadProgress.getFileName();
+    _pieceSize = FileSplitter::pieceSize(_downloadProgress.getFileSize());
 }
 
 void FileIO::savePiece(const uint32_t pieceIndex, const vector<uint8_t> &pieceData) {
-    if (downloadProgress.getPiece(pieceIndex).hash == SHA256::toHashSha256(pieceData)) {
+    if (_downloadProgress.getPiece(pieceIndex).hash == SHA256::toHashSha256(pieceData)) {
         std::lock_guard<std::mutex> lock(mutex_);
-        Utils::FileUtils::writeChunkToFile(pieceData, fileName, getOffset(pieceIndex));
-        downloadProgress.updatePieceStatus(pieceIndex, DownloadStatus::Downloaded);
+        Utils::FileUtils::writeChunkToFile(pieceData, _fileName, getOffset(pieceIndex));
+        _downloadProgress.updatePieceStatus(pieceIndex, DownloadStatus::Downloaded);
     } else {
-        downloadProgress.updatePieceStatus(pieceIndex, DownloadStatus::Empty);
+        _downloadProgress.updatePieceStatus(pieceIndex, DownloadStatus::Empty);
     }
 }
 
 
 bool FileIO::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex, const vector<uint8_t> &data) {
     std::lock_guard<std::mutex> lock(mutex_);
-    Utils::FileUtils::writeChunkToFile(data, getCurrentDirPath() + fileName, getOffset(pieceIndex, blockIndex));
-    if (downloadProgress.downloadedBlock(pieceIndex, blockIndex)) {
-        const bool isGood = Utils::FileUtils::verifyPiece(getCurrentDirPath() + fileName, getOffset(pieceIndex),
-                                                          downloadProgress.getPiece(pieceIndex).size,
-                                                          downloadProgress.getPiece(pieceIndex).hash);
-        downloadProgress.updatePieceStatus(pieceIndex, isGood ? DownloadStatus::Verified : DownloadStatus::Empty);
+    Utils::FileUtils::writeChunkToFile(data, getCurrentDirPath() + _fileName, getOffset(pieceIndex, blockIndex));
+    if (_downloadProgress.downloadedBlock(pieceIndex, blockIndex)) {
+        const bool isGood = Utils::FileUtils::verifyPiece(getCurrentDirPath() + _fileName, getOffset(pieceIndex),
+                                                          _downloadProgress.getPiece(pieceIndex).size,
+                                                          _downloadProgress.getPiece(pieceIndex).hash);
+        _downloadProgress.updatePieceStatus(pieceIndex, isGood ? DownloadStatus::Verified : DownloadStatus::Empty);
         updatePieceStateToFile(pieceIndex);
         return isGood;
     }
@@ -152,33 +153,48 @@ bool FileIO::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex, con
 
 vector<uint8_t> FileIO::loadPiece(const uint32_t pieceIndex) const {
     std::lock_guard<std::mutex> lock(mutex_);
-    return Utils::FileUtils::readFileChunk(getCurrentDirPath() + fileName, getOffset(pieceIndex), pieceSize);
+    return Utils::FileUtils::readFileChunk(getCurrentDirPath() + _fileName, getOffset(pieceIndex), _pieceSize);
 }
 
 vector<uint8_t> FileIO::loadBlock(const uint32_t pieceIndex, const uint32_t blockIndex) const {
     std::lock_guard<std::mutex> lock(mutex_);
-    return Utils::FileUtils::readFileChunk(getCurrentDirPath() + fileName, getOffset(pieceIndex, blockIndex),
+    return Utils::FileUtils::readFileChunk(getCurrentDirPath() + _fileName, getOffset(pieceIndex, blockIndex),
                                            Utils::FileSplitter::BLOCK_SIZE);
 }
 
 void FileIO::saveProgressToFile() {
-    FileUtils::writeVectorToFile(downloadProgress.serialize(),
+    FileUtils::writeVectorToFile(_downloadProgress.serialize(),
                                  getCurrentDirPath().append(
-                                     ("." + downloadProgress.getFileName() +
+                                     ("." + _downloadProgress.getFileName() +
                                       ".gitabic")));
 }
 
 void FileIO::updatePieceStateToFile(const uint32_t pieceIndex) const {
-    FileUtils::writeChunkToFile(downloadProgress.getPiece(pieceIndex).serializeForFileUpdate(),
-                                getCurrentDirPath() + "." + fileName + ".gitabic",
-                                downloadProgress.getPieceOffsetInProgressFile(pieceIndex));
+    FileUtils::writeChunkToFile(_downloadProgress.getPiece(pieceIndex).serializeForFileUpdate(),
+                                getCurrentDirPath() + "." + _fileName + ".gitabic",
+                                _downloadProgress.getPieceOffsetInProgressFile(pieceIndex));
+
+    //write bytes read to file
+    constexpr uint8_t BYTES_READ_OFFSET = 1;
+    uint64_t totalBytes = _downloadProgress.getTotalDownloadBytes();
+    FileUtils::writeChunkToFile(vector<uint8_t>(reinterpret_cast<uint8_t>(&totalBytes),
+                                                reinterpret_cast<uint8_t>(&totalBytes) + sizeof(totalBytes)),
+                                getCurrentDirPath() + "." + _fileName + ".gitabic",
+                                BYTES_READ_OFFSET);
+    //write last access to file
+    constexpr uint8_t LAST_ACCESS_OFFSET = 25;
+    time_t lastAccess = time(nullptr);
+    FileUtils::writeChunkToFile(vector<uint8_t>(reinterpret_cast<uint8_t>(&lastAccess),
+                                                reinterpret_cast<uint8_t>(&lastAccess) + sizeof(lastAccess)),
+                                getCurrentDirPath() + "." + _fileName + ".gitabic",
+                                LAST_ACCESS_OFFSET);
 }
 
 vector<uint16_t> FileIO::getIllegalPieces() const {
     vector<uint16_t> res;
-    for (uint32_t i = 0; i < downloadProgress.getAmmountOfPieces(); i++) {
-        const PieceProgress piece = downloadProgress.getPiece(i);
-        if (!Utils::FileUtils::verifyPiece(getCurrentDirPath() + fileName, piece.offset,
+    for (uint32_t i = 0; i < _downloadProgress.getAmmountOfPieces(); i++) {
+        const PieceProgress piece = _downloadProgress.getPiece(i);
+        if (!Utils::FileUtils::verifyPiece(getCurrentDirPath() + _fileName, piece.offset,
                                            piece.size,
                                            piece.hash)) {
             res.push_back(i);
@@ -189,7 +205,7 @@ vector<uint16_t> FileIO::getIllegalPieces() const {
 
 vector<FileIO> FileIO::getAllFileIO() {
     vector<FileIO> handlers;
-    for (const auto &dir: FileUtils::listDirectories(dirPath)) {
+    for (const auto &dir: FileUtils::listDirectories(_dirPath)) {
         FileIO handler(dir);
         handlers.push_back(handler);
     }
