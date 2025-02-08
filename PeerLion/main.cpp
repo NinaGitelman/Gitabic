@@ -68,7 +68,8 @@ int main(const int argc, char **argv) {
 
   auto fileIO = FileIO::getAllFileIO()[0];
 
-  auto serverSocket = std::make_shared<TCPSocket>(fileIO.getDownloadProgress().getSignalingAddress());
+  // auto serverSocket = std::make_shared<TCPSocket>(fileIO.getDownloadProgress().getSignalingAddress());
+  auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
   auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
   auto &dataRepublish = DataRepublish::getInstance(serverSocket);
   dataRepublish.saveData(fileIO.getDownloadProgress().getFileHash(), ServerResponseNewId(res).id);
@@ -87,7 +88,7 @@ int main(const int argc, char **argv) {
 void main2(const uint8_t n) {
   auto fileIO = FileIO("9e3d83b20958de1c578693a2df03f13869f7e4027a6d3bb166ba3e51a1b671f7", n);
 
-  const auto serverSocket = std::make_shared<TCPSocket>(fileIO.getDownloadProgress().getSignalingAddress());
+  const auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
   const auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
   auto &dataRepublish = DataRepublish::getInstance(serverSocket);
   dataRepublish.saveData(fileIO.getDownloadProgress().getFileHash(), ServerResponseNewId(res).id);

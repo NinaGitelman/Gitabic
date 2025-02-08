@@ -1,14 +1,16 @@
 
 #pragma once
-#include <string>
-#include <fstream>
-#include <vector>
 #include <cstdint>
-#include <stdexcept>
 #include <filesystem>
-#include "../../Encryptions/SHA256/sha256.h"
-#include "../../Encryptions/AES/AESHandler.h"
+#include <fstream>
+#include <mutex>
 #include <random>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include "../../Encryptions/AES/AESHandler.h"
+#include "../../Encryptions/SHA256/sha256.h"
 
 #define KB 1024UL
 
@@ -68,6 +70,11 @@ namespace Utils {
         static vector<std::string> listDirectories(const std::string &path);
 
         static std::string getExpandedPath(const std::string &path);
+
+
+        static std::mutex &getFileMutex(const std::string &filePath);
+
+        static std::pmr::unordered_map<std::string, std::mutex> fileMutexes;
     };
 
     /// @brief Class handling file splitting logic

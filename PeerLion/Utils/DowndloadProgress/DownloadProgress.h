@@ -130,6 +130,8 @@ public:
         return _signalingAddress;
     }
 
+    uint64_t getPieceOffsetInProgressFile(uint32_t pieceIndex) const;
+
     /// @brief Constructs a new download progress tracker from metadata
     /// @param metaData Metadata of the file being downloaded
     explicit DownloadProgress(const MetaDataFile &metaData);

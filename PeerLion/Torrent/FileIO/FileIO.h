@@ -83,6 +83,8 @@ public:
 
 	void saveProgressToFile();
 
+	void updatePieceStateToFile(uint32_t pieceIndex) const;
+
 	[[nodiscard]] vector<uint16_t> getIllegalPieces() const;
 
 	/**

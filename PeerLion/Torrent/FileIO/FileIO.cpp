@@ -144,6 +144,7 @@ bool FileIO::saveBlock(const uint32_t pieceIndex, const uint16_t blockIndex, con
                                                           downloadProgress.getPiece(pieceIndex).size,
                                                           downloadProgress.getPiece(pieceIndex).hash);
         downloadProgress.updatePieceStatus(pieceIndex, isGood ? DownloadStatus::Verified : DownloadStatus::Empty);
+        updatePieceStateToFile(pieceIndex);
         return isGood;
     }
     return false;
@@ -165,6 +166,12 @@ void FileIO::saveProgressToFile() {
                                  getCurrentDirPath().append(
                                      ("." + downloadProgress.getFileName() +
                                       ".gitabic")));
+}
+
+void FileIO::updatePieceStateToFile(const uint32_t pieceIndex) const {
+    FileUtils::writeChunkToFile(downloadProgress.getPiece(pieceIndex).serializeForFileUpdate(),
+                                getCurrentDirPath() + "." + fileName + ".gitabic",
+                                downloadProgress.getPieceOffsetInProgressFile(pieceIndex));
 }
 
 vector<uint16_t> FileIO::getIllegalPieces() const {

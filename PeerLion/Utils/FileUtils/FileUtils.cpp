@@ -4,7 +4,10 @@
 
 using namespace Utils;
 
+std::pmr::unordered_map<std::string, std::mutex> FileUtils::fileMutexes;
+
 std::vector<uint8_t> FileUtils::readFileToVector(const std::string &filePath) {
+    std::lock_guard guard(getFileMutex(filePath));
     std::ifstream file(filePath, std::ios::in | std::ios::binary);
 
     if (!file) {
@@ -25,7 +28,9 @@ std::vector<uint8_t> FileUtils::readFileToVector(const std::string &filePath) {
     }
 }
 
-std::vector<uint8_t> Utils::FileUtils::readFileChunk(const std::string &filePath, size_t offset, size_t size) {
+std::vector<uint8_t> Utils::FileUtils::readFileChunk(const std::string &filePath, const size_t offset,
+                                                     const size_t size) {
+    std::lock_guard guard(getFileMutex(filePath));
     std::ifstream file(filePath, std::ios::binary);
     if (!file) {
         throw std::runtime_error("Failed to open file: " + filePath);
@@ -39,6 +44,7 @@ std::vector<uint8_t> Utils::FileUtils::readFileChunk(const std::string &filePath
 }
 
 void FileUtils::writeVectorToFile(const std::vector<uint8_t> &data, const std::string &filePath) {
+    std::lock_guard guard(getFileMutex(filePath));
     std::ofstream outFile(filePath, std::ios::out | std::ios::binary | std::ios::trunc);
     if (!outFile) {
         throw std::ios_base::failure("Failed to open file for writing");
@@ -49,6 +55,7 @@ void FileUtils::writeVectorToFile(const std::vector<uint8_t> &data, const std::s
 
 void Utils::FileUtils::writeChunkToFile(const std::vector<uint8_t> &data, const std::string &filePath,
                                         uint64_t offset) {
+    std::lock_guard guard(getFileMutex(filePath));
     // Open the file in binary mode for both reading and writing, without truncating
     std::ofstream outFile(filePath, std::ios::in | std::ios::out | std::ios::binary);
     if (!outFile) {
@@ -72,6 +79,7 @@ void Utils::FileUtils::writeChunkToFile(const std::vector<uint8_t> &data, const 
 }
 
 void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_t size) {
+    std::lock_guard guard(getFileMutex(filePath));
     // Open the file in binary mode for writing
     std::ofstream file(filePath, std::ios::binary | std::ios::trunc);
     if (!file.is_open()) {
@@ -99,6 +107,8 @@ void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_
 
 bool FileUtils::verifyPiece(const std::string &filePath, const uint64_t offset, const uint64_t size,
                             const HashResult &hash) {
+    std::lock_guard guard(getFileMutex(filePath));
+
     const auto data = readFileChunk(filePath, offset, size);
     return hash == SHA256::toHashSha256(data);
 }
@@ -118,6 +128,13 @@ std::string FileUtils::getExpandedPath(const std::string &path) {
         }
     }
     return path; // Return unchanged if no '~' at the beginning
+}
+
+std::mutex &FileUtils::getFileMutex(const std::string &filePath) {
+    if (!fileMutexes.contains(filePath)) {
+        fileMutexes[filePath];
+    }
+    return fileMutexes[filePath];
 }
 
 std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName,

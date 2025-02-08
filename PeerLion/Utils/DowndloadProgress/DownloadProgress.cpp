@@ -1,5 +1,13 @@
 #include "DownloadProgress.h"
 
+uint64_t DownloadProgress::getPieceOffsetInProgressFile(uint32_t pieceIndex) const {
+    constexpr size_t PIECES_OFFSET = 86;
+    constexpr size_t PIECE_FIXED_DATA = 12;
+    const uint PIECE_SIZE = 61 + _pieces[0].blocks.size() * 8;
+
+    return PIECES_OFFSET + pieceIndex * PIECE_SIZE + PIECE_FIXED_DATA;
+}
+
 DownloadProgress::DownloadProgress(const MetaDataFile &metaData) {
     init(metaData);
 }
@@ -393,13 +401,23 @@ vector<uint8_t> PieceProgress::serializeForFileUpdate() const {
     std::vector<uint8_t> data;
 
     // Serialize only the necessary fields
-    data.insert(data.end(), reinterpret_cast<const uint8_t *>(&offset),
-                reinterpret_cast<const uint8_t *>(&offset) + sizeof(offset));
+    data.insert(data.end(), reinterpret_cast<const uint8_t *>(&bytesDownloaded),
+                reinterpret_cast<const uint8_t *>(&offset) + sizeof(bytesDownloaded));
     data.insert(data.end(), reinterpret_cast<const uint8_t *>(&status),
                 reinterpret_cast<const uint8_t *>(&status) + sizeof(status));
     data.insert(data.end(), reinterpret_cast<const uint8_t *>(&lastAccess),
                 reinterpret_cast<const uint8_t *>(&lastAccess) + sizeof(lastAccess));
+    data.insert(data.end(), hash.data(), hash.data() + hash.size());
 
+    // Serialize blocks
+    uint32_t blocksCount = blocks.size();
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&blocksCount),
+                reinterpret_cast<uint8_t *>(&blocksCount) + sizeof(blocksCount));
+
+    for (const auto &block: blocks) {
+        auto blockData = block.serialize();
+        data.insert(data.end(), blockData.begin(), blockData.end());
+    }
     return data;
 }
 
