@@ -181,24 +181,38 @@ CMakeFiles/PeerLion.dir/NetworkUnit/SocketHandler/SocketHandler.cpp.s: cmake_for
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/PeerLion.dir/NetworkUnit/SocketHandler/SocketHandler.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/NetworkUnit/SocketHandler/SocketHandler.cpp -o CMakeFiles/PeerLion.dir/NetworkUnit/SocketHandler/SocketHandler.cpp.s
 
-CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o: CMakeFiles/PeerLion.dir/flags.make
-CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o: ../Torrent/FileHandler/TorrentFileHandler.cpp
-CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o -MF CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o.d -o CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileHandler/TorrentFileHandler.cpp
+CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o: CMakeFiles/PeerLion.dir/flags.make
+CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o: ../Torrent/FileIO/FileIO.cpp
+CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o -MF CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o.d -o CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileIO/FileIO.cpp
 
-CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileHandler/TorrentFileHandler.cpp > CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.i
+CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileIO/FileIO.cpp > CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.i
 
-CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileHandler/TorrentFileHandler.cpp -o CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.s
+CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/FileIO/FileIO.cpp -o CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.s
+
+CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o: CMakeFiles/PeerLion.dir/flags.make
+CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o: ../Torrent/PeerManager/PeerManager.cpp
+CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o -MF CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o.d -o CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.cpp
+
+CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.cpp > CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.i
+
+CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeerManager/PeerManager.cpp -o CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.s
 
 CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o: CMakeFiles/PeerLion.dir/flags.make
 CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o: ../Torrent/PeersConnectionManager/PeersConnectionManager.cpp
 CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o -MF CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o.d -o CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeersConnectionManager/PeersConnectionManager.cpp
 
 CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.i: cmake_force
@@ -209,10 +223,52 @@ CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PeersConnectionManager/PeersConnectionManager.cpp -o CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.s
 
+CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o: CMakeFiles/PeerLion.dir/flags.make
+CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o: ../Torrent/PieceManagement/RarityTrackerChooser.cpp
+CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o -MF CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o.d -o CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/RarityTrackerChooser.cpp
+
+CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/RarityTrackerChooser.cpp > CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.i
+
+CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/PieceManagement/RarityTrackerChooser.cpp -o CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.s
+
+CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o: CMakeFiles/PeerLion.dir/flags.make
+CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o: ../Torrent/TorrentFileHandler/TorrentFileHandler.cpp
+CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o -MF CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o.d -o CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentFileHandler/TorrentFileHandler.cpp
+
+CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentFileHandler/TorrentFileHandler.cpp > CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.i
+
+CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentFileHandler/TorrentFileHandler.cpp -o CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.s
+
+CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o: CMakeFiles/PeerLion.dir/flags.make
+CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o: ../Torrent/TorrentManager/TorrentManager.cpp
+CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o -MF CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o.d -o CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentManager/TorrentManager.cpp
+
+CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentManager/TorrentManager.cpp > CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.i
+
+CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Torrent/TorrentManager/TorrentManager.cpp -o CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.s
+
 CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o: CMakeFiles/PeerLion.dir/flags.make
 CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o: ../Utils/DowndloadProgress/DownloadProgress.cpp
 CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o -MF CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o.d -o CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/DowndloadProgress/DownloadProgress.cpp
 
 CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.i: cmake_force
@@ -226,7 +282,7 @@ CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.s: cmake_fo
 CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o: CMakeFiles/PeerLion.dir/flags.make
 CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o: ../Utils/FileUtils/FileUtils.cpp
 CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o -MF CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o.d -o CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/FileUtils/FileUtils.cpp
 
 CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.i: cmake_force
@@ -240,7 +296,7 @@ CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.s: cmake_force
 CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o: CMakeFiles/PeerLion.dir/flags.make
 CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o: ../Utils/MetaDataFile/MetaDataFile.cpp
 CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o -MF CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o.d -o CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/MetaDataFile/MetaDataFile.cpp
 
 CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.i: cmake_force
@@ -254,7 +310,7 @@ CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.s: cmake_force
 CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.o: CMakeFiles/PeerLion.dir/flags.make
 CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.o: ../Utils/SerializeDeserializeUtils.cpp
 CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.o -MF CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.o.d -o CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/SerializeDeserializeUtils.cpp
 
 CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.i: cmake_force
@@ -268,7 +324,7 @@ CMakeFiles/PeerLion.dir/Utils/SerializeDeserializeUtils.cpp.s: cmake_force
 CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.o: CMakeFiles/PeerLion.dir/flags.make
 CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.o: ../Utils/ThreadSafeCout.cpp
 CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.o -MF CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.o.d -o CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/ThreadSafeCout.cpp
 
 CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.i: cmake_force
@@ -282,7 +338,7 @@ CMakeFiles/PeerLion.dir/Utils/ThreadSafeCout.cpp.s: cmake_force
 CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.o: CMakeFiles/PeerLion.dir/flags.make
 CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.o: ../Utils/VectorUint8Utils.cpp
 CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.o -MF CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.o.d -o CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/Utils/VectorUint8Utils.cpp
 
 CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.i: cmake_force
@@ -296,7 +352,7 @@ CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.s: cmake_force
 CMakeFiles/PeerLion.dir/main.cpp.o: CMakeFiles/PeerLion.dir/flags.make
 CMakeFiles/PeerLion.dir/main.cpp.o: ../main.cpp
 CMakeFiles/PeerLion.dir/main.cpp.o: CMakeFiles/PeerLion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/PeerLion.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/PeerLion.dir/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PeerLion.dir/main.cpp.o -MF CMakeFiles/PeerLion.dir/main.cpp.o.d -o CMakeFiles/PeerLion.dir/main.cpp.o -c /media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/main.cpp
 
 CMakeFiles/PeerLion.dir/main.cpp.i: cmake_force
@@ -317,8 +373,12 @@ PeerLion_OBJECTS = \
 "CMakeFiles/PeerLion.dir/NetworkUnit/ServerComm/DataRepublish/DataRepublish.cpp.o" \
 "CMakeFiles/PeerLion.dir/NetworkUnit/ServerComm/TCPSocket/TCPSocket.cpp.o" \
 "CMakeFiles/PeerLion.dir/NetworkUnit/SocketHandler/SocketHandler.cpp.o" \
-"CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o" \
+"CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o" \
+"CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o" \
 "CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o" \
+"CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o" \
+"CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o" \
+"CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o" \
 "CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o" \
 "CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o" \
 "CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o" \
@@ -338,8 +398,12 @@ PeerLion: CMakeFiles/PeerLion.dir/NetworkUnit/ServerComm/BitTorrentMessages.cpp.
 PeerLion: CMakeFiles/PeerLion.dir/NetworkUnit/ServerComm/DataRepublish/DataRepublish.cpp.o
 PeerLion: CMakeFiles/PeerLion.dir/NetworkUnit/ServerComm/TCPSocket/TCPSocket.cpp.o
 PeerLion: CMakeFiles/PeerLion.dir/NetworkUnit/SocketHandler/SocketHandler.cpp.o
-PeerLion: CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o
+PeerLion: CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o
+PeerLion: CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o
 PeerLion: CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o
+PeerLion: CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o
+PeerLion: CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o
+PeerLion: CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o
 PeerLion: CMakeFiles/PeerLion.dir/Utils/DowndloadProgress/DownloadProgress.cpp.o
 PeerLion: CMakeFiles/PeerLion.dir/Utils/FileUtils/FileUtils.cpp.o
 PeerLion: CMakeFiles/PeerLion.dir/Utils/MetaDataFile/MetaDataFile.cpp.o
@@ -349,7 +413,7 @@ PeerLion: CMakeFiles/PeerLion.dir/Utils/VectorUint8Utils.cpp.o
 PeerLion: CMakeFiles/PeerLion.dir/main.cpp.o
 PeerLion: CMakeFiles/PeerLion.dir/build.make
 PeerLion: CMakeFiles/PeerLion.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Linking CXX executable PeerLion"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Linking CXX executable PeerLion"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/PeerLion.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

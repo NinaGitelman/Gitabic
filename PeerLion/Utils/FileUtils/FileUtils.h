@@ -62,7 +62,8 @@ namespace Utils {
 
         static bool dirExists(const std::string &filePath);
 
-        static std::filesystem::path createDownloadFolder(const std::string &fileHash, const std::string &friendlyName);
+        static std::filesystem::path createDownloadFolder(const std::string &fileHash, const std::string &friendlyName,
+                                                          uint8_t n = 0);
 
         static vector<std::string> listDirectories(const std::string &path);
 
@@ -79,7 +80,7 @@ namespace Utils {
         /// @brief Calculates appropriate piece size for a file
         /// @param fileSize Size of the file
         /// @return Appropriate piece size in bytes
-        static uint pieceSize(const uint64_t fileSize);
+        static uint pieceSize(uint64_t fileSize);
     };
 
     /// @brief Class providing data conversion utilities

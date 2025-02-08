@@ -78,13 +78,13 @@ MessageBaseReceived TCPClientSocket::receive()
     // Try to read size, return defaults if fails
     if (recv(sockfd, &size, sizeof(size), 0) != sizeof(size))
     {
-        return MessageBaseReceived(0, vector<uint8_t>());
+        return {0, vector<uint8_t>()};
     }
 
     // If size is zero, return early
     if (size == 0)
     {
-        return MessageBaseReceived(code, vector<uint8_t>());
+        return {code, vector<uint8_t>()};
     }
 
     vector<uint8_t> data(size);
@@ -95,12 +95,12 @@ MessageBaseReceived TCPClientSocket::receive()
         if (received <= 0)
         {
             // If data reception fails, return what we have or default
-            return MessageBaseReceived(code, vector<uint8_t>());
+            return {code, vector<uint8_t>()};
         }
         total_received += received;
     }
 
-    return MessageBaseReceived(code, data);
+    return {code, data};
 }
 
 int TCPClientSocket::getSocketFd() const

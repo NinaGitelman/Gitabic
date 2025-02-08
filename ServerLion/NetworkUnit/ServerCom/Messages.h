@@ -199,16 +199,20 @@ enum ClientRequestCodes
     DebuggingStringMessage = 10
 };
 
-enum ClientResponseCodes
+enum ClientResponseCodesToServer // 11 - 19
 {
     // signaling
-    AuthorizedICEConnection = 11
+    AuthorizedICEConnection = 11,
+    AlreadyConnected = 12,
+    FullCapacity = 13
 };
-
 enum ServerResponseCodes
 {
     // signaling
     UserAuthorizedICEData = 11,
+    UserAlreadyConnected = 12,
+    UserFullCapacity = 13,
+    ExistsOpositeRequest = 14,
 
     NewID = 55,
 
@@ -280,7 +284,7 @@ struct ServerResponseUserList : MessageBaseToSend
     /// @return A byte vector
     virtual vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
-        vector<uint8_t> serialized = MessageBaseToSend::serialize(userList.size() * SHA256_SIZE);
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(userList.size() * SHA256_SIZE + _fileId.size());
         SerializeDeserializeUtils::addToEnd(serialized, vector<uint8_t>(_fileId.begin(), _fileId.end()));
         for (const ID &id : userList)
         {
@@ -321,6 +325,8 @@ struct ServerResponseUserAuthorizedICEData : MessageBaseToSend
     }
 };
 
+
+
 /// @brief Response to a user with connect data of another user
 /// Message data:   lenIceCandidateInfo (2 bytes), iceCandidateInfo (lenStudData btyes), requestId (2 bytes)
 struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
@@ -328,9 +334,10 @@ struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
     static constexpr uint8_t CONST_SIZE = 2;
     uint16_t requestId;
     vector<uint8_t> iceCandidateInfo;
+    ID from;
 
-    ServerRequestAuthorizeICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId)
-        : MessageBaseToSend(ServerRequestCodes::AuthorizeICEConnection), requestId(requestId), iceCandidateInfo(move(iceCandidateInfo)) {}
+    ServerRequestAuthorizeICEConnection(vector<uint8_t> iceCandidateInfo, uint16_t requestId, const ID& from)
+        : MessageBaseToSend(ServerRequestCodes::AuthorizeICEConnection), requestId(requestId), iceCandidateInfo(move(iceCandidateInfo)), from(from) {}
 
     vector<uint8_t> serialize(uint32_t PreviousSize = 0) const override
     {
@@ -341,9 +348,10 @@ struct ServerRequestAuthorizeICEConnection : MessageBaseToSend
         SerializeDeserializeUtils::serializeUint16IntoVector(requestIdSerialized, requestId);
 
         // Serialize base struct
-        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + CONST_SIZE + len);
+        vector<uint8_t> serialized = MessageBaseToSend::serialize(PreviousSize + CONST_SIZE + len + sizeof(from));
 
         // Append to serialized ken, ice candidaate info and request id
+        SerializeDeserializeUtils::addToEnd(serialized, from);
         SerializeDeserializeUtils::addToEnd(serialized, iceCandidateInfo);
         SerializeDeserializeUtils::addToEnd(serialized, requestIdSerialized);
         return serialized;
@@ -502,6 +510,33 @@ struct ClientResponseAuthorizedICEConnection : GeneralRecieve
 
         std::cout << std::endl;
     }
+};
+
+struct ClientResponseAlreadyConnected : GeneralRecieve {
+    uint16_t requestID;
+
+    explicit ClientResponseAlreadyConnected(const MessageBaseReceived &receivedMessage) : GeneralRecieve(receivedMessage.from)
+    {
+        deserialize(receivedMessage.data);
+    }
+
+    void deserialize(const std::vector<uint8_t> &buffer) {
+        memcpy(&requestID, buffer.data(), sizeof(requestID));
+    }
+
+};
+struct ClientResponseFullCapacity : GeneralRecieve {
+    uint16_t requestID;
+
+    explicit ClientResponseFullCapacity(const MessageBaseReceived &receivedMessage) : GeneralRecieve(receivedMessage.from)
+    {
+        deserialize(receivedMessage.data);
+    }
+
+    void deserialize(const std::vector<uint8_t> &buffer) {
+        memcpy(&requestID, buffer.data(), sizeof(requestID));
+    }
+
 };
 
 struct DebuggingStringMessageReceived : GeneralRecieve

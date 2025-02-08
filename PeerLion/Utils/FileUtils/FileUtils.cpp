@@ -120,18 +120,23 @@ std::string FileUtils::getExpandedPath(const std::string &path) {
     return path; // Return unchanged if no '~' at the beginning
 }
 
-std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName) {
-    const std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;
+std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName,
+                                                      const uint8_t n) {
+    std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;
+    if (n) hashFolder = "~/Gitabic" + std::to_string(n) + "/.filesFolders/" + fileHash;
+
     std::filesystem::path expandedHashFolder = std::filesystem::absolute(
         getExpandedPath(hashFolder.string()));
 
     // Ensure the directory exists
     if (!std::filesystem::exists(expandedHashFolder)) {
         std::filesystem::create_directories(expandedHashFolder);
+    } else {
+        return expandedHashFolder;
     }
 
     // Create a symbolic link with the friendly name
-    const std::filesystem::path symlink = "~/Gitabic/" + friendlyName;
+    const std::filesystem::path symlink = "~/Gitabic" + (n ? std::to_string(n) : "") + "/" + friendlyName;
     std::filesystem::path expandedSymlink = std::filesystem::absolute(getExpandedPath(symlink.string()));
 
     // Remove existing symlink if it exists
@@ -183,6 +188,9 @@ array<uint8_t, 16> Utils::Conversions::toKey(const std::vector<uint8_t> &vec) {
 }
 
 uint FileSplitter::pieceSize(const uint64_t fileSize) {
+    if (fileSize <= MIN_PIECE_SIZE) {
+        return fileSize;
+    }
     if (fileSize <= KB * MIN_PIECE_SIZE) {
         return MIN_PIECE_SIZE;
     }

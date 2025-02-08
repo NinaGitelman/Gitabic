@@ -1,6 +1,8 @@
 #ifndef DOWNLOADPROGRESS_H
 #define DOWNLOADPROGRESS_H
 #pragma once
+#include <bitset>
+
 #include "../MetaDataFile/MetaDataFile.h"
 
 /// Represents the current status of a download operation
@@ -57,7 +59,7 @@ struct PieceProgress {
 
     /// @brief Updates the download status of the piece
     /// @param status New status to set
-    uint32_t setStatus(DownloadStatus status);
+    int32_t setStatus(DownloadStatus status);
 
     /// @brief Updates the status of a specific block
     /// @param block Index of the block to update
@@ -67,7 +69,9 @@ struct PieceProgress {
 
     [[nodiscard]] BlockInfo getBlockInfo(uint16_t block) const;
 
-    [[nodiscard]] PieceProgress getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
+    [[nodiscard]] vector<BlockInfo> getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
+
+    static uint16_t getBlockIndex(uint64_t offset);
 
 
     /// @brief Serializes the piece progress information
@@ -84,36 +88,40 @@ struct PieceProgress {
 /// @brief Manages and tracks the progress of a file download
 class DownloadProgress {
 public:
-    [[nodiscard]] const string &get_file_name() const {
+    [[nodiscard]] const string &getFileName() const {
         return fileName;
     }
 
-    [[nodiscard]] const string &get_creator() const {
+    [[nodiscard]] const string &getCreator() const {
         return creator;
     }
 
-    [[nodiscard]] const HashResult &get_file_hash() const {
+    [[nodiscard]] const HashResult &getFileHash() const {
         return fileHash;
     }
 
-    [[nodiscard]] bool is_completed() const {
+    [[nodiscard]] bool isCompleted() const {
         return completed;
     }
 
-    [[nodiscard]] uint64_t get_total_download_bytes() const {
+    [[nodiscard]] uint64_t getTotalDownloadBytes() const {
         return totalDownloadBytes;
     }
 
-    [[nodiscard]] uint64_t get_file_size() const {
+    [[nodiscard]] uint64_t getFileSize() const {
         return fileSize;
     }
 
-    [[nodiscard]] time_t get_start_time() const {
+    [[nodiscard]] time_t getStartTime() const {
         return startTime;
     }
 
-    [[nodiscard]] time_t get_last_time() const {
+    [[nodiscard]] time_t getLastTime() const {
         return lastTime;
+    }
+
+    int getAmmountOfPieces() const {
+        return pieces.size();
     }
 
     /// @brief Constructs a new download progress tracker from metadata
@@ -129,6 +137,7 @@ public:
     DownloadProgress &operator=(DownloadProgress other);
 
     // Swap function
+
     friend void swap(DownloadProgress &first, DownloadProgress &second) noexcept;
 
     /// @brief Constructs a download progress tracker from serialized data
@@ -145,6 +154,8 @@ public:
     /// @brief Deserializes download progress state from data
     /// @param data Vector containing serialized download progress data
     void deserialize(vector<uint8_t> data);
+
+    vector<std::bitset<8> > getBitField() const;
 
     /// @brief Calculates the current download progress as a percentage
     /// @return Progress value between 0.0 and 1.0
@@ -171,9 +182,9 @@ public:
 
     vector<PieceProgress> getPiecesStatused(DownloadStatus status = DownloadStatus::Empty);
 
-    [[nodiscard]] vector<PieceProgress> getBlocksStatused(DownloadStatus status = DownloadStatus::Empty) const;
-
     [[nodiscard]] PieceProgress getPiece(uint32_t index) const;
+
+    uint getPieceIndex(uint64_t offset) const;
 
 private:
     /// @brief Initializes the download progress tracker with metadata

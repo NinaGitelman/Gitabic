@@ -15,7 +15,7 @@ using std::map;
 using std::mutex;
 using std::shared_ptr;
 
-#define SERVER_PORT 4787
+#define SERVER_PORT 4786
 
 class MultiThreadedServer
 {
@@ -57,7 +57,7 @@ private:
     void handleClient(std::shared_ptr<TCPClientSocket> clientSocket);
 
     // helper only for debugging...
-    void printDataAsASCII(vector<uint8_t> data);
+    static void printDataAsASCII(vector<uint8_t> data);
 
     // closes socket anf unbinds port
     void cleanupSocket();

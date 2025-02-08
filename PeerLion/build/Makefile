@@ -322,29 +322,53 @@ NetworkUnit/SocketHandler/SocketHandler.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/NetworkUnit/SocketHandler/SocketHandler.cpp.s
 .PHONY : NetworkUnit/SocketHandler/SocketHandler.cpp.s
 
-Torrent/FileHandler/TorrentFileHandler.o: Torrent/FileHandler/TorrentFileHandler.cpp.o
-.PHONY : Torrent/FileHandler/TorrentFileHandler.o
+Torrent/FileIO/FileIO.o: Torrent/FileIO/FileIO.cpp.o
+.PHONY : Torrent/FileIO/FileIO.o
 
 # target to build an object file
-Torrent/FileHandler/TorrentFileHandler.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.o
-.PHONY : Torrent/FileHandler/TorrentFileHandler.cpp.o
+Torrent/FileIO/FileIO.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.o
+.PHONY : Torrent/FileIO/FileIO.cpp.o
 
-Torrent/FileHandler/TorrentFileHandler.i: Torrent/FileHandler/TorrentFileHandler.cpp.i
-.PHONY : Torrent/FileHandler/TorrentFileHandler.i
+Torrent/FileIO/FileIO.i: Torrent/FileIO/FileIO.cpp.i
+.PHONY : Torrent/FileIO/FileIO.i
 
 # target to preprocess a source file
-Torrent/FileHandler/TorrentFileHandler.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.i
-.PHONY : Torrent/FileHandler/TorrentFileHandler.cpp.i
+Torrent/FileIO/FileIO.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.i
+.PHONY : Torrent/FileIO/FileIO.cpp.i
 
-Torrent/FileHandler/TorrentFileHandler.s: Torrent/FileHandler/TorrentFileHandler.cpp.s
-.PHONY : Torrent/FileHandler/TorrentFileHandler.s
+Torrent/FileIO/FileIO.s: Torrent/FileIO/FileIO.cpp.s
+.PHONY : Torrent/FileIO/FileIO.s
 
 # target to generate assembly for a file
-Torrent/FileHandler/TorrentFileHandler.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/FileHandler/TorrentFileHandler.cpp.s
-.PHONY : Torrent/FileHandler/TorrentFileHandler.cpp.s
+Torrent/FileIO/FileIO.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/FileIO/FileIO.cpp.s
+.PHONY : Torrent/FileIO/FileIO.cpp.s
+
+Torrent/PeerManager/PeerManager.o: Torrent/PeerManager/PeerManager.cpp.o
+.PHONY : Torrent/PeerManager/PeerManager.o
+
+# target to build an object file
+Torrent/PeerManager/PeerManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.o
+.PHONY : Torrent/PeerManager/PeerManager.cpp.o
+
+Torrent/PeerManager/PeerManager.i: Torrent/PeerManager/PeerManager.cpp.i
+.PHONY : Torrent/PeerManager/PeerManager.i
+
+# target to preprocess a source file
+Torrent/PeerManager/PeerManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.i
+.PHONY : Torrent/PeerManager/PeerManager.cpp.i
+
+Torrent/PeerManager/PeerManager.s: Torrent/PeerManager/PeerManager.cpp.s
+.PHONY : Torrent/PeerManager/PeerManager.s
+
+# target to generate assembly for a file
+Torrent/PeerManager/PeerManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PeerManager/PeerManager.cpp.s
+.PHONY : Torrent/PeerManager/PeerManager.cpp.s
 
 Torrent/PeersConnectionManager/PeersConnectionManager.o: Torrent/PeersConnectionManager/PeersConnectionManager.cpp.o
 .PHONY : Torrent/PeersConnectionManager/PeersConnectionManager.o
@@ -369,6 +393,78 @@ Torrent/PeersConnectionManager/PeersConnectionManager.s: Torrent/PeersConnection
 Torrent/PeersConnectionManager/PeersConnectionManager.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PeersConnectionManager/PeersConnectionManager.cpp.s
 .PHONY : Torrent/PeersConnectionManager/PeersConnectionManager.cpp.s
+
+Torrent/PieceManagement/RarityTrackerChooser.o: Torrent/PieceManagement/RarityTrackerChooser.cpp.o
+.PHONY : Torrent/PieceManagement/RarityTrackerChooser.o
+
+# target to build an object file
+Torrent/PieceManagement/RarityTrackerChooser.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.o
+.PHONY : Torrent/PieceManagement/RarityTrackerChooser.cpp.o
+
+Torrent/PieceManagement/RarityTrackerChooser.i: Torrent/PieceManagement/RarityTrackerChooser.cpp.i
+.PHONY : Torrent/PieceManagement/RarityTrackerChooser.i
+
+# target to preprocess a source file
+Torrent/PieceManagement/RarityTrackerChooser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.i
+.PHONY : Torrent/PieceManagement/RarityTrackerChooser.cpp.i
+
+Torrent/PieceManagement/RarityTrackerChooser.s: Torrent/PieceManagement/RarityTrackerChooser.cpp.s
+.PHONY : Torrent/PieceManagement/RarityTrackerChooser.s
+
+# target to generate assembly for a file
+Torrent/PieceManagement/RarityTrackerChooser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/PieceManagement/RarityTrackerChooser.cpp.s
+.PHONY : Torrent/PieceManagement/RarityTrackerChooser.cpp.s
+
+Torrent/TorrentFileHandler/TorrentFileHandler.o: Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o
+.PHONY : Torrent/TorrentFileHandler/TorrentFileHandler.o
+
+# target to build an object file
+Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o
+.PHONY : Torrent/TorrentFileHandler/TorrentFileHandler.cpp.o
+
+Torrent/TorrentFileHandler/TorrentFileHandler.i: Torrent/TorrentFileHandler/TorrentFileHandler.cpp.i
+.PHONY : Torrent/TorrentFileHandler/TorrentFileHandler.i
+
+# target to preprocess a source file
+Torrent/TorrentFileHandler/TorrentFileHandler.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.i
+.PHONY : Torrent/TorrentFileHandler/TorrentFileHandler.cpp.i
+
+Torrent/TorrentFileHandler/TorrentFileHandler.s: Torrent/TorrentFileHandler/TorrentFileHandler.cpp.s
+.PHONY : Torrent/TorrentFileHandler/TorrentFileHandler.s
+
+# target to generate assembly for a file
+Torrent/TorrentFileHandler/TorrentFileHandler.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/TorrentFileHandler/TorrentFileHandler.cpp.s
+.PHONY : Torrent/TorrentFileHandler/TorrentFileHandler.cpp.s
+
+Torrent/TorrentManager/TorrentManager.o: Torrent/TorrentManager/TorrentManager.cpp.o
+.PHONY : Torrent/TorrentManager/TorrentManager.o
+
+# target to build an object file
+Torrent/TorrentManager/TorrentManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.o
+.PHONY : Torrent/TorrentManager/TorrentManager.cpp.o
+
+Torrent/TorrentManager/TorrentManager.i: Torrent/TorrentManager/TorrentManager.cpp.i
+.PHONY : Torrent/TorrentManager/TorrentManager.i
+
+# target to preprocess a source file
+Torrent/TorrentManager/TorrentManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.i
+.PHONY : Torrent/TorrentManager/TorrentManager.cpp.i
+
+Torrent/TorrentManager/TorrentManager.s: Torrent/TorrentManager/TorrentManager.cpp.s
+.PHONY : Torrent/TorrentManager/TorrentManager.s
+
+# target to generate assembly for a file
+Torrent/TorrentManager/TorrentManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PeerLion.dir/build.make CMakeFiles/PeerLion.dir/Torrent/TorrentManager/TorrentManager.cpp.s
+.PHONY : Torrent/TorrentManager/TorrentManager.cpp.s
 
 Utils/DowndloadProgress/DownloadProgress.o: Utils/DowndloadProgress/DownloadProgress.cpp.o
 .PHONY : Utils/DowndloadProgress/DownloadProgress.o
@@ -571,12 +667,24 @@ help:
 	@echo "... NetworkUnit/SocketHandler/SocketHandler.o"
 	@echo "... NetworkUnit/SocketHandler/SocketHandler.i"
 	@echo "... NetworkUnit/SocketHandler/SocketHandler.s"
-	@echo "... Torrent/FileHandler/TorrentFileHandler.o"
-	@echo "... Torrent/FileHandler/TorrentFileHandler.i"
-	@echo "... Torrent/FileHandler/TorrentFileHandler.s"
+	@echo "... Torrent/FileIO/FileIO.o"
+	@echo "... Torrent/FileIO/FileIO.i"
+	@echo "... Torrent/FileIO/FileIO.s"
+	@echo "... Torrent/PeerManager/PeerManager.o"
+	@echo "... Torrent/PeerManager/PeerManager.i"
+	@echo "... Torrent/PeerManager/PeerManager.s"
 	@echo "... Torrent/PeersConnectionManager/PeersConnectionManager.o"
 	@echo "... Torrent/PeersConnectionManager/PeersConnectionManager.i"
 	@echo "... Torrent/PeersConnectionManager/PeersConnectionManager.s"
+	@echo "... Torrent/PieceManagement/RarityTrackerChooser.o"
+	@echo "... Torrent/PieceManagement/RarityTrackerChooser.i"
+	@echo "... Torrent/PieceManagement/RarityTrackerChooser.s"
+	@echo "... Torrent/TorrentFileHandler/TorrentFileHandler.o"
+	@echo "... Torrent/TorrentFileHandler/TorrentFileHandler.i"
+	@echo "... Torrent/TorrentFileHandler/TorrentFileHandler.s"
+	@echo "... Torrent/TorrentManager/TorrentManager.o"
+	@echo "... Torrent/TorrentManager/TorrentManager.i"
+	@echo "... Torrent/TorrentManager/TorrentManager.s"
 	@echo "... Utils/DowndloadProgress/DownloadProgress.o"
 	@echo "... Utils/DowndloadProgress/DownloadProgress.i"
 	@echo "... Utils/DowndloadProgress/DownloadProgress.s"

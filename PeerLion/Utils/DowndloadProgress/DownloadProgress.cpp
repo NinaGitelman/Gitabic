@@ -127,6 +127,17 @@ void DownloadProgress::deserialize(vector<uint8_t> data) {
     }
 }
 
+vector<std::bitset<8> > DownloadProgress::getBitField() const {
+    vector<std::bitset<8> > bitField;
+    for (int i = 0; i < pieces.size(); ++i) {
+        if (i % 8 == 0) {
+            bitField.push_back(std::bitset<8>());
+        }
+        bitField.back()[i % 8] = pieces[i].status == DownloadStatus::Verified;
+    }
+    return bitField;
+}
+
 double DownloadProgress::progress() const {
     std::lock_guard<std::mutex> guard(mut);
     return totalDownloadBytes / static_cast<double>(fileSize);
@@ -154,7 +165,7 @@ void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadSta
     // Update last access time
     lastTime = time(nullptr);
 
-    totalDownloadBytes -= pieces[piece].setStatus(status);
+    totalDownloadBytes += pieces[piece].setStatus(status);
 }
 
 void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t block, const DownloadStatus status) {
@@ -173,21 +184,14 @@ vector<PieceProgress> DownloadProgress::getPiecesStatused(const DownloadStatus s
     vector<PieceProgress> pieces;
 
     for (const auto &piece: this->pieces) {
-        if (piece.status == status) { pieces.push_back(piece); }
+        if (piece.status == status) {
+            pieces.push_back(piece);
+        }
     }
 
     return pieces;
 }
 
-vector<PieceProgress> DownloadProgress::getBlocksStatused(DownloadStatus status) const {
-    std::lock_guard<std::mutex> guard(mut);
-    vector<PieceProgress> res;
-    res.reserve(this->pieces.size());
-    for (const auto &piece: this->pieces) {
-        res.push_back(piece.getBlocksStatused());
-    }
-    return res;
-}
 
 PieceProgress DownloadProgress::getPiece(const uint32_t index) const {
     std::lock_guard<mutex> guard(mut);
@@ -195,6 +199,10 @@ PieceProgress DownloadProgress::getPiece(const uint32_t index) const {
     if (index >= pieces.size())
         throw std::out_of_range("No piece #" + index);
     return pieces[index];
+}
+
+uint DownloadProgress::getPieceIndex(const uint64_t offset) const {
+    return offset / Utils::FileSplitter::pieceSize(fileSize);
 }
 
 
@@ -222,21 +230,19 @@ void DownloadProgress::init(const MetaDataFile &metaData) {
 PieceProgress::PieceProgress(const uint64_t offset, const uint32_t size, const HashResult &hash) : offset(offset),
                                                                                                    size(size),
                                                                                                    hash(hash) {
-    {
-        this->bytesDownloaded = 0;
-        lastAccess = time(nullptr);
-        status = DownloadStatus::Empty;
-        blocks = vector<BlockInfo>();
-        auto temp = size;
-        this->hash = hash;
-        while (temp > 0) {
-            BlockInfo block{};
-            block.offset = size - temp;
-            block.size = Utils::FileSplitter::BLOCK_SIZE < temp ? Utils::FileSplitter::BLOCK_SIZE : temp;
-            temp -= block.size;
-            block.isLastBlock = temp == 0;
-            blocks.push_back(block);
-        }
+    this->bytesDownloaded = 0;
+    lastAccess = time(nullptr);
+    status = DownloadStatus::Empty;
+    blocks = vector<BlockInfo>();
+    auto temp = size;
+    this->hash = hash;
+    while (temp > 0) {
+        BlockInfo block{};
+        block.offset = size - temp;
+        block.size = Utils::FileSplitter::BLOCK_SIZE < temp ? Utils::FileSplitter::BLOCK_SIZE : temp;
+        temp -= block.size;
+        block.isLastBlock = temp == 0;
+        blocks.push_back(block);
     }
 }
 
@@ -291,22 +297,27 @@ bool PieceProgress::allBlocksDownloaded() const {
     return true;
 }
 
-uint32_t PieceProgress::setStatus(const DownloadStatus status) {
-    uint32_t sizeRemoved = 0;
+int32_t PieceProgress::setStatus(const DownloadStatus status) {
+    int32_t sizeChanged = 0;
     const bool toRemove = status == DownloadStatus::Empty && this->status != DownloadStatus::Empty;
+    const bool toAdd = (status == DownloadStatus::Verified || status == DownloadStatus::Downloaded) && (
+                           this->status == DownloadStatus::Empty || this->status == DownloadStatus::Downloading);
     // Update last access time
     lastAccess = time(nullptr);
 
     this->status = status;
     if (status != DownloadStatus::Downloading) {
         for (auto &&i: blocks) {
-            if (toRemove && i.status == DownloadStatus::Downloaded) {
-                sizeRemoved += i.size;
+            if (toRemove && (i.status == DownloadStatus::Downloaded || i.status == DownloadStatus::Verified)) {
+                sizeChanged -= i.size;
+            }
+            if (toAdd && (i.status == DownloadStatus::Empty || i.status == DownloadStatus::Downloading)) {
+                sizeChanged += i.size;
             }
             i.status = status;
         }
     }
-    return sizeRemoved;
+    return sizeChanged;
 }
 
 void PieceProgress::updateBlockStatus(const uint16_t block, const DownloadStatus status) {
@@ -320,6 +331,9 @@ void PieceProgress::updateBlockStatus(const uint16_t block, const DownloadStatus
     if (status == DownloadStatus::Downloaded && allBlocksDownloaded()) {
         this->status = DownloadStatus::Downloaded;
     }
+    if (status == DownloadStatus::Downloading) {
+        this->status = DownloadStatus::Downloading;
+    }
 }
 
 BlockInfo PieceProgress::getBlockInfo(const uint16_t block) const {
@@ -328,15 +342,18 @@ BlockInfo PieceProgress::getBlockInfo(const uint16_t block) const {
     return blocks[block];
 }
 
-PieceProgress PieceProgress::getBlocksStatused(const DownloadStatus status) const {
-    PieceProgress piece_progress(offset, size, hash);
-    piece_progress.status = status;
+vector<BlockInfo> PieceProgress::getBlocksStatused(const DownloadStatus status) const {
+    vector<BlockInfo> relevantBlcoks;
     for (auto &&i: blocks) {
         if (i.status == status) {
-            piece_progress.blocks.push_back(i);
+            relevantBlcoks.push_back(i);
         }
     }
-    return piece_progress;
+    return relevantBlcoks;
+}
+
+uint16_t PieceProgress::getBlockIndex(const uint64_t offset) {
+    return offset / Utils::FileSplitter::BLOCK_SIZE;
 }
 
 vector<uint8_t> PieceProgress::serialize() const {

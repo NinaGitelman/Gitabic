@@ -28,8 +28,8 @@ ICEConnection::ICEConnection(const bool isControlling) {
         // Enable verbose logging
         g_object_set(_agent, "stun-max-retransmissions", 3, NULL);
         g_object_set(_agent, "stun-initial-timeout", 500, NULL);
-        nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 10244, 65535);
         _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
+        nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 10244, 65535);
 
         if (_streamId == 0) {
             throw std::runtime_error("Failed to add stream");
@@ -53,15 +53,18 @@ void ICEConnection::callbackAgentCloseDone(GObject *source_object, GAsyncResult 
     // Simply quit the main loop
     g_main_loop_quit(agentCloseLoop);
 }
-
-void ICEConnection::disconnect() {
-    if (_isConnected) // in case called twice by accident...
+// sometimes it gets here if one tries to connect too fast to the other one but its okay as _isConnected is then as false
+void ICEConnection::disconnect()
+{
+   if (_isConnected) // in case called twice by accident...
     {
+        g_message("is connected");
+
         std::cout << "Disconnecting from ICEConnection" << std::endl;
 
         // send a disconnect message
         MessageBaseToSend disconnectMessage = MessageBaseToSend(ICEConnectionCodes::Disconnect);
-        systemSendMessage(this, &disconnectMessage);
+        systemSendMessage(this, std::make_shared<MessageBaseToSend>(disconnectMessage));
 
         _isConnected.store(false);
         // NEEDS to be before as the threads will check if it is connected before using gloop, agent, context
@@ -136,16 +139,15 @@ void ICEConnection::callbackReceive(NiceAgent *_agent, guint _stream_id, guint c
             if (len == 1 && buf[0] == '\0' && iceConnection->_gloop != nullptr)
             // if the connection finished this is what libnice should send (it didnt by now but leaving it...)
             {
-                g_message("Other peer disconnected");
+                g_message("Other peer disconnected in callback received from lib nice");
                 iceConnection->disconnect();
             } else {
                 try {
                     MessageBaseReceived newMessage = deserializeMessage(buf, len);
 
-                    if (newMessage.code == ICEConnectionCodes::Disconnect)
                     // if other user prettily asked to disconnect - disconnect
-                    {
-                        g_message("Other peer disconnected");
+                    if (newMessage.code == ICEConnectionCodes::Disconnect) {
+                        g_message("Other peer disconnected in receive from code");
                         iceConnection->disconnect();
                     } else {
                         // add the new received message to the messages queue
@@ -296,6 +298,7 @@ end:
 
 bool ICEConnection::connectToPeer(const vector<uint8_t> remoteDataVec) {
     // call thread
+    bool connected = false;
     std::thread peerThread([this, remoteDataVec]() {
         connectToPeerThread(remoteDataVec);
     });
@@ -319,12 +322,14 @@ bool ICEConnection::connectToPeer(const vector<uint8_t> remoteDataVec) {
 
         // Check if peer is connected
         if (_isConnected.load()) {
-            return true; // Successfully connected
+            connected = true;
+            break;
         }
 
         // Wait for the next check interval
         std::this_thread::sleep_for(checkInterval);
     }
+    return connected;
 }
 
 int ICEConnection::connectToPeerThread(const vector<uint8_t> remoteDataVec) {
@@ -515,8 +520,8 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent *_agent, guint strea
     }
 }
 
-void ICEConnection::sendMessage(MessageBaseToSend *message) {
-    std::cout << "ICEConnection sending message" << std::endl; {
+void ICEConnection::sendMessage(const std::shared_ptr<MessageBaseToSend> &message) {
+    {
         std::lock_guard<std::mutex> lock(_mutexMessagesToSend);
         _messagesToSend.push(message);
     }
@@ -526,7 +531,7 @@ void ICEConnection::sendMessage(MessageBaseToSend *message) {
 }
 
 
-void ICEConnection::systemSendMessage(ICEConnection *connection, MessageBaseToSend *message) {
+void ICEConnection::systemSendMessage(ICEConnection *connection, std::shared_ptr<MessageBaseToSend> message) {
     std::vector<uint8_t> messageInVector = message->serialize();
 
     gint result = nice_agent_send(connection->_agent,
@@ -562,7 +567,7 @@ void ICEConnection::messageSendingThread(ICEConnection *connection) {
         while (!connection->_messagesToSend.empty()) {
             try {
                 // Take the message out of the queue
-                MessageBaseToSend *message = connection->_messagesToSend.front();
+                const auto message = connection->_messagesToSend.front();
                 connection->_messagesToSend.pop();
 
                 // Unlock mutex before sending to prevent deadlock
