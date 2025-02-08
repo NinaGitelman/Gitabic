@@ -78,6 +78,8 @@ struct PieceProgress {
     /// @return Vector containing the serialized piece data
     [[nodiscard]] vector<uint8_t> serialize() const;
 
+    [[nodiscard]] vector<uint8_t> serializeForFileUpdate() const;
+
     /// @brief Deserializes piece progress information
     /// @param data Vector containing the serialized data
     /// @param offset Current position in the data vector, updated after deserialization
@@ -89,39 +91,43 @@ struct PieceProgress {
 class DownloadProgress {
 public:
     [[nodiscard]] const string &getFileName() const {
-        return fileName;
+        return _fileName;
     }
 
     [[nodiscard]] const string &getCreator() const {
-        return creator;
+        return _creator;
     }
 
     [[nodiscard]] const HashResult &getFileHash() const {
-        return fileHash;
+        return _fileHash;
     }
 
     [[nodiscard]] bool isCompleted() const {
-        return completed;
+        return _completed;
     }
 
     [[nodiscard]] uint64_t getTotalDownloadBytes() const {
-        return totalDownloadBytes;
+        return _totalDownloadBytes;
     }
 
     [[nodiscard]] uint64_t getFileSize() const {
-        return fileSize;
+        return _fileSize;
     }
 
     [[nodiscard]] time_t getStartTime() const {
-        return startTime;
+        return _startTime;
     }
 
     [[nodiscard]] time_t getLastTime() const {
-        return lastTime;
+        return _lastTime;
     }
 
     int getAmmountOfPieces() const {
-        return pieces.size();
+        return _pieces.size();
+    }
+
+    Address getSignalingAddress() const {
+        return _signalingAddress;
     }
 
     /// @brief Constructs a new download progress tracker from metadata
@@ -191,16 +197,17 @@ private:
     /// @param metaData Metadata of the file being downloaded
     void init(const MetaDataFile &metaData);
 
-    string fileName; ///< Name of the file being downloaded
-    string creator; ///< Name of the creator of file being downloaded
-    HashResult fileHash{}; ///< Hash of the complete file
-    bool completed{}; ///< Indicates if download is complete
-    uint64_t totalDownloadBytes{}; ///< Total bytes downloaded so far
-    uint64_t fileSize{}; ///< Total size of the file
-    time_t startTime{}; ///< Time when download started
-    time_t lastTime{}; ///< Time of last download activity
-    vector<PieceProgress> pieces; ///< List of all pieces in the download
-    mutable std::mutex mut;
+    string _fileName; ///< Name of the file being downloaded
+    string _creator; ///< Name of the creator of file being downloaded
+    HashResult _fileHash{}; ///< Hash of the complete file
+    bool _completed{}; ///< Indicates if download is complete
+    uint64_t _totalDownloadBytes{}; ///< Total bytes downloaded so far
+    uint64_t _fileSize{}; ///< Total size of the file
+    time_t _startTime{}; ///< Time when download started
+    time_t _lastTime{}; ///< Time of last download activity
+    vector<PieceProgress> _pieces; ///< List of all pieces in the download
+    Address _signalingAddress; ///< Network address for signaling
+    mutable std::mutex _mut;
 };
 
 #endif

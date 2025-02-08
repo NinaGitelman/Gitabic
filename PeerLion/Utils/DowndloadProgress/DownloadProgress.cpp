@@ -4,16 +4,19 @@ DownloadProgress::DownloadProgress(const MetaDataFile &metaData) {
     init(metaData);
 }
 
-DownloadProgress::DownloadProgress(const DownloadProgress &downloadProgress) : fileName(downloadProgress.fileName),
-                                                                               creator(downloadProgress.creator),
-                                                                               fileHash(downloadProgress.fileHash),
-                                                                               completed(downloadProgress.completed),
-                                                                               totalDownloadBytes(
-                                                                                   downloadProgress.totalDownloadBytes),
-                                                                               fileSize(downloadProgress.fileSize),
-                                                                               startTime(downloadProgress.startTime),
-                                                                               lastTime(downloadProgress.lastTime),
-                                                                               pieces(downloadProgress.pieces) {
+DownloadProgress::DownloadProgress(const DownloadProgress &downloadProgress) : _fileName(downloadProgress._fileName),
+                                                                               _creator(downloadProgress._creator),
+                                                                               _fileHash(downloadProgress._fileHash),
+                                                                               _completed(downloadProgress._completed),
+                                                                               _totalDownloadBytes(
+                                                                                   downloadProgress.
+                                                                                   _totalDownloadBytes),
+                                                                               _fileSize(downloadProgress._fileSize),
+                                                                               _startTime(downloadProgress._startTime),
+                                                                               _lastTime(downloadProgress._lastTime),
+                                                                               _pieces(downloadProgress._pieces),
+                                                                               _signalingAddress(
+                                                                                   downloadProgress._signalingAddress) {
 }
 
 DownloadProgress &DownloadProgress::operator=(const MetaDataFile &meta) {
@@ -28,15 +31,16 @@ DownloadProgress &DownloadProgress::operator=(DownloadProgress other) {
 
 void swap(DownloadProgress &first, DownloadProgress &second) noexcept {
     using std::swap;
-    swap(first.fileName, second.fileName);
-    swap(first.creator, second.creator);
-    swap(first.fileHash, second.fileHash);
-    swap(first.completed, second.completed);
-    swap(first.totalDownloadBytes, second.totalDownloadBytes);
-    swap(first.fileSize, second.fileSize);
-    swap(first.startTime, second.startTime);
-    swap(first.lastTime, second.lastTime);
-    swap(first.pieces, second.pieces);
+    swap(first._fileName, second._fileName);
+    swap(first._creator, second._creator);
+    swap(first._fileHash, second._fileHash);
+    swap(first._completed, second._completed);
+    swap(first._totalDownloadBytes, second._totalDownloadBytes);
+    swap(first._fileSize, second._fileSize);
+    swap(first._startTime, second._startTime);
+    swap(first._lastTime, second._lastTime);
+    swap(first._pieces, second._pieces);
+    swap(first._signalingAddress, second._signalingAddress);
 }
 
 DownloadProgress::DownloadProgress(const vector<uint8_t> &data) {
@@ -47,34 +51,36 @@ DownloadProgress::~DownloadProgress()
 = default;
 
 vector<uint8_t> DownloadProgress::serialize() {
-    std::lock_guard<mutex> guard(mut);
+    std::lock_guard<mutex> guard(_mut);
     vector<uint8_t> data;
 
     // Serialize basic properties
-    data.insert(data.end(), reinterpret_cast<uint8_t *>(&completed),
-                reinterpret_cast<uint8_t *>(&completed) + sizeof(completed));
-    data.insert(data.end(), reinterpret_cast<uint8_t *>(&totalDownloadBytes),
-                reinterpret_cast<uint8_t *>(&totalDownloadBytes) + sizeof(totalDownloadBytes));
-    data.insert(data.end(), reinterpret_cast<uint8_t *>(&fileSize),
-                reinterpret_cast<uint8_t *>(&fileSize) + sizeof(fileSize));
-    data.insert(data.end(), reinterpret_cast<uint8_t *>(&startTime),
-                reinterpret_cast<uint8_t *>(&startTime) + sizeof(startTime));
-    data.insert(data.end(), reinterpret_cast<uint8_t *>(&lastTime),
-                reinterpret_cast<uint8_t *>(&lastTime) + sizeof(lastTime));
-    data.insert(data.end(), fileHash.data(), fileHash.data() + fileHash.size());
-    uint8_t nameSize = fileName.size();
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&_completed),
+                reinterpret_cast<uint8_t *>(&_completed) + sizeof(_completed));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&_totalDownloadBytes),
+                reinterpret_cast<uint8_t *>(&_totalDownloadBytes) + sizeof(_totalDownloadBytes));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&_fileSize),
+                reinterpret_cast<uint8_t *>(&_fileSize) + sizeof(_fileSize));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&_startTime),
+                reinterpret_cast<uint8_t *>(&_startTime) + sizeof(_startTime));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&_lastTime),
+                reinterpret_cast<uint8_t *>(&_lastTime) + sizeof(_lastTime));
+    data.insert(data.end(), _fileHash.data(), _fileHash.data() + _fileHash.size());
+    uint8_t nameSize = _fileName.size();
     data.insert(data.end(), (uint8_t *) &nameSize, (uint8_t *) &nameSize + sizeof(nameSize));
-    data.insert(data.end(), fileName.c_str(), fileName.c_str() + fileName.size());
-    nameSize = creator.size();
+    data.insert(data.end(), _fileName.c_str(), _fileName.c_str() + _fileName.size());
+    nameSize = _creator.size();
     data.insert(data.end(), (uint8_t *) &nameSize, (uint8_t *) &nameSize + sizeof(nameSize));
-    data.insert(data.end(), creator.c_str(), creator.c_str() + creator.size());
+    data.insert(data.end(), _creator.c_str(), _creator.c_str() + _creator.size());
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&_signalingAddress),
+                reinterpret_cast<uint8_t *>(&_signalingAddress) + sizeof(_signalingAddress));
 
     // Serialize pieces
-    uint32_t piecesCount = pieces.size();
+    uint32_t piecesCount = _pieces.size();
     data.insert(data.end(), reinterpret_cast<uint8_t *>(&piecesCount),
                 reinterpret_cast<uint8_t *>(&piecesCount) + sizeof(piecesCount));
 
-    for (const auto &piece: pieces) {
+    for (const auto &piece: _pieces) {
         auto pieceData = piece.serialize();
         data.insert(data.end(), pieceData.begin(), pieceData.end());
     }
@@ -83,107 +89,109 @@ vector<uint8_t> DownloadProgress::serialize() {
 }
 
 void DownloadProgress::deserialize(vector<uint8_t> data) {
-    std::lock_guard<mutex> guard(mut);
+    std::lock_guard<mutex> guard(_mut);
 
     size_t offset = 0;
 
     // Deserialize basic properties
-    memcpy(&completed, data.data() + offset, sizeof(completed));
-    offset += sizeof(completed);
+    memcpy(&_completed, data.data() + offset, sizeof(_completed));
+    offset += sizeof(_completed);
 
-    memcpy(&totalDownloadBytes, data.data() + offset, sizeof(totalDownloadBytes));
-    offset += sizeof(totalDownloadBytes);
+    memcpy(&_totalDownloadBytes, data.data() + offset, sizeof(_totalDownloadBytes));
+    offset += sizeof(_totalDownloadBytes);
 
-    memcpy(&fileSize, data.data() + offset, sizeof(fileSize));
-    offset += sizeof(fileSize);
+    memcpy(&_fileSize, data.data() + offset, sizeof(_fileSize));
+    offset += sizeof(_fileSize);
 
-    memcpy(&startTime, data.data() + offset, sizeof(startTime));
-    offset += sizeof(startTime);
+    memcpy(&_startTime, data.data() + offset, sizeof(_startTime));
+    offset += sizeof(_startTime);
 
-    memcpy(&lastTime, data.data() + offset, sizeof(lastTime));
-    offset += sizeof(lastTime);
+    memcpy(&_lastTime, data.data() + offset, sizeof(_lastTime));
+    offset += sizeof(_lastTime);
 
-    memcpy(fileHash.data(), data.data() + offset, fileHash.size());
-    offset += fileHash.size();
+    memcpy(_fileHash.data(), data.data() + offset, _fileHash.size());
+    offset += _fileHash.size();
 
     uint8_t fileNameSize;
     memcpy(&fileNameSize, data.data() + offset, sizeof(fileNameSize));
     offset += sizeof(fileNameSize);
-    fileName = string(data.data() + offset, data.data() + offset + fileNameSize);
+    _fileName = string(data.data() + offset, data.data() + offset + fileNameSize);
     offset += fileNameSize;
     memcpy(&fileNameSize, data.data() + offset, sizeof(fileNameSize));
     offset += sizeof(fileNameSize);
-    creator = string(data.data() + offset, data.data() + offset + fileNameSize);
+    _creator = string(data.data() + offset, data.data() + offset + fileNameSize);
     offset += fileNameSize;
+    _signalingAddress = *reinterpret_cast<Address *>(data.data() + offset);
+    offset += sizeof(_signalingAddress);
 
     // Deserialize pieces
     uint32_t piecesCount;
     memcpy(&piecesCount, data.data() + offset, sizeof(piecesCount));
     offset += sizeof(piecesCount);
 
-    pieces.clear();
+    _pieces.clear();
     for (uint32_t i = 0; i < piecesCount; i++) {
-        pieces.push_back(PieceProgress::deserialize(data, offset));
+        _pieces.push_back(PieceProgress::deserialize(data, offset));
     }
 }
 
 vector<std::bitset<8> > DownloadProgress::getBitField() const {
     vector<std::bitset<8> > bitField;
-    for (int i = 0; i < pieces.size(); ++i) {
+    for (int i = 0; i < _pieces.size(); ++i) {
         if (i % 8 == 0) {
             bitField.push_back(std::bitset<8>());
         }
-        bitField.back()[i % 8] = pieces[i].status == DownloadStatus::Verified;
+        bitField.back()[i % 8] = _pieces[i].status == DownloadStatus::Verified;
     }
     return bitField;
 }
 
 double DownloadProgress::progress() const {
-    std::lock_guard<std::mutex> guard(mut);
-    return totalDownloadBytes / static_cast<double>(fileSize);
+    std::lock_guard<std::mutex> guard(_mut);
+    return _totalDownloadBytes / static_cast<double>(_fileSize);
 }
 
 bool DownloadProgress::downloadedBlock(const uint32_t piece, const uint16_t block) {
-    std::lock_guard<mutex> guard(mut);
+    std::lock_guard<mutex> guard(_mut);
 
-    if (piece >= pieces.size())
+    if (piece >= _pieces.size())
         throw std::out_of_range("No piece #" + piece);
 
     // Update last access time
-    lastTime = time(nullptr);
+    _lastTime = time(nullptr);
 
-    totalDownloadBytes += pieces[piece].downloadedBlock(block);
-    return pieces[piece].status == DownloadStatus::Downloaded;
+    _totalDownloadBytes += _pieces[piece].downloadedBlock(block);
+    return _pieces[piece].status == DownloadStatus::Downloaded;
 }
 
 void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadStatus status) {
-    std::lock_guard<mutex> guard(mut);
+    std::lock_guard<mutex> guard(_mut);
 
-    if (piece >= pieces.size())
+    if (piece >= _pieces.size())
         throw std::out_of_range("No piece #" + piece);
 
     // Update last access time
-    lastTime = time(nullptr);
+    _lastTime = time(nullptr);
 
-    totalDownloadBytes += pieces[piece].setStatus(status);
+    _totalDownloadBytes += _pieces[piece].setStatus(status);
 }
 
 void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t block, const DownloadStatus status) {
-    std::lock_guard<std::mutex> guard(mut);
-    if (piece >= pieces.size())
+    std::lock_guard<std::mutex> guard(_mut);
+    if (piece >= _pieces.size())
         throw std::out_of_range("No piece #" + piece);
 
     // Update last access time
-    lastTime = time(nullptr);
+    _lastTime = time(nullptr);
 
-    pieces[piece].updateBlockStatus(block, status);
+    _pieces[piece].updateBlockStatus(block, status);
 }
 
 vector<PieceProgress> DownloadProgress::getPiecesStatused(const DownloadStatus status) {
-    std::lock_guard<std::mutex> guard(mut);
+    std::lock_guard<std::mutex> guard(_mut);
     vector<PieceProgress> pieces;
 
-    for (const auto &piece: this->pieces) {
+    for (const auto &piece: this->_pieces) {
         if (piece.status == status) {
             pieces.push_back(piece);
         }
@@ -194,35 +202,36 @@ vector<PieceProgress> DownloadProgress::getPiecesStatused(const DownloadStatus s
 
 
 PieceProgress DownloadProgress::getPiece(const uint32_t index) const {
-    std::lock_guard<mutex> guard(mut);
+    std::lock_guard<mutex> guard(_mut);
 
-    if (index >= pieces.size())
+    if (index >= _pieces.size())
         throw std::out_of_range("No piece #" + index);
-    return pieces[index];
+    return _pieces[index];
 }
 
 uint DownloadProgress::getPieceIndex(const uint64_t offset) const {
-    return offset / Utils::FileSplitter::pieceSize(fileSize);
+    return offset / Utils::FileSplitter::pieceSize(_fileSize);
 }
 
 
 void DownloadProgress::init(const MetaDataFile &metaData) {
     using namespace Utils;
-    fileName = metaData.getFileName();
-    creator = metaData.getCreator();
-    startTime = time(nullptr);
-    lastTime = startTime;
-    fileSize = metaData.getFileSize();
-    totalDownloadBytes = 0;
-    completed = false;
-    fileHash = metaData.getFileHash();
-    auto temp = fileSize;
+    _fileName = metaData.getFileName();
+    _creator = metaData.getCreator();
+    _startTime = time(nullptr);
+    _lastTime = _startTime;
+    _fileSize = metaData.getFileSize();
+    _totalDownloadBytes = 0;
+    _completed = false;
+    _fileHash = metaData.getFileHash();
+    _signalingAddress = metaData.getSignalingAddress();
+    auto temp = _fileSize;
     const uint32_t pieceSize = FileSplitter::pieceSize(temp);
     int i = 0;
     while (temp > 0) {
-        PieceProgress piece(fileSize - temp, temp > pieceSize ? pieceSize : temp, metaData.getPartsHashes()[i]);
+        PieceProgress piece(_fileSize - temp, temp > pieceSize ? pieceSize : temp, metaData.getPartsHashes()[i]);
         temp -= piece.size;
-        pieces.push_back(piece);
+        _pieces.push_back(piece);
         i++;
     }
 }
@@ -369,12 +378,27 @@ vector<uint8_t> PieceProgress::serialize() const {
 
     // Serialize blocks
     uint32_t blocksCount = blocks.size();
-    data.insert(data.end(), (uint8_t *) &blocksCount, (uint8_t *) &blocksCount + sizeof(blocksCount));
+    data.insert(data.end(), reinterpret_cast<uint8_t *>(&blocksCount),
+                reinterpret_cast<uint8_t *>(&blocksCount) + sizeof(blocksCount));
 
     for (const auto &block: blocks) {
         auto blockData = block.serialize();
         data.insert(data.end(), blockData.begin(), blockData.end());
     }
+
+    return data;
+}
+
+vector<uint8_t> PieceProgress::serializeForFileUpdate() const {
+    std::vector<uint8_t> data;
+
+    // Serialize only the necessary fields
+    data.insert(data.end(), reinterpret_cast<const uint8_t *>(&offset),
+                reinterpret_cast<const uint8_t *>(&offset) + sizeof(offset));
+    data.insert(data.end(), reinterpret_cast<const uint8_t *>(&status),
+                reinterpret_cast<const uint8_t *>(&status) + sizeof(status));
+    data.insert(data.end(), reinterpret_cast<const uint8_t *>(&lastAccess),
+                reinterpret_cast<const uint8_t *>(&lastAccess) + sizeof(lastAccess));
 
     return data;
 }
