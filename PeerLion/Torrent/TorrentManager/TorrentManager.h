@@ -80,6 +80,11 @@ public:
 
     void handleMessage(MessageBaseReceived &message);
 
+    void start(vector<FileIO> &files);
+
+    void stopAll() const;
+
+    vector<FileIO> getFilesIOs();
 };
 
 

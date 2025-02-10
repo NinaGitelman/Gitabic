@@ -177,15 +177,15 @@ void FileIO::updatePieceStateToFile(const uint32_t pieceIndex) const {
     //write bytes read to file
     constexpr uint8_t BYTES_READ_OFFSET = 1;
     uint64_t totalBytes = _downloadProgress.getTotalDownloadBytes();
-    FileUtils::writeChunkToFile(vector<uint8_t>(reinterpret_cast<uint8_t>(&totalBytes),
-                                                reinterpret_cast<uint8_t>(&totalBytes) + sizeof(totalBytes)),
+    FileUtils::writeChunkToFile(vector<uint8_t>(reinterpret_cast<uint8_t *>(&totalBytes),
+                                                reinterpret_cast<uint8_t *>(&totalBytes) + sizeof(totalBytes)),
                                 getCurrentDirPath() + "." + _fileName + ".gitabic",
                                 BYTES_READ_OFFSET);
     //write last access to file
     constexpr uint8_t LAST_ACCESS_OFFSET = 25;
     time_t lastAccess = time(nullptr);
-    FileUtils::writeChunkToFile(vector<uint8_t>(reinterpret_cast<uint8_t>(&lastAccess),
-                                                reinterpret_cast<uint8_t>(&lastAccess) + sizeof(lastAccess)),
+    FileUtils::writeChunkToFile(vector<uint8_t>(reinterpret_cast<uint8_t *>(&lastAccess),
+                                                reinterpret_cast<uint8_t *>(&lastAccess) + sizeof(lastAccess)),
                                 getCurrentDirPath() + "." + _fileName + ".gitabic",
                                 LAST_ACCESS_OFFSET);
 }

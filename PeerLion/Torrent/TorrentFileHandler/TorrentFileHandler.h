@@ -81,7 +81,13 @@ public:
 
 	void stop();
 
+	void resume();
+
+	bool isRunning();
+
 	void addMessage(const MessageBaseReceived &msg);
+
+	FileIO &getFileIO();
 };
 
 

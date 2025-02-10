@@ -343,13 +343,32 @@ void TorrentFileHandler::sendMessages() {
 }
 
 void TorrentFileHandler::stop() {
-	_running = false;
-	_handleRequestsThread.join();
-	_handleResponsesThread.join();
-	_downloadFileThread.join();
-	_sendMessagesThread.join();
+	if (_running) {
+		_running = false;
+		_handleRequestsThread.join();
+		_handleResponsesThread.join();
+		_downloadFileThread.join();
+		_sendMessagesThread.join();
+	}
 }
 
+void TorrentFileHandler::resume() {
+	if (!_running) {
+		_running = true;
+		_handleRequestsThread = thread(&TorrentFileHandler::handleRequests, this);
+		_handleResponsesThread = thread(&TorrentFileHandler::handleResponses, this);
+		_downloadFileThread = thread(&TorrentFileHandler::downloadFile, this);
+		_sendMessagesThread = thread(&TorrentFileHandler::sendMessages, this);
+		_handleRequestsThread.detach();
+		_handleResponsesThread.detach();
+		_downloadFileThread.detach();
+		_sendMessagesThread.detach();
+	}
+}
+
+bool TorrentFileHandler::isRunning() {
+	return _running;
+}
 
 void TorrentFileHandler::addMessage(const MessageBaseReceived &msg) {
 	switch (msg.code) {
@@ -380,3 +399,8 @@ void TorrentFileHandler::addMessage(const MessageBaseReceived &msg) {
 			throw std::runtime_error("Unknown message code");
 	}
 }
+
+FileIO &TorrentFileHandler::getFileIO() {
+	return _fileIO;
+}
+

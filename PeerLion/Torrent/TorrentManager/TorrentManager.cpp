@@ -4,6 +4,7 @@
 
 #include "TorrentManager.h"
 
+#include <ranges>
 #include <utility>
 
 
@@ -73,4 +74,24 @@ void TorrentManager::handleMessage(MessageBaseReceived &message) {
     } else {
         throw std::runtime_error("FileHandler for this fileID does not exist");
     }
+}
+
+void TorrentManager::start(vector<FileIO> &files) {
+    for (auto &file: files) {
+        addNewFileHandler(file);
+    }
+}
+
+void TorrentManager::stopAll() const {
+    for (auto &handler: fileHandlers | std::ranges::views::values) {
+        handler->fileHandler->stop();
+    }
+}
+
+vector<FileIO> TorrentManager::getFilesIOs() {
+    vector<FileIO> result;
+    for (const auto &handler: fileHandlers | std::ranges::views::values) {
+        result.push_back(handler->fileHandler->getFileIO());
+    }
+    return result;
 }

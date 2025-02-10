@@ -21,6 +21,7 @@
 #include <iostream>
 #include <csignal>
 #include <iostream>
+#include "Utils/TorrentCLI.hpp"
 
 #define SERVER_ADDRESS "0.0.0.0"
 #define SERVER_PORT 4786
@@ -58,8 +59,9 @@ void main2(uint8_t n);
 int main(const int argc, char **argv) {
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
-
-
+  TorrentCLI cli(TorrentManager::getInstance());
+  cli.run();
+  return 0;
   if (argc == 2) {
     main2(atoi(argv[1]));
     return 0;
