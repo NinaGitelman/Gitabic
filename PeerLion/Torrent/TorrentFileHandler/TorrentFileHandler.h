@@ -22,6 +22,7 @@ using FileID = ID; // to be pretty :)
 
 class TorrentFileHandler {
 private:
+	ID _id;
 	mutable mutex _mutexFileIO;
 	FileIO _fileIO;
 	PeersConnectionManager &_peersConnectionManager;
@@ -77,7 +78,9 @@ private:
 	void sendMessages();
 
 public:
-	TorrentFileHandler(const FileIO &fileIo, const std::shared_ptr<TCPSocket> &serverSocket, AESKey aesKey);
+	TorrentFileHandler(const FileIO &fileIo, const std::shared_ptr<TCPSocket> &serverSocket, AESKey aesKey,
+						const ID &_id,
+						bool autoStart = true);
 
 	void stop();
 

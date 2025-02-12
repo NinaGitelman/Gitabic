@@ -18,6 +18,7 @@ struct FileHandlerAndMutex {
     std::shared_ptr<TorrentFileHandler> fileHandler;
     mutable std::mutex mutex;
 
+
     FileHandlerAndMutex(std::shared_ptr<TorrentFileHandler> fileHandler)
         : fileHandler(std::move(fileHandler)) {
     }
@@ -47,10 +48,12 @@ struct FileHandlerAndMutex {
 // class to manage all the torrent files (TorrentFileHandler)
 class TorrentManager {
 private:
+    ID _id{};
+
     // Singleton - Delete copy and assignment to ensure singleton
     TorrentManager(const TorrentManager &) = delete;
 
-    explicit TorrentManager(std::shared_ptr<TCPSocket> socket = nullptr);
+    explicit TorrentManager(std::shared_ptr<TCPSocket> &socket);
 
     TorrentManager &operator=(const TorrentManager &) = delete;
 
@@ -69,18 +72,19 @@ public:
 
     /// @brief function to add a new file handler - add new file to the torrent system
     /// @param fileIO the fileIO of the file to add
+    /// @param autoStart whether to start the file handler automatically
     /// @throw runtime_error if the file id is already in the system
-    void addNewFileHandler(FileIO &fileIO);
+    void addNewFileHandler(FileIO &fileIO, bool autoStart = true);
 
     /// @brief function to remove file from the torrent system
     /// @param fileID the fileIO of the file to add
     /// @throw runtime_error if the file id is already in the system
-    void removeFileHandler(const FileID &fileID);
+    void stopFileHandler(const FileID &fileID);
 
 
     void handleMessage(MessageBaseReceived &message);
 
-    void start(vector<FileIO> &files);
+    void start(vector<FileIO> &files, bool autoStart = true);
 
     void stopAll() const;
 

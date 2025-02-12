@@ -137,6 +137,10 @@ std::mutex &FileUtils::getFileMutex(const std::string &filePath) {
     return fileMutexes[filePath];
 }
 
+void FileUtils::createDirectory(const std::string &path) {
+    std::filesystem::create_directory(path);
+}
+
 std::filesystem::path FileUtils::createDownloadFolder(const std::string &fileHash, const std::string &friendlyName,
                                                       const uint8_t n) {
     std::filesystem::path hashFolder = "~/Gitabic/.filesFolders/" + fileHash;

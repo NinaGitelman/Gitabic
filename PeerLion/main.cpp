@@ -59,7 +59,8 @@ void main2(uint8_t n);
 int main(const int argc, char **argv) {
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
-  TorrentCLI cli(TorrentManager::getInstance());
+  TorrentCLI cli(TorrentManager::getInstance(std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT))),
+                 argc > 1 ? atoi(argv[1]) : 0);
   cli.run();
   return 0;
   if (argc == 2) {

@@ -3,7 +3,6 @@
 //
 
 #include "TorrentManager.h"
-
 #include <ranges>
 #include <utility>
 
@@ -17,23 +16,27 @@ TorrentManager &TorrentManager::getInstance(std::shared_ptr<TCPSocket> socket) {
 
     if (!instance) {
         // Create a new TorrentManager instance
-        instance = std::unique_ptr<TorrentManager>(new TorrentManager(std::move(socket)));
+        instance = std::unique_ptr<TorrentManager>(new TorrentManager(socket));
     }
     return *instance;
 }
 
-TorrentManager::TorrentManager(std::shared_ptr<TCPSocket> socket): _serverSocket(std::move(socket)) {
+TorrentManager::TorrentManager(std::shared_ptr<TCPSocket> &socket): _serverSocket(std::move(socket)) {
+    const auto res = _serverSocket->receive([](const unsigned char code) {
+        return code == ServerResponseCodes::NewID;
+    });
+    _id = ServerResponseNewId(res).id;
 }
 
 
 /// TODO - change empty aes key later...
-void TorrentManager::addNewFileHandler(FileIO &fileIO) {
+void TorrentManager::addNewFileHandler(FileIO &fileIO, bool autoStart) {
     const FileID fileID = fileIO.getDownloadProgress().getFileHash();
     // tnis line throws seg fault: the next one
     std::unique_lock<std::mutex> lockFileHandlers(_mutexFileHandlers);
     // Check if fileId already exists
     if (!fileHandlers.contains(fileID)) {
-        auto torrentFileHandler = std::make_shared<TorrentFileHandler>(fileIO, _serverSocket, AESKey());
+        auto torrentFileHandler = std::make_shared<TorrentFileHandler>(fileIO, _serverSocket, AESKey(), _id, autoStart);
 
 
         // Create a FileHandlerAndMutex object
@@ -42,11 +45,11 @@ void TorrentManager::addNewFileHandler(FileIO &fileIO) {
         // Insert into the unordered_map
         fileHandlers[fileID] = fileHandlerAndMutex;
     } else {
-        throw std::runtime_error("FileHandler for this fileID already exists");
+        fileHandlers[fileID]->fileHandler->resume();
     }
 }
 
-void TorrentManager::removeFileHandler(const FileID &fileID) {
+void TorrentManager::stopFileHandler(const FileID &fileID) {
     std::unique_lock<std::mutex> lockFileHandlers(_mutexFileHandlers);
     // Check if fileId already exists
     auto fileHandlerIt = fileHandlers.find(fileID);
@@ -54,7 +57,7 @@ void TorrentManager::removeFileHandler(const FileID &fileID) {
         // stop the file handler's processes
         (fileHandlerIt->second)->fileHandler->stop();
 
-        fileHandlers.erase(fileHandlerIt);
+        // fileHandlers.erase(fileHandlerIt);
     } else {
         throw std::runtime_error("FileHandler for this fileID does not exist");
     }
@@ -76,9 +79,9 @@ void TorrentManager::handleMessage(MessageBaseReceived &message) {
     }
 }
 
-void TorrentManager::start(vector<FileIO> &files) {
+void TorrentManager::start(vector<FileIO> &files, const bool autoStart) {
     for (auto &file: files) {
-        addNewFileHandler(file);
+        addNewFileHandler(file, autoStart);
     }
 }
 

@@ -1,29 +1,50 @@
 #include <iostream>
 #include <string>
 #include <thread>
-#include <chrono>
 #include <iomanip>
 #include <sstream>
 #include "../Torrent/TorrentManager/TorrentManager.h"
 #include "../Torrent/FileIO/FileIO.h"
+#include <cstdlib>
 
 enum class MenuChoice {
-    ListFiles = (int)'1',
+    ListFiles = static_cast<int>('1'),
     StartAll,
     StopAll,
     AddFileToDownload,
     AddFileToSeed,
-    RemoveFile,
+    stopFile,
+    startFile,
     Exit
 };
 
 class TorrentCLI {
-
-
 private:
-    TorrentManager &manager;
-    bool running = true;
-    std::mutex display_mutex;
+    TorrentManager &_manager;
+    bool _running = true;
+    std::mutex _display_mutex;
+    uint8_t _n;
+
+    [[nodiscard]] uint8_t chooseFile(const vector<FileIO> &files) {
+        if (files.empty()) {
+            std::cout << "No files available.\n";
+            return 0;
+        }
+
+        displayFiles();
+
+        int fileIndex;
+        std::cout << "Enter file number: ";
+        std::cin >> fileIndex;
+        std::cin.ignore();
+
+        if (fileIndex < 1 || fileIndex > files.size()) {
+            std::cout << "Invalid file number.\n";
+            return 0;
+        }
+
+        return fileIndex;
+    }
 
     static std::string getProgressBar(double percentage, int width = 30) {
         int pos = width * percentage;
@@ -51,10 +72,10 @@ private:
     }
 
     void displayFiles() {
-        std::lock_guard<std::mutex> lock(display_mutex);
+        std::lock_guard<std::mutex> lock(_display_mutex);
         std::cout << "\n=== Current Files ===\n";
 
-        auto files = manager.getFilesIOs();
+        auto files = _manager.getFilesIOs();
         if (files.empty()) {
             std::cout << "No files in the system.\n";
             return;
@@ -91,17 +112,16 @@ private:
 
         try {
             MetaDataFile metadata(path);
-            FileIO fileIO(metadata);
-            manager.addNewFileHandler(fileIO);
+            FileIO fileIO(metadata, _n);
+            _manager.addNewFileHandler(fileIO);
             std::cout << "File added successfully!\n";
         } catch (const std::exception &e) {
             std::cout << "Error adding file: " << e.what() << "\n";
         }
     }
 
-    void addFileToSeed(){
+    void addFileToSeed() const {
         std::string path, creator, password;
-        Address signalingAddress;
         std::cout << "Enter the path to the metadata file: ";
         std::getline(std::cin, path);
 
@@ -117,20 +137,22 @@ private:
         std::getline(std::cin, signalingIP);
         std::cout << "Enter the signaling port: ";
         std::getline(std::cin, signalingPort);
-        signalingAddress = Address(signalingIP, std::stoi(signalingPort));
-
+        const auto signalingAddress = Address(signalingIP, std::stoi(signalingPort));
 
 
         MetaDataFile metadata = MetaDataFile::createMetaData(path, password, signalingAddress, creator);
 
-        FileIO fileIO(metadata);
-        fileIO.setFileMode(FileMode::Seed);
-        //TODO make progress automatically full
-        manager.addNewFileHandler(fileIO);
+        FileIO fileIO(metadata, _n, true);
+        Utils::FileUtils::writeVectorToFile(Utils::FileUtils::readFileToVector(path),
+                                            Utils::FileUtils::getExpandedPath(
+                                                "~/Gitabic" + (_n ? std::to_string(_n) : "") + "/.filesFolders/" +
+                                                SHA256::hashToString(metadata.getFileHash()) + "/" +
+                                                metadata.getFileName()));
+        _manager.addNewFileHandler(fileIO);
     }
 
-    void handleRemoveFile() {
-        auto files = manager.getFilesIOs();
+    void handlestopFile() {
+        auto files = _manager.getFilesIOs();
         if (files.empty()) {
             std::cout << "No files available.\n";
             return;
@@ -149,56 +171,85 @@ private:
         }
 
         try {
-            manager.removeFileHandler(files[fileIndex - 1].getDownloadProgress().getFileHash());
+            _manager.stopFileHandler(files[fileIndex - 1].getDownloadProgress().getFileHash());
             std::cout << "File removed successfully!\n";
         } catch (const std::exception &e) {
             std::cout << "Error removing file: " << e.what() << "\n";
         }
     }
 
+    void clearScreen() {
+        // Set the TERM environment variable if it's not already set
+        if (!std::getenv("TERM")) {
+            setenv("TERM", "xterm", 1); // Set TERM to "xterm" (a common terminal type)
+        }
+
+        // Clear the screen
+        system("clear");
+    }
+
 public:
-    explicit TorrentCLI(TorrentManager &mgr) : manager(mgr) {
+    explicit TorrentCLI(TorrentManager &mgr, const uint8_t n) : _manager(mgr), _n(n) {
+        auto fileIOs = FileIO::getAllFileIO(n);
+        _manager.start(fileIOs, false);
     }
 
     void run() {
         std::cout << "Welcome to BitTorrent CLI\n";
 
-        while (running) {
+        while (_running) {
+            ThreadSafeCout::print << "\nPress Enter to continue...";
+            std::cin.get(); // Wait for Enter key
+            clearScreen();
             std::cout << "\n=== Main Menu ===\n"
-                    << "1. List all files\n"
-                    << "2. Add new file\n"
-                    << "3. Remove file\n"
-                    << "4. Exit\n"
+                    << "1. List files\n"
+                    << "2. Start all files\n"
+                    << "3. Stop all files\n"
+                    << "4. Add file to download\n"
+                    << "5. Add file to seed\n"
+                    << "6. Stop file\n"
+                    << "7. Start file\n"
+                    << "8. Exit\n"
                     << "Choice: ";
 
             std::string choice;
             std::getline(std::cin, choice);
 
+            if (choice.empty()) {
+                continue;
+            }
 
-            switch ((int)choice[0]) {
-              	case (int)MenuChoice::StartAll:
-            {
-                  auto fileIOs = FileIO::getAllFileIO();
-                  manager.start(fileIOs);
-                	break;
-                }
-				case (int)MenuChoice::StopAll:
-					manager.stopAll();
-                	break;
-                case (int)MenuChoice::ListFiles:
+            switch (static_cast<int>(choice[0])) {
+                case static_cast<int>(MenuChoice::ListFiles):
                     displayFiles();
                     break;
-                case (int)MenuChoice::AddFileToDownload:
+                case static_cast<int>(MenuChoice::StartAll): {
+                    auto fileIOs = FileIO::getAllFileIO();
+                    _manager.start(fileIOs, true);
+                    break;
+                }
+                case static_cast<int>(MenuChoice::StopAll):
+                    _manager.stopAll();
+                    break;
+                case static_cast<int>(MenuChoice::AddFileToDownload):
                     handleAddFile();
                     break;
-                case (int)MenuChoice::AddFileToSeed:
-                  	addFileToSeed();
+                case static_cast<int>(MenuChoice::AddFileToSeed):
+                    addFileToSeed();
                     break;
-                case (int)MenuChoice::RemoveFile:
-                    handleRemoveFile();
+                case static_cast<int>(MenuChoice::stopFile):
+                    handlestopFile();
                     break;
-                case (int)MenuChoice::Exit:
-                    running = false;
+                case static_cast<int>(MenuChoice::startFile): {
+                    auto files = _manager.getFilesIOs();
+                    const auto fileIndex = chooseFile(files);
+                    if (fileIndex) {
+                        _manager.addNewFileHandler(files[fileIndex - 1]);
+                    }
+                    break;
+                }
+                case static_cast<int>(MenuChoice::Exit):
+                    _running = false;
                     break;
                 default:
                     std::cout << "Invalid choice.\n";

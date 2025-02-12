@@ -182,6 +182,9 @@ void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadSta
     _lastTime = time(nullptr);
 
     _totalDownloadBytes += _pieces[piece].setStatus(status);
+    if (progress() >= 1) {
+        _completed = true;
+    }
 }
 
 void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t block, const DownloadStatus status) {
@@ -193,7 +196,19 @@ void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t bl
     _lastTime = time(nullptr);
 
     _pieces[piece].updateBlockStatus(block, status);
+
+    if (progress() >= 1) {
+        _completed = true;
+    }
 }
+
+void DownloadProgress::done() {
+    for (auto &piece: _pieces) {
+        _totalDownloadBytes += piece.setStatus(DownloadStatus::Verified);
+    }
+    _completed = true;
+}
+
 
 vector<PieceProgress> DownloadProgress::getPiecesStatused(const DownloadStatus status) {
     std::lock_guard<std::mutex> guard(_mut);

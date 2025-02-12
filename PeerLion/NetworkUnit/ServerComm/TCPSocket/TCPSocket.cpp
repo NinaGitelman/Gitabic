@@ -24,7 +24,7 @@ TCPSocket::~TCPSocket() {
 }
 
 void TCPSocket::sendRequest(const MessageBaseToSend &msg) {
-    std::cout << "sending server request" << std::endl;
+    // std::cout << "sending server request" << std::endl;
     std::unique_lock<mutex> guard(socketMut); // Lock the resource // STOPS IN HERE
 
     const vector<uint8_t> serialized = msg.serialize();
@@ -32,7 +32,7 @@ void TCPSocket::sendRequest(const MessageBaseToSend &msg) {
 }
 
 MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant) {
-    std::cout << "in receive function";
+    // std::cout << "in receive function";
     auto start_time = std::chrono::high_resolution_clock::now();
     while (true) {
         auto now = std::chrono::high_resolution_clock::now();
@@ -59,7 +59,7 @@ MessageBaseReceived TCPSocket::receive(std::function<bool(uint8_t)> isRelevant) 
         {
             throw std::runtime_error("Failed to read response code");
         }
-        std::cout << "Received " << (int) code << std::endl;
+        // std::cout << "Received " << (int) code << std::endl;
 
         if (recv(sockfd, &size, sizeof(size), 0) != sizeof(size)) // Read the size (4 bytes)
         {

@@ -119,11 +119,22 @@ FileIO::FileIO(const string &hash, uint8_t n) : _mode(FileMode::Default),
     _pieceSize = FileSplitter::pieceSize(_downloadProgress.getFileSize());
 }
 
-FileIO::FileIO(const MetaDataFile &metaData, const uint8_t n) : _n(n) {
+FileIO::FileIO(MetaDataFile &metaData, const uint8_t n, const bool isSeed) : _n(n) {
     initNew(metaData);
     this->_mode = FileMode::Default;
     _fileName = _downloadProgress.getFileName();
     _pieceSize = FileSplitter::pieceSize(_downloadProgress.getFileSize());
+    if (isSeed) {
+        _downloadProgress.done();
+        saveProgressToFile();
+        setFileMode(Seed);
+    }
+    if (!FileUtils::dirExists(FileUtils::getExpandedPath("~/Gitabic/MetaDatas/"))) {
+        FileUtils::createDirectory(FileUtils::getExpandedPath("~/Gitabic/MetaDatas/"));
+    }
+    FileUtils::writeVectorToFile(metaData.serialize(),
+                                 FileUtils::getExpandedPath("~/Gitabic/MetaDatas/") + _fileName + ".gitabic"
+    );
 }
 
 void FileIO::savePiece(const uint32_t pieceIndex, const vector<uint8_t> &pieceData) {
@@ -203,9 +214,10 @@ vector<uint16_t> FileIO::getIllegalPieces() const {
     return res;
 }
 
-vector<FileIO> FileIO::getAllFileIO() {
+vector<FileIO> FileIO::getAllFileIO(const uint8_t n) {
     vector<FileIO> handlers;
-    for (const auto &dir: FileUtils::listDirectories(_dirPath)) {
+    for (const auto &dir: FileUtils::listDirectories(
+             FileUtils::getExpandedPath("~/Gitabic" + (n ? std::to_string(n) : "") + "/.filesFolders/"))) {
         FileIO handler(dir);
         handlers.push_back(handler);
     }

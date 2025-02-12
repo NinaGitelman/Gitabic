@@ -74,6 +74,8 @@ namespace Utils {
 
         static std::mutex &getFileMutex(const std::string &filePath);
 
+        static void createDirectory(const std::string &path);
+
         static std::pmr::unordered_map<std::string, std::mutex> fileMutexes;
     };
 

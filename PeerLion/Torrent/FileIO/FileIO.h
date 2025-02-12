@@ -51,7 +51,7 @@ public:
 
 	FileIO(const string &hash, uint8_t n);
 
-	explicit FileIO(const MetaDataFile &metaData, uint8_t n = 0);
+	explicit FileIO(MetaDataFile &metaData, uint8_t n = 0, bool isSeed = false);
 
 	/**
 	 *
@@ -91,7 +91,7 @@ public:
 	 * initiates all files io
 	 * @return
 	 */
-	static vector<FileIO> getAllFileIO();
+	static vector<FileIO> getAllFileIO(uint8_t n = 0);
 };
 
 

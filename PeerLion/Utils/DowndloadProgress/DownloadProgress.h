@@ -188,6 +188,8 @@ public:
     /// @throw std::out_of_range if piece or block index is invalid
     void updateBlockStatus(uint32_t piece, uint16_t block, DownloadStatus status);
 
+    void done();
+
     vector<PieceProgress> getPiecesStatused(DownloadStatus status = DownloadStatus::Empty);
 
     [[nodiscard]] PieceProgress getPiece(uint32_t index) const;
