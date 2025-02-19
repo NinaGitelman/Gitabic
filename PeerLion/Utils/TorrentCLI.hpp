@@ -122,7 +122,7 @@ private:
 
     void addFileToSeed() const {
         std::string path, creator, password;
-        std::cout << "Enter the path to the metadata file: ";
+        std::cout << "Enter the path to the file: ";
         std::getline(std::cin, path);
 
         std::cout << "Enter the creator: ";
