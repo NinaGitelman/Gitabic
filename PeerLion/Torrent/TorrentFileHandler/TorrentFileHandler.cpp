@@ -23,21 +23,21 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 																										getFileHash()),
 																									_serverSocket(
 																										serverSocket),
-																									_peerManager(
-																										std::make_unique
-																										<
-																											PeerManager>(
-																											_fileID,
-																											serverSocket,
-																											fileIo.
-																											getMode() ==
-																											FileMode::Seed)),
 																									_isSeed(false),
 																									_aesHandler(
 																										aesKey) {
 	_pieceChooser = std::make_unique<RarityTrackerChooser>(
 		RarityTrackerChooser(_fileIO.getDownloadProgress().getAmmountOfPieces(), _fileIO.getDownloadProgress(),
 							_fileID));
+	if (_fileIO.getDownloadProgress().progress() >= 1) {
+		_isSeed = true;
+	}
+	_fileIO.setFileMode(_isSeed ? FileMode::Seed : FileMode::Hybrid);
+	_peerManager = (std::make_unique<PeerManager>(_fileID,
+												serverSocket,
+												_fileIO.
+												getMode() ==
+												FileMode::Seed));
 	if (autoStart) {
 		_running = true;
 
@@ -53,11 +53,6 @@ TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
 	} else {
 		_running = false;
 	}
-	if (_fileIO.getDownloadProgress().progress() >= 1) {
-		_isSeed = true;
-		_peerManager->finishedFile();
-	}
-	_fileIO.setFileMode(_isSeed ? FileMode::Seed : FileMode::Hybrid);
 }
 
 ResultMessages TorrentFileHandler::handle(const DataRequest &request) const {
@@ -292,13 +287,14 @@ void TorrentFileHandler::downloadFile() {
 	const auto WAITING_TIME = std::chrono::seconds(1);
 	while (_running) {
 		if (_fileIO.getDownloadProgress().progress() >= 1) {
-			const auto illegalPieces = _fileIO.getIllegalPieces();
-			if (illegalPieces.size() == 0) {
-				break;
-			}
-			for (auto &pieceIndex: illegalPieces) {
-				_fileIO.getDownloadProgress().updatePieceStatus(pieceIndex, DownloadStatus::Empty);
-			}
+			// const auto illegalPieces = _fileIO.getIllegalPieces();
+			// if (illegalPieces.size() == 0) {
+			// 	break;
+			// }
+			// for (auto &pieceIndex: illegalPieces) {
+			// 	_fileIO.getDownloadProgress().updatePieceStatus(pieceIndex, DownloadStatus::Empty);
+			// }
+			break;
 		}
 		for (const auto &peer: _peerManager->getNewPeerList()) {
 			std::lock_guard guard(_mutexMessagesToSend);

@@ -224,7 +224,7 @@ public:
                     displayFiles();
                     break;
                 case static_cast<int>(MenuChoice::StartAll): {
-                    auto fileIOs = FileIO::getAllFileIO();
+                    auto fileIOs = FileIO::getAllFileIO(_n);
                     _manager.start(fileIOs, true);
                     break;
                 }

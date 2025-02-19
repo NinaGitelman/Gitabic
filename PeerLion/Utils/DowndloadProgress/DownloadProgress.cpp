@@ -173,7 +173,7 @@ bool DownloadProgress::downloadedBlock(const uint32_t piece, const uint16_t bloc
 }
 
 void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadStatus status) {
-    std::lock_guard<mutex> guard(_mut);
+    std::unique_lock<mutex> guard(_mut);
 
     if (piece >= _pieces.size())
         throw std::out_of_range("No piece #" + piece);
@@ -182,13 +182,14 @@ void DownloadProgress::updatePieceStatus(const uint32_t piece, const DownloadSta
     _lastTime = time(nullptr);
 
     _totalDownloadBytes += _pieces[piece].setStatus(status);
+    guard.unlock();
     if (progress() >= 1) {
         _completed = true;
     }
 }
 
 void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t block, const DownloadStatus status) {
-    std::lock_guard<std::mutex> guard(_mut);
+    std::unique_lock<std::mutex> guard(_mut);
     if (piece >= _pieces.size())
         throw std::out_of_range("No piece #" + piece);
 
@@ -197,6 +198,7 @@ void DownloadProgress::updateBlockStatus(const uint32_t piece, const uint16_t bl
 
     _pieces[piece].updateBlockStatus(block, status);
 
+    guard.unlock();
     if (progress() >= 1) {
         _completed = true;
     }
