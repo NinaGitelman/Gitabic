@@ -1,3 +1,0 @@
-/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles/PeerLion.dir
-/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles/edit_cache.dir
-/media/user/OS/LinuxExtraSpace/gitabic/emek-yizrael-1701-gitabic/PeerLion/build/CMakeFiles/rebuild_cache.dir
