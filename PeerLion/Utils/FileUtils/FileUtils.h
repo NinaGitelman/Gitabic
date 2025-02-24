@@ -11,6 +11,7 @@
 #include <vector>
 #include "../../Encryptions/AES/AESHandler.h"
 #include "../../Encryptions/SHA256/sha256.h"
+#include <memory_resource>
 
 #define KB 1024UL
 
