@@ -23,7 +23,7 @@
 #include <iostream>
 #include "Utils/TorrentCLI.hpp"
 
-#define SERVER_ADDRESS "0.0.0.0"
+#define SERVER_ADDRESS "172.17.0.1"
 #define SERVER_PORT 4786
 
 // TODO - talk about - the singletons dont cleanup because the constructors are not called. check this
@@ -56,60 +56,77 @@ void fakeProgress(const double percentage, FileIO &file_io) {
 void main2(uint8_t n);
 
 
+
 int main(const int argc, char **argv) {
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
-  TorrentCLI cli(TorrentManager::getInstance(std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT))),
-                 argc > 1 ? atoi(argv[1]) : 0);
-  cli.run();
-  return 0;
-  if (argc == 2) {
-    main2(atoi(argv[1]));
-    return 0;
-  }
-  string filePath = getenv("HOME");
 
-  auto fileIO = FileIO::getAllFileIO()[0];
+  std::string serverAddress = SERVER_ADDRESS;  // Default to hardcoded address
+  if (argc > 1) {
+    serverAddress = argv[1];  // Use address passed as argument if available
+  }
+
+  TorrentCLI cli(TorrentManager::getInstance(std::make_shared<TCPSocket>(Address(serverAddress, SERVER_PORT))),
+                 argc > 2 ? atoi(argv[2]) : 0);
+  cli.run();
+
+  return 0;  // End after CLI is done
+}
+//
+// int main(const int argc, char **argv) {
+//   signal(SIGINT, signalHandler);
+//   signal(SIGTERM, signalHandler);
+//   TorrentCLI cli(TorrentManager::getInstance(std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT))),
+//                  argc > 1 ? atoi(argv[1]) : 0);
+//   cli.run();
+//   return 0;
+//   if (argc == 2) {
+//     main2(atoi(argv[1]));
+//     return 0;
+//   }
+//   string filePath = getenv("HOME");
+//
+//   auto fileIO = FileIO::getAllFileIO()[0];
 
   // auto serverSocket = std::make_shared<TCPSocket>(fileIO.getDownloadProgress().getSignalingAddress());
-  auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
-  auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
-  auto &dataRepublish = DataRepublish::getInstance(serverSocket);
-  dataRepublish.saveData(fileIO.getDownloadProgress().getFileHash(), ServerResponseNewId(res).id);
-
-  TorrentManager::getInstance(serverSocket).addNewFileHandler(fileIO);
-
-  while (true) {
-    string input;
-    std::getline(std::cin, input);
-    if (input == "exit") {
-      break;
-    }
-  }
-}
-
-void main2(const uint8_t n) {
-  auto fileIO = FileIO("9e3d83b20958de1c578693a2df03f13869f7e4027a6d3bb166ba3e51a1b671f7", n);
-
-  const auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
-  const auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
-  auto &dataRepublish = DataRepublish::getInstance(serverSocket);
-  dataRepublish.saveData(fileIO.getDownloadProgress().getFileHash(), ServerResponseNewId(res).id);
-
-  TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);
-
-  std::cout << "in main" << std::endl;
-  instanceTorrentManager.addNewFileHandler(fileIO);
-
-  while (true) {
-    string input;
-    std::getline(std::cin, input);
-    if (input == "exit") {
-      break;
-    }
-  }
-}
-
+//   auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
+//   auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
+//   auto &dataRepublish = DataRepublish::getInstance(serverSocket);
+//   dataRepublish.saveData(fileIO.getDownloadProgress().getFileHash(), ServerResponseNewId(res).id);
+//
+//   TorrentManager::getInstance(serverSocket).addNewFileHandler(fileIO);
+//
+//   while (true) {
+//     string input;
+//     std::getline(std::cin, input);
+//     if (input == "exit") {
+//       break;
+//     }
+//   }
+// }
+//
+// void main2(const uint8_t n) {
+//   auto fileIO = FileIO("9e3d83b20958de1c578693a2df03f13869f7e4027a6d3bb166ba3e51a1b671f7", n);
+//
+//   const auto serverSocket = std::make_shared<TCPSocket>(Address(SERVER_ADDRESS, SERVER_PORT));
+//   const auto res = serverSocket->receive([](const unsigned char code) { return code == ServerResponseCodes::NewID; });
+//   auto &dataRepublish = DataRepublish::getInstance(serverSocket);
+//   dataRepublish.saveData(fileIO.getDownloadProgress().getFileHash(), ServerResponseNewId(res).id);
+//
+//   TorrentManager &instanceTorrentManager = TorrentManager::getInstance(serverSocket);
+//
+//   std::cout << "in main" << std::endl;
+//   instanceTorrentManager.addNewFileHandler(fileIO);
+//
+//   while (true) {
+//     string input;
+//     std::getline(std::cin, input);
+//     if (input == "exit") {
+//       break;
+//     }
+//   }
+// }
+//
 
 // int main(int argc, char *argv[]) {
 //   //   int connect = 1;
@@ -169,7 +186,8 @@ void main2(const uint8_t n) {
 //
 //   if (argc >= 2) // if there is cmd arg then this will start the connection
 //   {
-//     ServerResponseNewId otherNewId(serverSocket->receive([](uint8_t code) {
+//     ServerResponseNewId otherNewId(serverSocket->
+//     receive([](uint8_t code) {
 //       return code == ServerResponseCodes::NewID;
 //     }));
 //
