@@ -8,8 +8,10 @@ RUN apt-get update && \
 
 # Copy the script, file and metadata file to the container's working directory
 COPY PeerLion /PeerLion
-COPY DockerHelp.txt /DockerHelp.txt
-COPY DockerHelp.txt.gitabic /DockerHelp.txt.gitabic
+COPY image.png /image.png
+COPY image.png.gitabic /image.png.gitabic
+COPY test.txt /test.txt
+COPY test.txt.gitabic /test.txt.gitabic
 
 # Set default command to bash
 CMD ["/bin/bash"]
