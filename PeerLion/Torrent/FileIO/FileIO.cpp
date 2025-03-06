@@ -173,6 +173,22 @@ vector<uint8_t> FileIO::loadBlock(const uint32_t pieceIndex, const uint32_t bloc
                                            Utils::FileSplitter::BLOCK_SIZE);
 }
 
+bool FileIO::verifyFile()  {
+    if (Utils::FileUtils::verifyPiece(getCurrentDirPath() + _fileName, 0, _downloadProgress.getFileSize(), _downloadProgress.getFileHash())) {
+        return true;
+    }
+    for (const auto& pieceNumber : getDamagedPieces()) {
+        _downloadProgress.updatePieceStatus(pieceNumber, DownloadStatus::Empty);
+    }
+    return false;
+}
+
+void FileIO::changeAllStatus(const DownloadStatus status) {
+    for (uint i = 0; i < _downloadProgress.getAmmountOfPieces(); i++) {
+        _downloadProgress.updatePieceStatus(i, status);
+    }
+}
+
 void FileIO::saveProgressToFile() {
     FileUtils::writeVectorToFile(_downloadProgress.serialize(),
                                  getCurrentDirPath().append(
@@ -201,7 +217,7 @@ void FileIO::updatePieceStateToFile(const uint32_t pieceIndex) const {
                                 LAST_ACCESS_OFFSET);
 }
 
-vector<uint16_t> FileIO::getIllegalPieces() const {
+vector<uint16_t> FileIO::getDamagedPieces() const {
     vector<uint16_t> res;
     for (uint32_t i = 0; i < _downloadProgress.getAmmountOfPieces(); i++) {
         const PieceProgress piece = _downloadProgress.getPiece(i);

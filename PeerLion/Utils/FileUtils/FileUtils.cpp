@@ -107,8 +107,6 @@ void FileUtils::createFilePlaceHolder(const std::string &filePath, const uint64_
 
 bool FileUtils::verifyPiece(const std::string &filePath, const uint64_t offset, const uint64_t size,
                             const HashResult &hash) {
-    std::lock_guard guard(getFileMutex(filePath));
-
     const auto data = readFileChunk(filePath, offset, size);
     return hash == SHA256::toHashSha256(data);
 }

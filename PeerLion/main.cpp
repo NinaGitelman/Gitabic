@@ -58,8 +58,8 @@ void main2(uint8_t n);
 
 
 int main(const int argc, char **argv) {
-  signal(SIGINT, signalHandler);
-  signal(SIGTERM, signalHandler);
+  //signal(SIGINT, signalHandler);
+  //signal(SIGTERM, signalHandler);
 
   std::string serverAddress = SERVER_ADDRESS;  // Default to hardcoded address
   if (argc > 1) {

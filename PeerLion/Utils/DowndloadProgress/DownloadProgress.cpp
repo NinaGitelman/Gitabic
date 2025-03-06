@@ -417,19 +417,34 @@ vector<uint8_t> PieceProgress::serialize() const {
 vector<uint8_t> PieceProgress::serializeForFileUpdate() const {
     std::vector<uint8_t> data;
 
-    // Serialize only the necessary fields
-    data.insert(data.end(), reinterpret_cast<const uint8_t *>(&bytesDownloaded),
-                reinterpret_cast<const uint8_t *>(&offset) + sizeof(bytesDownloaded));
-    data.insert(data.end(), reinterpret_cast<const uint8_t *>(&status),
-                reinterpret_cast<const uint8_t *>(&status) + sizeof(status));
-    data.insert(data.end(), reinterpret_cast<const uint8_t *>(&lastAccess),
-                reinterpret_cast<const uint8_t *>(&lastAccess) + sizeof(lastAccess));
+    // Serialize bytesDownloaded
+    data.insert(data.end(),
+                reinterpret_cast<const uint8_t*>(&bytesDownloaded),
+                reinterpret_cast<const uint8_t*>(&bytesDownloaded) + sizeof(bytesDownloaded));
+
+    // Serialize offset
+    data.insert(data.end(),
+                reinterpret_cast<const uint8_t*>(&offset),
+                reinterpret_cast<const uint8_t*>(&offset) + sizeof(offset));
+
+    // Serialize status
+    data.insert(data.end(),
+                reinterpret_cast<const uint8_t*>(&status),
+                reinterpret_cast<const uint8_t*>(&status) + sizeof(status));
+
+    // Serialize lastAccess
+    data.insert(data.end(),
+                reinterpret_cast<const uint8_t*>(&lastAccess),
+                reinterpret_cast<const uint8_t*>(&lastAccess) + sizeof(lastAccess));
+
+    // Serialize hash
     data.insert(data.end(), hash.data(), hash.data() + hash.size());
 
     // Serialize blocks
     uint32_t blocksCount = blocks.size();
-    data.insert(data.end(), reinterpret_cast<uint8_t *>(&blocksCount),
-                reinterpret_cast<uint8_t *>(&blocksCount) + sizeof(blocksCount));
+    data.insert(data.end(),
+                reinterpret_cast<uint8_t*>(&blocksCount),
+                reinterpret_cast<uint8_t*>(&blocksCount) + sizeof(blocksCount));
 
     for (const auto &block: blocks) {
         auto blockData = block.serialize();

@@ -81,11 +81,14 @@ public:
 	 */
 	[[nodiscard]] vector<uint8_t> loadBlock(uint32_t pieceIndex, uint32_t blockIndex) const;
 
+	bool verifyFile();
+	void changeAllStatus(DownloadStatus status);
+
 	void saveProgressToFile();
 
 	void updatePieceStateToFile(uint32_t pieceIndex) const;
 
-	[[nodiscard]] vector<uint16_t> getIllegalPieces() const;
+	[[nodiscard]] vector<uint16_t> getDamagedPieces() const;
 
 	/**
 	 * initiates all files io

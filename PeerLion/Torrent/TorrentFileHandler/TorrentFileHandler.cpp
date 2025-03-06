@@ -10,34 +10,34 @@
 
 
 TorrentFileHandler::TorrentFileHandler(const FileIO &fileIo,
-										const std::shared_ptr<TCPSocket> &serverSocket,
-										const AESKey aesKey, const ID &_id, const bool autoStart) : _id(_id),
-																									_fileIO(fileIo),
-																									_peersConnectionManager(
-																										PeersConnectionManager::getInstance(
-																											serverSocket)),
-																									_fileID(
-																										_fileIO.
-																										getDownloadProgress()
-																										.
-																										getFileHash()),
-																									_serverSocket(
-																										serverSocket),
-																									_isSeed(false),
-																									_aesHandler(
-																										aesKey) {
+                                       const std::shared_ptr<TCPSocket> &serverSocket,
+                                       const AESKey aesKey, const ID &_id, const bool autoStart) : _id(_id),
+	_fileIO(fileIo),
+	_peersConnectionManager(
+		PeersConnectionManager::getInstance(
+			serverSocket)),
+	_fileID(
+		_fileIO.
+		getDownloadProgress()
+		.
+		getFileHash()),
+	_serverSocket(
+		serverSocket),
+	_isSeed(false),
+	_aesHandler(
+		aesKey) {
 	_pieceChooser = std::make_unique<RarityTrackerChooser>(
 		RarityTrackerChooser(_fileIO.getDownloadProgress().getAmmountOfPieces(), _fileIO.getDownloadProgress(),
-							_fileID));
+		                     _fileID));
 	if (_fileIO.getDownloadProgress().progress() >= 1) {
 		_isSeed = true;
 	}
 	_fileIO.setFileMode(_isSeed ? FileMode::Seed : FileMode::Hybrid);
 	_peerManager = (std::make_unique<PeerManager>(_fileID,
-												serverSocket,
-												_fileIO.
-												getMode() ==
-												FileMode::Seed));
+	                                              serverSocket,
+	                                              _fileIO.
+	                                              getMode() ==
+	                                              FileMode::Seed));
 	if (autoStart) {
 		_running = true;
 
@@ -118,14 +118,14 @@ ResultMessages TorrentFileHandler::handle(const TorrentMessageBase &request) {
 			if (!_peerManager->getPeerState(request.other).amInterested && !_isSeed.load()) {
 				res.messages.push_back(
 					std::make_shared<TorrentMessageBase>(_fileID, _aesHandler.getKey(),
-														BitTorrentRequestCodes::fileInterested));
+					                                     BitTorrentRequestCodes::fileInterested));
 				res.messages[0]->other = request.other;
 				_peerManager->addConnectedPeer(request.other);
 			}
 			_peerManager->getPeerState(request.other).peerInterested = true;
 			peerManagerLock.unlock();
 			auto bitFieldMsg = std::make_shared<FileBitField>(_fileID, _aesHandler.getKey(),
-															_fileIO.getDownloadProgress().getBitField());
+			                                                  _fileIO.getDownloadProgress().getBitField());
 			bitFieldMsg->other = request.other;
 			res.messages.push_back(bitFieldMsg);
 			break;
@@ -262,7 +262,7 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 		_pieceChooser->updateBlockReceived(blockResponse.other, blockResponse.pieceIndex, blockResponse.blockIndex);
 	}
 	ThreadSafeCout::cout("Saved block " + std::to_string(blockResponse.blockIndex) + " of piece " +
-						std::to_string(blockResponse.pieceIndex));
+	                     std::to_string(blockResponse.pieceIndex));
 
 	// update all interested peers that i got this pice
 	if (pieceFinished) {
@@ -294,13 +294,13 @@ void TorrentFileHandler::downloadFile() {
 			// for (auto &pieceIndex: illegalPieces) {
 			// 	_fileIO.getDownloadProgress().updatePieceStatus(pieceIndex, DownloadStatus::Empty);
 			// }
-			break;
+			if (_fileIO.verifyFile()) { break; }
 		}
 		for (const auto &peer: _peerManager->getNewPeerList()) {
 			std::lock_guard guard(_mutexMessagesToSend);
 			_messagesToSend.push_back(
 				std::make_shared<TorrentMessageBase>(_fileID, _aesHandler.getKey(),
-													BitTorrentRequestCodes::fileInterested, peer));
+				                                     BitTorrentRequestCodes::fileInterested, peer));
 			_cvMessagesToSend.notify_one();
 			_pieceChooser->addPeer(peer);
 		}
@@ -323,6 +323,8 @@ void TorrentFileHandler::downloadFile() {
 	//Test file
 	_isSeed = true;
 	_fileIO.setFileMode(Seed);
+	_fileIO.changeAllStatus(DownloadStatus::Verified);
+	_fileIO.saveProgressToFile();
 	ThreadSafeCout::cout("Finished downloading file!!!");
 	_peerManager->finishedFile();
 }
