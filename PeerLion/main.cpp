@@ -23,7 +23,7 @@
 #include <iostream>
 #include "Utils/TorrentCLI.hpp"
 
-#define SERVER_ADDRESS "34.224.100.96"
+#define SERVER_ADDRESS "34.224.28.126"
 #define SERVER_PORT 4786
 
 // TODO - talk about - the singletons dont cleanup because the constructors are not called. check this
