@@ -15,7 +15,7 @@ using std::map;
 using std::mutex;
 using std::shared_ptr;
 
-#define SERVER_PORT 4786
+#define SERVER_PORT 4787
 
 class MultiThreadedServer
 {
