@@ -27,7 +27,7 @@
 // if needed to check, do nslookup for: relay1.expressturn.com
 // using free express turn....
 // todo later - put this in a configs file in a safer way....
-#define TURN_ADDR "23.26.133.136"
+#define TURN_ADDR "51.158.152.43"
 #define TURN_USERNAME "ef8X4GWHOIXIDE3M2R"
 #define TURN_PASSWORD "rpKpXiK0tpIWNzOB"
 

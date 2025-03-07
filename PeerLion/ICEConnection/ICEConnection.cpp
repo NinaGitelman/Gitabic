@@ -13,7 +13,6 @@ ICEConnection::ICEConnection(const bool isControlling) {
     // Create our own context for this handler
     //_context = g_main_context_new();
     _context = g_main_context_default(); // Get the default context
-
     // Create loop with our context (not NULL)
     // Create loop with our context (not NULL)
     _gloop = g_main_loop_new(_context, FALSE);
@@ -26,9 +25,10 @@ ICEConnection::ICEConnection(const bool isControlling) {
         g_object_set(_agent, "stun-server", _stunAddr, NULL);
         g_object_set(_agent, "stun-server-port", _stunPort, NULL);
         g_object_set(_agent, "controlling-mode", isControlling, NULL);
-
-     //   g_object_set(_agent, "stun-max-retransmissions", 50, NULL);
-       // g_object_set(_agent, "stun-initial-timeout", 5000, NULL);
+        // new for test
+      //  g_object_set(G_OBJECT(_agent), "ice-tcp", FALSE, NULL);
+        g_object_set(_agent, "stun-max-retransmissions", 10, NULL);
+        g_object_set(_agent, "stun-initial-timeout", 500, NULL);
         _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
         nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 10244, 65535);
 

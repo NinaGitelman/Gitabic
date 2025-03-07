@@ -1,0 +1,717 @@
+user@user-VivoBook-ASUSLaptop-X421EAY-X413EA:~/Desktop$ G_MESSAGES_DEBUG=all ./simple-example 0 stun3.l.google.com 19302
+** (process:7029): DEBUG: 22:29:21.042: Using stun server '[stun3.l.google.com]:19302'
+
+(process:7029): libnice-DEBUG: 22:29:21.043: Agent 0x561966ea5000 : Property set, changing role to "controlled".
+(process:7029): libnice-DEBUG: 22:29:21.043: Created NiceStream (1 created, 0 destroyed)
+(process:7029): libnice-DEBUG: 22:29:21.043: Created NiceComponent (1 created, 0 destroyed)
+(process:7029): libnice-DEBUG: 22:29:21.043: Agent 0x561966ea5000 : allocating stream id 1 (0x561966ea8f10)
+(process:7029): libnice-DEBUG: 22:29:21.043: Agent 0x561966ea5000 : In ICE-FULL mode, starting candidate gathering.
+(process:7029): gupnp-context-manager-DEBUG: 22:29:21.043: Using context manager implementation GUPnPLinuxContextManager
+(process:7029): GUPnP-ContextManager-Linux-DEBUG: 22:29:21.043: Bootstrap: Querying all interfaces
+(process:7029): libnice-DEBUG: 22:29:21.043: Failed to convert address to string for interface ?lo?.
+(process:7029): GUPnP-ContextManager-Linux-DEBUG: 22:29:21.043: Received RTM_NEWLINK
+(process:7029): libnice-DEBUG: 22:29:21.043: Failed to convert address to string for interface ?wlo1?.
+(process:7029): GUPnP-ContextManager-Linux-DEBUG: 22:29:21.043: Received RTM_NEWLINK
+(process:7029): libnice-DEBUG: 22:29:21.043: Failed to convert address to string for interface ?docker0?.
+(process:7029): GUPnP-ContextManager-Linux-DEBUG: 22:29:21.043: Received RTM_NEWLINK
+(process:7029): libnice-DEBUG: 22:29:21.043: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.043: IP Address: 127.0.0.1
+(process:7029): GUPnP-ContextManager-Linux-DEBUG: 22:29:21.043: Bootstrap: Querying all addresses
+(process:7029): libnice-DEBUG: 22:29:21.043: Ignoring loopback interface
+(process:7029): libnice-DEBUG: 22:29:21.043: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.043: IP Address: 10.100.102.33
+(process:7029): GUPnP-ContextManager-Linux-DEBUG: 22:29:21.043: Received RTM_NEWADDR
+(process:7029): libnice-DEBUG: 22:29:21.043: Interface:  docker0
+(process:7029): libnice-DEBUG: 22:29:21.043: IP Address: 172.17.0.1
+(process:7029): libnice-DEBUG: 22:29:21.043: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.043: IP Address: ::1
+(process:7029): libnice-DEBUG: 22:29:21.043: Ignoring loopback interface
+(process:7029): libnice-DEBUG: 22:29:21.043: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.043: IP Address: fe80::3a84:5683:c5cd:4136%wlo1
+(process:7029): libnice-DEBUG: 22:29:21.043: Agent 0x561966ea5000: Trying to create host candidate on port 0
+(process:7029): gssdp-client-DEBUG: 22:29:21.043: Created SSDP client 0x0x7fc88000b8f0
+(process:7029): gssdp-client-DEBUG: 22:29:21.043:   iface_name : lo
+(process:7029): gssdp-client-DEBUG: 22:29:21.043:   host_ip    : (null)
+(process:7029): libnice-DEBUG: 22:29:21.043: Component 0x561966ea9530: Attach source (stream 1).
+(process:7029): gssdp-client-DEBUG: 22:29:21.043:   server_id  : Linux/5.15.0-134-generic UPnP/1.0 GSSDP/1.2.3
+(process:7029): libnice-DEBUG: 22:29:21.043: Attaching source 0x561966eb5e30 (socket 0x561966eae030, FD 8) to context 0x561966e9f400
+(process:7029): gssdp-client-DEBUG: 22:29:21.043:   network    : 127.0.0.0
+(process:7029): libnice-DEBUG: 22:29:21.043: Agent 0x561966ea5000: Adding UPnP port fe80::3a84:5683:c5cd:4136:57534
+(process:7029): gssdp-client-DEBUG: 22:29:21.043:   host_addr  : 0x0x561966ea8b20
+(process:7029): gssdp-client-DEBUG: 22:29:21.044:   host_mask  : 0x0x7fc880003270
+(process:7029): libnice-DEBUG: 22:29:21.044: Agent 0x561966ea5000: Trying to create host candidate on port 0
+(process:7029): libnice-DEBUG: 22:29:21.044: Failed to convert address to string for interface ?lo?.
+(process:7029): libnice-DEBUG: 22:29:21.044: Failed to convert address to string for interface ?wlo1?.
+(process:7029): libnice-DEBUG: 22:29:21.044: Failed to convert address to string for interface ?docker0?.
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: 127.0.0.1
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: 10.100.102.33
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  docker0
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: 172.17.0.1
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: ::1
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: fe80::3a84:5683:c5cd:4136%wlo1
+(process:7029): libnice-DEBUG: 22:29:21.044: Component 0x561966ea9530: Attach source (stream 1).
+(process:7029): libnice-DEBUG: 22:29:21.044: Agent 0x561966ea5000: Trying to create host candidate on port 0
+(process:7029): libnice-DEBUG: 22:29:21.044: Failed to convert address to string for interface ?lo?.
+(process:7029): libnice-DEBUG: 22:29:21.044: Failed to convert address to string for interface ?wlo1?.
+(process:7029): libnice-DEBUG: 22:29:21.044: Failed to convert address to string for interface ?docker0?.
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: 127.0.0.1
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: 10.100.102.33
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  docker0
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: 172.17.0.1
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: ::1
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: fe80::3a84:5683:c5cd:4136%wlo1
+(process:7029): libnice-DEBUG: 22:29:21.044: Component 0x561966ea9530: Attach source (stream 1).
+(process:7029): libnice-DEBUG: 22:29:21.044: Attaching source 0x561966eba790 (socket 0x561966eae180, FD 12) to context 0x561966e9f400
+(process:7029): libnice-DEBUG: 22:29:21.044: Agent 0x561966ea5000: Adding UPnP port fe80::3a84:5683:c5cd:4136:37759
+(process:7029): libnice-DEBUG: 22:29:21.044: Agent 0x561966ea5000: Trying to create host candidate on port 0
+(process:7029): libnice-DEBUG: 22:29:21.044: Agent 0x561966ea5000: Could not set IPV6 socket ToS: Protocol not available
+(process:7029): libnice-DEBUG: 22:29:21.044: Component 0x561966ea9530: Attach source (stream 1).
+(process:7029): libnice-DEBUG: 22:29:21.044: Attaching source 0x561966eb7120 (socket 0x7fc88000cea0, FD 13) to context 0x561966e9f400
+(process:7029): libnice-DEBUG: 22:29:21.044: Agent 0x561966ea5000: Adding UPnP port 172.17.0.1:40250
+(process:7029): libnice-DEBUG: 22:29:21.044: Agent 0x561966ea5000: Trying to create host candidate on port 0
+(process:7029): GUPnP-ContextManager-Linux-DEBUG: 22:29:21.044: Received RTM_NEWADDR
+(process:7029): libnice-DEBUG: 22:29:21.044: Failed to convert address to string for interface ?lo?.
+(process:7029): libnice-DEBUG: 22:29:21.044: Failed to convert address to string for interface ?wlo1?.
+(process:7029): libnice-DEBUG: 22:29:21.044: Failed to convert address to string for interface ?docker0?.
+(process:7029): gssdp-client-DEBUG: 22:29:21.044: Created SSDP client 0x0x7fc88000b9e0
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  lo
+(process:7029): gssdp-client-DEBUG: 22:29:21.044:   iface_name : wlo1
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: 127.0.0.1
+(process:7029): gssdp-client-DEBUG: 22:29:21.044:   host_ip    : (null)
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  wlo1
+(process:7029): gssdp-client-DEBUG: 22:29:21.044:   server_id  : Linux/5.15.0-134-generic UPnP/1.0 GSSDP/1.2.3
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: 10.100.102.33
+(process:7029): gssdp-client-DEBUG: 22:29:21.044:   network    : Marcelo
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  docker0
+(process:7029): gssdp-client-DEBUG: 22:29:21.044:   host_addr  : 0x0x7fc880007f60
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: 172.17.0.1
+(process:7029): gssdp-client-DEBUG: 22:29:21.044:   host_mask  : 0x0x7fc880003a40
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: ::1
+(process:7029): libnice-DEBUG: 22:29:21.044: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.044: IP Address: fe80::3a84:5683:c5cd:4136%wlo1
+(process:7029): libnice-DEBUG: 22:29:21.044: Component 0x561966ea9530: Attach source (stream 1).
+(process:7029): libnice-DEBUG: 22:29:21.044: Agent 0x561966ea5000: Trying to create host candidate on port 0
+(process:7029): libnice-DEBUG: 22:29:21.045: Failed to convert address to string for interface ?lo?.
+(process:7029): libnice-DEBUG: 22:29:21.045: Failed to convert address to string for interface ?wlo1?.
+(process:7029): libnice-DEBUG: 22:29:21.045: Failed to convert address to string for interface ?docker0?.
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: 127.0.0.1
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: 10.100.102.33
+(process:7029): GUPnP-ContextManager-Linux-DEBUG: 22:29:21.045: Received RTM_NEWADDR
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  docker0
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: 172.17.0.1
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: ::1
+(process:7029): gssdp-client-DEBUG: 22:29:21.045: Created SSDP client 0x0x7fc88000bad0
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  wlo1
+(process:7029): gssdp-client-DEBUG: 22:29:21.045:   iface_name : docker0
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: fe80::3a84:5683:c5cd:4136%wlo1
+(process:7029): gssdp-client-DEBUG: 22:29:21.045:   host_ip    : (null)
+(process:7029): gssdp-client-DEBUG: 22:29:21.045:   server_id  : Linux/5.15.0-134-generic UPnP/1.0 GSSDP/1.2.3
+(process:7029): gssdp-client-DEBUG: 22:29:21.045:   network    : 172.17.0.0
+(process:7029): libnice-DEBUG: 22:29:21.045: Agent 0x561966ea5000: Could not set IPV6 socket ToS: Protocol not available
+(process:7029): gssdp-client-DEBUG: 22:29:21.045:   host_addr  : 0x0x7fc880008760
+(process:7029): gssdp-client-DEBUG: 22:29:21.045:   host_mask  : 0x0x7fc880003b90
+(process:7029): libnice-DEBUG: 22:29:21.045: Component 0x561966ea9530: Attach source (stream 1).
+(process:7029): libnice-DEBUG: 22:29:21.045: Attaching source 0x561966eba560 (socket 0x561966ebb010, FD 17) to context 0x561966e9f400
+(process:7029): libnice-DEBUG: 22:29:21.045: Agent 0x561966ea5000: Adding UPnP port 172.17.0.1:43543
+(process:7029): libnice-DEBUG: 22:29:21.045: Agent 0x561966ea5000: Trying to create host candidate on port 0
+(process:7029): libnice-DEBUG: 22:29:21.045: Agent 0x561966ea5000: Could not set IPV6 socket ToS: Protocol not available
+(process:7029): libnice-DEBUG: 22:29:21.045: Component 0x561966ea9530: Attach source (stream 1).
+(process:7029): libnice-DEBUG: 22:29:21.045: Attaching source 0x561966ebc230 (socket 0x561966ebb080, FD 20) to context 0x561966e9f400
+(process:7029): libnice-DEBUG: 22:29:21.045: Agent 0x561966ea5000: Adding UPnP port 10.100.102.33:45092
+(process:7029): libnice-DEBUG: 22:29:21.045: Agent 0x561966ea5000: Trying to create host candidate on port 0
+(process:7029): libnice-DEBUG: 22:29:21.045: Failed to convert address to string for interface ?lo?.
+(process:7029): libnice-DEBUG: 22:29:21.045: Failed to convert address to string for interface ?wlo1?.
+(process:7029): libnice-DEBUG: 22:29:21.045: Failed to convert address to string for interface ?docker0?.
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: 127.0.0.1
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: 10.100.102.33
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  docker0
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: 172.17.0.1
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: ::1
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: fe80::3a84:5683:c5cd:4136%wlo1
+(process:7029): libnice-DEBUG: 22:29:21.045: Component 0x561966ea9530: Attach source (stream 1).
+(process:7029): libnice-DEBUG: 22:29:21.045: Agent 0x561966ea5000: Trying to create host candidate on port 0
+(process:7029): libnice-DEBUG: 22:29:21.045: Failed to convert address to string for interface ?lo?.
+(process:7029): libnice-DEBUG: 22:29:21.045: Failed to convert address to string for interface ?wlo1?.
+(process:7029): libnice-DEBUG: 22:29:21.045: Failed to convert address to string for interface ?docker0?.
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: 127.0.0.1
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: 10.100.102.33
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  docker0
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: 172.17.0.1
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  lo
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: ::1
+(process:7029): libnice-DEBUG: 22:29:21.045: Interface:  wlo1
+(process:7029): libnice-DEBUG: 22:29:21.045: IP Address: fe80::3a84:5683:c5cd:4136%wlo1
+(process:7029): libnice-DEBUG: 22:29:21.045: Agent 0x561966ea5000: Could not set IPV6 socket ToS: Protocol not available
+(process:7029): libnice-DEBUG: 22:29:21.045: Component 0x561966ea9530: Attach source (stream 1).
+(process:7029): libnice-DEBUG: 22:29:21.045: Attaching source 0x561966eb9e10 (socket 0x561966ebb160, FD 22) to context 0x561966e9f400
+(process:7029): libnice-DEBUG: 22:29:21.045: Agent 0x561966ea5000: Adding UPnP port 10.100.102.33:55745
+** (process:7029): DEBUG: 22:29:21.045: waiting for candidate-gathering-done signal...
+(process:7029): GLib-GIO-DEBUG: 22:29:21.051: _g_io_module_get_default: Found default implementation dconf (DConfSettingsBackend) for ?gsettings-backend?
+(process:7029): dconf-DEBUG: 22:29:21.051: watch_fast: "/system/proxy/" (establishing: 0, active: 0)
+(process:7029): dconf-DEBUG: 22:29:21.051: watch_fast: "/system/proxy/http/" (establishing: 0, active: 0)
+(process:7029): dconf-DEBUG: 22:29:21.051: watch_fast: "/system/proxy/https/" (establishing: 0, active: 0)
+(process:7029): dconf-DEBUG: 22:29:21.051: watch_fast: "/system/proxy/ftp/" (establishing: 0, active: 0)
+(process:7029): dconf-DEBUG: 22:29:21.051: watch_fast: "/system/proxy/socks/" (establishing: 0, active: 0)
+(process:7029): GLib-GIO-DEBUG: 22:29:21.051: _g_io_module_get_default: Found default implementation gnome (GProxyResolverGnome) for ?gio-proxy-resolver?
+(process:7029): GLib-GIO-DEBUG: 22:29:21.052: _g_io_module_get_default: Found default implementation gnutls (GTlsBackendGnutls) for ?gio-tls-backend?
+(process:7029): dconf-DEBUG: 22:29:21.053: watch_established: "/system/proxy/" (establishing: 1)
+(process:7029): dconf-DEBUG: 22:29:21.053: watch_established: "/system/proxy/http/" (establishing: 1)
+(process:7029): dconf-DEBUG: 22:29:21.053: watch_established: "/system/proxy/https/" (establishing: 1)
+(process:7029): dconf-DEBUG: 22:29:21.053: watch_established: "/system/proxy/ftp/" (establishing: 1)
+(process:7029): dconf-DEBUG: 22:29:21.053: watch_established: "/system/proxy/socks/" (establishing: 1)
+(process:7029): GLib-GIO-DEBUG: 22:29:21.072: GSocketClient: Starting new address enumeration
+(process:7029): GLib-GIO-DEBUG: 22:29:21.073: GSocketClient: Address enumeration succeeded
+(process:7029): GLib-GIO-DEBUG: 22:29:21.073: GSocketClient: Starting TCP connection attempt
+(process:7029): GLib-GIO-DEBUG: 22:29:21.075: GSocketClient: TCP connection successful
+(process:7029): GLib-GIO-DEBUG: 22:29:21.075: GSocketClient: Starting application layer connection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.075: GSocketClient: Connection successful!
+** (process:7029): DEBUG: 22:29:21.079: Using passed type urn:schemas-upnp-org:service:WANPPPConnection:1
+** (process:7029): DEBUG: 22:29:21.079: Found type from XML: urn:schemas-upnp-org:service:WANPPPConnection:1
+** (process:7029): DEBUG: 22:29:21.079: Trying to use version-less type...
+** (process:7029): DEBUG: 22:29:21.079: Version-less type is urn:schemas-upnp-org:service:WANPPPConnection
+** (process:7029): DEBUG: 22:29:21.079: Will return type GUPnPServiceProxy for UPnP type urn:schemas-upnp-org:service:WANPPPConnection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.079: GSocketClient: Starting new address enumeration
+(process:7029): GLib-GIO-DEBUG: 22:29:21.079: GSocketClient: Starting new address enumeration
+(process:7029): GLib-GIO-DEBUG: 22:29:21.079: GSocketClient: Address enumeration succeeded
+(process:7029): GLib-GIO-DEBUG: 22:29:21.079: GSocketClient: Starting TCP connection attempt
+(process:7029): GLib-GIO-DEBUG: 22:29:21.080: GSocketClient: Address enumeration succeeded
+(process:7029): GLib-GIO-DEBUG: 22:29:21.080: GSocketClient: Starting TCP connection attempt
+(process:7029): GLib-GIO-DEBUG: 22:29:21.080: GSocketClient: TCP connection successful
+(process:7029): GLib-GIO-DEBUG: 22:29:21.080: GSocketClient: Starting application layer connection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.080: GSocketClient: Connection successful!
+(process:7029): GLib-GIO-DEBUG: 22:29:21.082: GSocketClient: TCP connection successful
+(process:7029): GLib-GIO-DEBUG: 22:29:21.082: GSocketClient: Starting application layer connection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.082: GSocketClient: Connection successful!
+(process:7029): GLib-GIO-DEBUG: 22:29:21.085: GSocketClient: Starting new address enumeration
+(process:7029): GLib-GIO-DEBUG: 22:29:21.085: GSocketClient: Address enumeration succeeded
+(process:7029): GLib-GIO-DEBUG: 22:29:21.085: GSocketClient: Starting TCP connection attempt
+(process:7029): GLib-GIO-DEBUG: 22:29:21.087: GSocketClient: TCP connection successful
+(process:7029): GLib-GIO-DEBUG: 22:29:21.087: GSocketClient: Starting application layer connection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.087: GSocketClient: Connection successful!
+(process:7029): GLib-GIO-DEBUG: 22:29:21.089: GSocketClient: Starting new address enumeration
+(process:7029): GLib-GIO-DEBUG: 22:29:21.090: GSocketClient: Address enumeration succeeded
+(process:7029): GLib-GIO-DEBUG: 22:29:21.090: GSocketClient: Starting TCP connection attempt
+(process:7029): GLib-GIO-DEBUG: 22:29:21.091: GSocketClient: TCP connection successful
+(process:7029): GLib-GIO-DEBUG: 22:29:21.091: GSocketClient: Starting application layer connection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.091: GSocketClient: Connection successful!
+(process:7029): libnice-DEBUG: 22:29:21.099: Agent 0x561966ea5000 : Error mapping fe80::3a84:5683:c5cd:4136:37759 to 0 (543) : Argument Value Invalid
+(process:7029): GLib-GIO-DEBUG: 22:29:21.099: GSocketClient: Starting new address enumeration
+(process:7029): GLib-GIO-DEBUG: 22:29:21.099: GSocketClient: Address enumeration succeeded
+(process:7029): GLib-GIO-DEBUG: 22:29:21.099: GSocketClient: Starting TCP connection attempt
+(process:7029): GLib-GIO-DEBUG: 22:29:21.101: GSocketClient: TCP connection successful
+(process:7029): GLib-GIO-DEBUG: 22:29:21.101: GSocketClient: Starting application layer connection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.101: GSocketClient: Connection successful!
+(process:7029): libnice-DEBUG: 22:29:21.105: Agent 0x561966ea5000 : Error mapping fe80::3a84:5683:c5cd:4136:57534 to 0 (543) : Argument Value Invalid
+(process:7029): GLib-GIO-DEBUG: 22:29:21.106: GSocketClient: Starting new address enumeration
+(process:7029): GLib-GIO-DEBUG: 22:29:21.106: GSocketClient: Address enumeration succeeded
+(process:7029): GLib-GIO-DEBUG: 22:29:21.106: GSocketClient: Starting TCP connection attempt
+(process:7029): GLib-GIO-DEBUG: 22:29:21.107: GSocketClient: TCP connection successful
+(process:7029): GLib-GIO-DEBUG: 22:29:21.107: GSocketClient: Starting application layer connection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.107: GSocketClient: Connection successful!
+(process:7029): libnice-DEBUG: 22:29:21.178: Agent 0x561966ea5000 : Successfully mapped 172.17.0.1:40250 to 85.65.236.95:40250
+(process:7029): GLib-GIO-DEBUG: 22:29:21.178: GSocketClient: Starting new address enumeration
+(process:7029): GLib-GIO-DEBUG: 22:29:21.178: GSocketClient: Address enumeration succeeded
+(process:7029): GLib-GIO-DEBUG: 22:29:21.178: GSocketClient: Starting TCP connection attempt
+(process:7029): GLib-GIO-DEBUG: 22:29:21.180: GSocketClient: TCP connection successful
+(process:7029): GLib-GIO-DEBUG: 22:29:21.180: GSocketClient: Starting application layer connection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.180: GSocketClient: Connection successful!
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000 : UPnP port mapping timed out
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered UDP local candidate : [fe80::3a84:5683:c5cd:4136]:57534 for s1/c1. U/P '(null)'/'(null)'
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered TCP-ACT local candidate : [fe80::3a84:5683:c5cd:4136]:0 for s1/c1. U/P '(null)'/'(null)'
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered TCP-PASS local candidate : [fe80::3a84:5683:c5cd:4136]:37759 for s1/c1. U/P '(null)'/'(null)'
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered UDP local candidate : [172.17.0.1]:40250 for s1/c1. U/P '(null)'/'(null)'
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered TCP-ACT local candidate : [172.17.0.1]:0 for s1/c1. U/P '(null)'/'(null)'
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered TCP-PASS local candidate : [172.17.0.1]:43543 for s1/c1. U/P '(null)'/'(null)'
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered UDP local candidate : [10.100.102.33]:45092 for s1/c1. U/P '(null)'/'(null)'
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered TCP-ACT local candidate : [10.100.102.33]:0 for s1/c1. U/P '(null)'/'(null)'
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered TCP-PASS local candidate : [10.100.102.33]:55745 for s1/c1. U/P '(null)'/'(null)'
+(process:7029): libnice-DEBUG: 22:29:21.246: Agent 0x561966ea5000: gathered UDP local candidate : [85.65.236.95]:40250 for s1/c1. U/P '(null)'/'(null)'
+** (process:7029): DEBUG: 22:29:21.246: SIGNAL candidate gathering done
+
+Copy this line to remote client:
+
+  9xlb nOWfsmaWCTxqWczEydf/oz 1,2013266431,fe80::3a84:5683:c5cd:4136,57534,host 2,1015023103,fe80::3a84:5683:c5cd:4136,0,host 3,1010828799,fe80::3a84:5683:c5cd:4136,37759,host 4,2013266430,172.17.0.1,40250,host 5,1015022079,172.17.0.1,0,host 6,1010827775,172.17.0.1,43543,host 7,2013266429,10.100.102.33,45092,host 8,1015022335,10.100.102.33,0,host 9,1010828031,10.100.102.33,55745,host 10,1761608191,85.65.236.95,40250,srflx
+
+Enter remote data (single line, no wrapping):
+> (process:7029): GLib-GIO-DEBUG: 22:29:21.261: GSocketClient: Starting new address enumeration
+(process:7029): GLib-GIO-DEBUG: 22:29:21.261: GSocketClient: Address enumeration succeeded
+(process:7029): GLib-GIO-DEBUG: 22:29:21.261: GSocketClient: Starting TCP connection attempt
+(process:7029): GLib-GIO-DEBUG: 22:29:21.262: GSocketClient: TCP connection successful
+(process:7029): GLib-GIO-DEBUG: 22:29:21.262: GSocketClient: Starting application layer connection
+(process:7029): GLib-GIO-DEBUG: 22:29:21.262: GSocketClient: Connection successful!
+  W9lJ cw+AruDwRr/kuvO1pXHTDb 1,2015363327,172.31.30.19,53446,host 2,1015021823,172.31.30.19,0,host 3,1010827519,172.31.30.19,41313,host 4,2015363583,fe80::8ff:e8ff:fe89:61f7,56896,host 5,1015022079,fe80::8ff:e8ff:fe89:61f7,0,host 6,1010827775,fe80::8ff:e8ff:fe89:61f7,35807,host 7,1679819007,52.20.122.197,53446,srflx 8,847249663,52.20.122.197,0,srflx 9,843055359,52.20.122.197,41313,srflx
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000: set_remote_candidates 1 1
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : Adding UDP remote candidate with addr [52.20.122.197]:41313 for s1/c1. U/P '(null)'/'(null)' prio: 843055359
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : pair 0x7fc88042e650 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : new pair 0x7fc88042e650 : [172.17.0.1]:40250 --> [52.20.122.197]:41313
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : added a new pair 0x7fc88042e650 with foundation '4:9' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : stream 1 component 1 STATE-CHANGE disconnected -> connecting.
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : pair 0x7fc88042e700 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : new pair 0x7fc88042e700 : [10.100.102.33]:45092 --> [52.20.122.197]:41313
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : added a new pair 0x7fc88042e700 with foundation '7:9' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : Adding UDP remote candidate with addr [52.20.122.197]:0 for s1/c1. U/P '(null)'/'(null)' prio: 847249663
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : pair 0x561966ecb020 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : new pair 0x561966ecb020 : [172.17.0.1]:40250 --> [52.20.122.197]:0
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : added a new pair 0x561966ecb020 with foundation '4:8' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : pair 0x561966ecb0d0 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : new pair 0x561966ecb0d0 : [10.100.102.33]:45092 --> [52.20.122.197]:0
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : added a new pair 0x561966ecb0d0 with foundation '7:8' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.370: Agent 0x561966ea5000 : Adding UDP remote candidate with addr [52.20.122.197]:53446 for s1/c1. U/P '(null)'/'(null)' prio: 1679819007
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecb180 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecb180 : [172.17.0.1]:40250 --> [52.20.122.197]:53446
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecb180 with foundation '4:7' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecb230 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecb230 : [10.100.102.33]:45092 --> [52.20.122.197]:53446
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecb230 with foundation '7:7' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : Adding UDP remote candidate with addr [fe80::8ff:e8ff:fe89:61f7]:35807 for s1/c1. U/P '(null)'/'(null)' prio: 1010827775
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecb2e0 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecb2e0 : [fe80::3a84:5683:c5cd:4136]:57534 --> [fe80::8ff:e8ff:fe89:61f7]:35807
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecb2e0 with foundation '1:6' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : Adding UDP remote candidate with addr [fe80::8ff:e8ff:fe89:61f7]:0 for s1/c1. U/P '(null)'/'(null)' prio: 1015022079
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecb390 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecb390 : [fe80::3a84:5683:c5cd:4136]:57534 --> [fe80::8ff:e8ff:fe89:61f7]:0
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecb390 with foundation '1:5' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : Adding UDP remote candidate with addr [fe80::8ff:e8ff:fe89:61f7]:56896 for s1/c1. U/P '(null)'/'(null)' prio: 2015363583
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecb440 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecb440 : [fe80::3a84:5683:c5cd:4136]:57534 --> [fe80::8ff:e8ff:fe89:61f7]:56896
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecb440 with foundation '1:4' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : Adding UDP remote candidate with addr [172.31.30.19]:41313 for s1/c1. U/P '(null)'/'(null)' prio: 1010827519
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecb4f0 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecb4f0 : [172.17.0.1]:40250 --> [172.31.30.19]:41313
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecb4f0 with foundation '4:3' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecb5a0 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecb5a0 : [10.100.102.33]:45092 --> [172.31.30.19]:41313
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecb5a0 with foundation '7:3' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : Adding UDP remote candidate with addr [172.31.30.19]:0 for s1/c1. U/P '(null)'/'(null)' prio: 1015021823
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecb650 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecb650 : [172.17.0.1]:40250 --> [172.31.30.19]:0
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecb650 with foundation '4:2' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecb700 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecb700 : [10.100.102.33]:45092 --> [172.31.30.19]:0
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecb700 with foundation '7:2' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : Adding UDP remote candidate with addr [172.31.30.19]:53446 for s1/c1. U/P '(null)'/'(null)' prio: 2015363327
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecc030 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecc030 : [172.17.0.1]:40250 --> [172.31.30.19]:53446
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecc030 with foundation '4:1' to stream 1 component 1.
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : pair 0x561966ecc0e0 state FROZEN (priv_add_new_check_pair)
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : new pair 0x561966ecc0e0 : [10.100.102.33]:45092 --> [172.31.30.19]:53446
+(process:7029): libnice-DEBUG: 22:29:22.371: Agent 0x561966ea5000 : added a new pair 0x561966ecc0e0 with foundation '7:1' to stream 1 component 1.
+** (process:7029): DEBUG: 22:29:22.371: SIGNAL: state changed 1 1 connecting[2]
+
+** (process:7029): DEBUG: 22:29:22.371: waiting for state READY or FAILED signal...
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb440 with s/c-id 1/1 (1:4) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb440 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecc030 with s/c-id 1/1 (4:1) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecc030 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecc0e0 with s/c-id 1/1 (7:1) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecc0e0 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb180 with s/c-id 1/1 (4:7) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb180 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb230 with s/c-id 1/1 (7:7) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb230 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb390 with s/c-id 1/1 (1:5) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb390 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb650 with s/c-id 1/1 (4:2) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb650 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb700 with s/c-id 1/1 (7:2) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb700 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb2e0 with s/c-id 1/1 (1:6) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb2e0 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb4f0 with s/c-id 1/1 (4:3) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb4f0 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb5a0 with s/c-id 1/1 (7:3) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb5a0 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb020 with s/c-id 1/1 (4:8) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb020 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x561966ecb0d0 with s/c-id 1/1 (7:8) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x561966ecb0d0 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : Pair 0x7fc88042e650 with s/c-id 1/1 (4:9) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.391: Agent 0x561966ea5000 : pair 0x7fc88042e650 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.392: Agent 0x561966ea5000 : Pair 0x7fc88042e700 with s/c-id 1/1 (7:9) unfrozen.
+(process:7029): libnice-DEBUG: 22:29:22.392: Agent 0x561966ea5000 : pair 0x7fc88042e700 state WAITING (priv_conn_check_unfreeze_next)
+(process:7029): libnice-DEBUG: 22:29:22.392: Agent 0x561966ea5000 : pair 0x561966ecb440 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.392: Agent 0x561966ea5000 : STUN-CC REQ [fe80::3a84:5683:c5cd:4136]:57534 --> [fe80::8ff:e8ff:fe89:61f7]:56896, socket=8, pair=0x561966ecb440 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494263, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.392: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.392:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.392:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.392:   sent    : 0x7e4f7206a388a7d5a220e64c71c6714b71e6db19
+(process:7029): libnice-stun-DEBUG: 22:29:22.392:  Message HMAC-SHA1 fingerprint: 0x96a1fbab
+(process:7029): libnice-DEBUG: 22:29:22.392: Agent 0x561966ea5000: conncheck created 88 - 0x561966eca8f0
+(process:7029): libnice-DEBUG: 22:29:22.392: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.392: Agent 0x561966ea5000 : stream 1: timer tick #1: 0 frozen, 1 in-progress, 14 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:22.412: Agent 0x561966ea5000 : pair 0x561966ecc030 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.412: Agent 0x561966ea5000 : STUN-CC REQ [172.17.0.1]:40250 --> [172.31.30.19]:53446, socket=13, pair=0x561966ecc030 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494258, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.412: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.412:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.412:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.412:   sent    : 0x1a7cb6885f1b566b0483b26986c65e3cae928fe5
+(process:7029): libnice-stun-DEBUG: 22:29:22.412:  Message HMAC-SHA1 fingerprint: 0xd4b2a1aa
+(process:7029): libnice-DEBUG: 22:29:22.412: Agent 0x561966ea5000: conncheck created 88 - 0x561966eccb60
+(process:7029): libnice-DEBUG: 22:29:22.412: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.432: Agent 0x561966ea5000 : pair 0x561966ecc0e0 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.432: Agent 0x561966ea5000 : STUN-CC REQ [10.100.102.33]:45092 --> [172.31.30.19]:53446, socket=20, pair=0x561966ecc0e0 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494257, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.432: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.432:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.432:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.432:   sent    : 0x5a67213f0b234d0fccff48754ef8e12b1a7a2fad
+(process:7029): libnice-stun-DEBUG: 22:29:22.432:  Message HMAC-SHA1 fingerprint: 0x76134112
+(process:7029): libnice-DEBUG: 22:29:22.432: Agent 0x561966ea5000: conncheck created 88 - 0x561966ecd4a0
+(process:7029): libnice-DEBUG: 22:29:22.432: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.452: Agent 0x561966ea5000 : pair 0x561966ecb180 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.452: Agent 0x561966ea5000 : STUN-CC REQ [172.17.0.1]:40250 --> [52.20.122.197]:53446, socket=13, pair=0x561966ecb180 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494267, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.452: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.452:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.453:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.453:   sent    : 0x32d02c6410aeff409064051cd0aabc67af413667
+(process:7029): libnice-stun-DEBUG: 22:29:22.453:  Message HMAC-SHA1 fingerprint: 0x6c9c7eb4
+(process:7029): libnice-DEBUG: 22:29:22.453: Agent 0x561966ea5000: conncheck created 88 - 0x561966ecdde0
+(process:7029): libnice-DEBUG: 22:29:22.453: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.473: Agent 0x561966ea5000 : pair 0x561966ecb230 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.473: Agent 0x561966ea5000 : STUN-CC REQ [10.100.102.33]:45092 --> [52.20.122.197]:53446, socket=20, pair=0x561966ecb230 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494266, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.473: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.473:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.473:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.473:   sent    : 0xa255b8835ab4e4e77f255ab2054c2656045409b8
+(process:7029): libnice-stun-DEBUG: 22:29:22.473:  Message HMAC-SHA1 fingerprint: 0xe473b4e4
+(process:7029): libnice-DEBUG: 22:29:22.473: Agent 0x561966ea5000: conncheck created 88 - 0x561966ece720
+(process:7029): libnice-DEBUG: 22:29:22.473: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.493: Agent 0x561966ea5000 : pair 0x561966ecb390 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.493: Agent 0x561966ea5000 : STUN-CC REQ [fe80::3a84:5683:c5cd:4136]:57534 --> [fe80::8ff:e8ff:fe89:61f7]:0, socket=8, pair=0x561966ecb390 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494264, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.493: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.493:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.493:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.493:   sent    : 0xacb233628d2f1a6a11be52a92edb0395bed8e6d6
+(process:7029): libnice-stun-DEBUG: 22:29:22.493:  Message HMAC-SHA1 fingerprint: 0xccad91b6
+(process:7029): libnice-DEBUG: 22:29:22.493: Agent 0x561966ea5000: conncheck created 88 - 0x561966ecef60
+(process:7029): libnice-DEBUG: 22:29:22.493: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.513: Agent 0x561966ea5000 : pair 0x561966ecb650 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.513: Agent 0x561966ea5000 : STUN-CC REQ [172.17.0.1]:40250 --> [172.31.30.19]:0, socket=13, pair=0x561966ecb650 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494260, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.513: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.513:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.513:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.513:   sent    : 0x2c8a770e8380902c77991fb2b6c528e5bad68ebe
+(process:7029): libnice-stun-DEBUG: 22:29:22.513:  Message HMAC-SHA1 fingerprint: 0x716ed879
+(process:7029): libnice-DEBUG: 22:29:22.513: Agent 0x561966ea5000: conncheck created 88 - 0x561966ecf8a0
+(process:7029): libnice-DEBUG: 22:29:22.513: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.533: Agent 0x561966ea5000 : pair 0x561966ecb700 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.533: Agent 0x561966ea5000 : STUN-CC REQ [10.100.102.33]:45092 --> [172.31.30.19]:0, socket=20, pair=0x561966ecb700 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494259, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.533: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.534:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.534:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.534:   sent    : 0x93c2dbcdcfda8214437068abe5b682f5f0086527
+(process:7029): libnice-stun-DEBUG: 22:29:22.534:  Message HMAC-SHA1 fingerprint: 0x5c16b4f4
+(process:7029): libnice-DEBUG: 22:29:22.534: Agent 0x561966ea5000: conncheck created 88 - 0x561966ed01e0
+(process:7029): libnice-DEBUG: 22:29:22.534: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.554: Agent 0x561966ea5000 : pair 0x561966ecb2e0 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.554: Agent 0x561966ea5000 : STUN-CC REQ [fe80::3a84:5683:c5cd:4136]:57534 --> [fe80::8ff:e8ff:fe89:61f7]:35807, socket=8, pair=0x561966ecb2e0 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494265, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.554: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.554:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.554:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.554:   sent    : 0x9b88d8866b25f17614a4ffc570ecd57558aea1dd
+(process:7029): libnice-stun-DEBUG: 22:29:22.554:  Message HMAC-SHA1 fingerprint: 0xc95cf89b
+(process:7029): libnice-DEBUG: 22:29:22.554: Agent 0x561966ea5000: conncheck created 88 - 0x561966ed0880
+(process:7029): libnice-DEBUG: 22:29:22.554: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.574: Agent 0x561966ea5000 : pair 0x561966ecb4f0 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.574: Agent 0x561966ea5000 : STUN-CC REQ [172.17.0.1]:40250 --> [172.31.30.19]:41313, socket=13, pair=0x561966ecb4f0 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494262, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.574: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.574:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.574:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.574:   sent    : 0x842e375aba378974da2561380c09654004a9614e
+(process:7029): libnice-stun-DEBUG: 22:29:22.574:  Message HMAC-SHA1 fingerprint: 0x0a85c15a
+(process:7029): libnice-DEBUG: 22:29:22.574: Agent 0x561966ea5000: conncheck created 88 - 0x561966ed0ee0
+(process:7029): libnice-DEBUG: 22:29:22.574: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.594: Agent 0x561966ea5000 : pair 0x561966ecb5a0 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.594: Agent 0x561966ea5000 : STUN-CC REQ [10.100.102.33]:45092 --> [172.31.30.19]:41313, socket=20, pair=0x561966ecb5a0 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494261, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.594: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.594:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.594:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.594:   sent    : 0x92076c1607c9f577ddc7e6600b69557059b9b994
+(process:7029): libnice-stun-DEBUG: 22:29:22.594:  Message HMAC-SHA1 fingerprint: 0xf6501483
+(process:7029): libnice-DEBUG: 22:29:22.594: Agent 0x561966ea5000: conncheck created 88 - 0x561966ed1460
+(process:7029): libnice-DEBUG: 22:29:22.594: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.614: Agent 0x561966ea5000 : pair 0x561966ecb020 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.615: Agent 0x561966ea5000 : STUN-CC REQ [172.17.0.1]:40250 --> [52.20.122.197]:0, socket=13, pair=0x561966ecb020 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494269, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.615: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.615:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.615:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.615:   sent    : 0xfcc3bd478d84b5c959853446e4c570e8c5981e74
+(process:7029): libnice-stun-DEBUG: 22:29:22.615:  Message HMAC-SHA1 fingerprint: 0xf28252af
+(process:7029): libnice-DEBUG: 22:29:22.615: Agent 0x561966ea5000: conncheck created 88 - 0x561966ed19e0
+(process:7029): libnice-DEBUG: 22:29:22.615: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.635: Agent 0x561966ea5000 : pair 0x561966ecb0d0 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.635: Agent 0x561966ea5000 : STUN-CC REQ [10.100.102.33]:45092 --> [52.20.122.197]:0, socket=20, pair=0x561966ecb0d0 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494268, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.635: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.635:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.635:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.635:   sent    : 0xe233420278722a73b1c5b43203d8e38fa8e79b15
+(process:7029): libnice-stun-DEBUG: 22:29:22.635:  Message HMAC-SHA1 fingerprint: 0xe84eb220
+(process:7029): libnice-DEBUG: 22:29:22.635: Agent 0x561966ea5000: conncheck created 88 - 0x561966ed1f60
+(process:7029): libnice-DEBUG: 22:29:22.635: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.655: Agent 0x561966ea5000 : pair 0x7fc88042e650 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.655: Agent 0x561966ea5000 : STUN-CC REQ [172.17.0.1]:40250 --> [52.20.122.197]:41313, socket=13, pair=0x7fc88042e650 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494271, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.655: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.655:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.655:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.655:   sent    : 0x9100870fc53fe2fe1f9a2d7b870058a09657e7c7
+(process:7029): libnice-stun-DEBUG: 22:29:22.655:  Message HMAC-SHA1 fingerprint: 0xab727612
+(process:7029): libnice-DEBUG: 22:29:22.655: Agent 0x561966ea5000: conncheck created 88 - 0x561966ed24e0
+(process:7029): libnice-DEBUG: 22:29:22.655: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.675: Agent 0x561966ea5000 : pair 0x7fc88042e700 state IN_PROGRESS (priv_conn_check_initiate)
+(process:7029): libnice-DEBUG: 22:29:22.675: Agent 0x561966ea5000 : STUN-CC REQ [10.100.102.33]:45092 --> [52.20.122.197]:41313, socket=20, pair=0x7fc88042e700 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494270, controlled.
+(process:7029): libnice-DEBUG: 22:29:22.675: Agent 0x561966ea5000 : conn_check_send: set cand_use=0 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:22.675:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:22.675:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:22.675:   sent    : 0xee0f89debb05ebb2e23aceba04f461b1eb2e3307
+(process:7029): libnice-stun-DEBUG: 22:29:22.675:  Message HMAC-SHA1 fingerprint: 0x45bb2dd0
+(process:7029): libnice-DEBUG: 22:29:22.675: Agent 0x561966ea5000: conncheck created 88 - 0x561966ed2a60
+(process:7029): libnice-DEBUG: 22:29:22.675: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:22.695: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb440 (timer=2/7 3/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.716: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc030 (timer=2/7 3/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.736: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc0e0 (timer=2/7 3/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.756: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb180 (timer=2/7 3/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.776: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb230 (timer=2/7 3/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.796: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb390 (timer=2/7 3/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.816: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb650 (timer=2/7 3/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.837: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb700 (timer=2/7 2/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.857: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb2e0 (timer=2/7 2/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.877: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb4f0 (timer=2/7 2/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.897: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb5a0 (timer=2/7 2/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.917: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb020 (timer=2/7 2/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.937: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb0d0 (timer=2/7 2/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.957: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e650 (timer=2/7 2/600ms).
+(process:7029): libnice-DEBUG: 22:29:22.978: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e700 (timer=2/7 2/600ms).
+(process:7029): libnice-DEBUG: 22:29:23.299: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb440 (timer=3/7 8/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.319: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc030 (timer=3/7 7/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.339: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc0e0 (timer=3/7 7/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.359: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb180 (timer=3/7 7/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.379: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb230 (timer=3/7 7/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.400: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb390 (timer=3/7 7/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.400: Agent 0x561966ea5000 : stream 1: timer tick #51: 0 frozen, 15 in-progress, 0 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:23.420: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb650 (timer=3/7 7/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.440: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb700 (timer=3/7 7/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.460: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb2e0 (timer=3/7 7/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.480: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb4f0 (timer=3/7 7/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.500: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb5a0 (timer=3/7 6/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.521: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb020 (timer=3/7 6/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.541: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb0d0 (timer=3/7 6/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.561: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e650 (timer=3/7 6/1200ms).
+(process:7029): libnice-DEBUG: 22:29:23.581: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e700 (timer=3/7 6/1200ms).
+(process:7029): libnice-DEBUG: 22:29:24.404: Agent 0x561966ea5000 : stream 1: timer tick #101: 0 frozen, 15 in-progress, 0 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:24.504: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb440 (timer=4/7 13/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.524: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc030 (timer=4/7 13/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.544: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc0e0 (timer=4/7 13/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.565: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb180 (timer=4/7 12/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.585: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb230 (timer=4/7 12/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.605: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb390 (timer=4/7 12/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.625: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb650 (timer=4/7 12/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.645: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb700 (timer=4/7 12/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.665: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb2e0 (timer=4/7 12/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.685: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb4f0 (timer=4/7 12/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.705: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb5a0 (timer=4/7 12/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.726: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb020 (timer=4/7 12/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.746: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb0d0 (timer=4/7 11/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.766: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e650 (timer=4/7 11/2400ms).
+(process:7029): libnice-DEBUG: 22:29:24.786: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e700 (timer=4/7 10/2400ms).
+(process:7029): libnice-DEBUG: 22:29:25.408: Agent 0x561966ea5000 : stream 1: timer tick #151: 0 frozen, 15 in-progress, 0 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:26.412: Agent 0x561966ea5000 : stream 1: timer tick #201: 0 frozen, 15 in-progress, 0 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:26.894: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb440 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:26.914: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc030 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:26.934: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc0e0 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:26.954: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb180 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:26.974: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb230 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:26.995: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb390 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.015: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb650 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.035: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb700 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.055: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb2e0 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.075: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb4f0 (timer=5/7 1/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.095: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb5a0 (timer=5/7 0/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.115: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb020 (timer=5/7 0/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.136: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb0d0 (timer=5/7 0/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.156: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e650 (timer=5/7 0/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.196: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e700 (timer=5/7 21/4800ms).
+(process:7029): libnice-DEBUG: 22:29:27.417: Agent 0x561966ea5000 : stream 1: timer tick #251: 0 frozen, 15 in-progress, 0 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:28.420: Agent 0x561966ea5000 : stream 1: timer tick #301: 0 frozen, 15 in-progress, 0 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:29.423: Agent 0x561966ea5000 : stream 1: timer tick #351: 0 frozen, 15 in-progress, 0 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:30.427: Agent 0x561966ea5000 : stream 1: timer tick #401: 0 frozen, 15 in-progress, 0 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:31.430: Agent 0x561966ea5000 : stream 1: timer tick #451: 0 frozen, 15 in-progress, 0 waiting, 0 succeeded, 0 discovered, 0 nominated, 0 waiting-for-nom, 0 valid.
+(process:7029): libnice-DEBUG: 22:29:31.711: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb440 (timer=6/7 19/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.731: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc030 (timer=6/7 19/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.751: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecc0e0 (timer=6/7 19/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.772: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb180 (timer=6/7 18/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.792: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb230 (timer=6/7 18/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.812: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb390 (timer=6/7 18/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.832: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb650 (timer=6/7 18/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.852: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb700 (timer=6/7 18/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.872: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb2e0 (timer=6/7 18/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.892: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb4f0 (timer=6/7 18/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.897: Agent 0x561966ea5000: inbound STUN packet for 1/1 (stream/component) from [52.20.122.197]:53446 (88 octets) :
+(process:7029): libnice-stun-DEBUG: 22:29:31.897: STUN demux: OK!
+(process:7029): libnice-stun-DEBUG: 22:29:31.897: Comparing username/ufrag of len 9 and 4, equal=0
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:   username: 0x39786c623a57396c4a
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:   ufrag:    0x39786c62
+(process:7029): libnice-stun-DEBUG: 22:29:31.897: Found valid username, returning password: 'nOWfsmaWCTxqWczEydf/oz'
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:  Message HMAC-SHA1 fingerprint:
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:   key     : 0x6e4f5766736d61574354787157637a457964662f6f7a
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:   expected: 0x5c9cb6536e1bbf2e0ae7dde874dda7ed36cd80cc
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:   received: 0x5c9cb6536e1bbf2e0ae7dde874dda7ed36cd80cc
+(process:7029): libnice-stun-DEBUG: 22:29:31.897: STUN auth: OK!
+(process:7029): libnice-stun-DEBUG: 22:29:31.897: STUN unknown: 0 mandatory attribute(s)!
+(process:7029): libnice-stun-DEBUG: 22:29:31.897: STUN Reply (buffer size = 1300)...
+(process:7029): libnice-stun-DEBUG: 22:29:31.897: STUN Role Conflict detected:
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:  switching role from "controlled" to "controlling"
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:   key     : 0x6e4f5766736d61574354787157637a457964662f6f7a
+(process:7029): libnice-stun-DEBUG: 22:29:31.897:   sent    : 0xde13ced99bec7353364d84b2cd049560dce1dd40
+(process:7029): libnice-stun-DEBUG: 22:29:31.898:  Message HMAC-SHA1 fingerprint: 0x606b271b
+(process:7029): libnice-stun-DEBUG: 22:29:31.898:  All done (response size: 80)
+(process:7029): libnice-DEBUG: 22:29:31.898: Agent 0x561966ea5000 : Role conflict, changing agent role to "controlling".
+(process:7029): libnice-DEBUG: 22:29:31.898: Agent 0x561966ea5000 :  1:1 Adding valid source candidate: 52.20.122.197:53446 trans: 0
+(process:7029): libnice-DEBUG: 22:29:31.898: Agent 0x561966ea5000 : STUN-CC RESP to '52.20.122.197:53446', socket=13, len=80, cand=0x561966ebd710 (c-id:1), use-cand=0.
+(process:7029): libnice-DEBUG: 22:29:31.898: Agent 0x561966ea5000 : Found a matching pair 0x561966ecb180 (4:7) (IN_PROGRESS) ...
+(process:7029): libnice-DEBUG: 22:29:31.898: Agent 0x561966ea5000 : pair 0x561966ecb180 added for a triggered check.
+(process:7029): libnice-DEBUG: 22:29:31.898: Agent 0x561966ea5000 : pair 0x561966ecb180 state IN_PROGRESS (priv_add_pair_to_triggered_check_queue)
+(process:7029): libnice-DEBUG: 22:29:31.898: agent_recv_message_unlocked: Valid STUN packet received.
+(process:7029): libnice-DEBUG: 22:29:31.910: Agent 0x561966ea5000: inbound STUN packet for 1/1 (stream/component) from [52.20.122.197]:53446 (76 octets) :
+(process:7029): libnice-stun-DEBUG: 22:29:31.911: STUN demux: OK!
+(process:7029): libnice-stun-DEBUG: 22:29:31.911:  Message HMAC-SHA1 fingerprint:
+(process:7029): libnice-stun-DEBUG: 22:29:31.911:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:31.911:   expected: 0xdf30a78a9fa9ba9aea00c7c4955edc246e6b12e2
+(process:7029): libnice-stun-DEBUG: 22:29:31.911:   received: 0xdf30a78a9fa9ba9aea00c7c4955edc246e6b12e2
+(process:7029): libnice-stun-DEBUG: 22:29:31.911: STUN auth: OK!
+(process:7029): libnice-stun-DEBUG: 22:29:31.911: STUN unknown: 0 mandatory attribute(s)!
+(process:7029): libnice-DEBUG: 22:29:31.911: Agent 0x561966ea5000 : stun_bind_process/conncheck for 0x561966ecb180: controlling,res=role conflict,stun#=0.
+(process:7029): libnice-DEBUG: 22:29:31.911: Agent 0x561966ea5000 : Role conflict with pair 0x561966ecb180, restarting
+(process:7029): libnice-DEBUG: 22:29:31.911: Agent 0x561966ea5000 : Role conflict, staying with role "controlling".
+(process:7029): libnice-DEBUG: 22:29:31.911: Agent 0x561966ea5000 : pair 0x561966ecb180 state IN_PROGRESS (priv_add_pair_to_triggered_check_queue)
+(process:7029): libnice-DEBUG: 22:29:31.911: agent_recv_message_unlocked: Valid STUN packet received.
+(process:7029): libnice-DEBUG: 22:29:31.913: Agent 0x561966ea5000 : STUN-CC REQ [172.17.0.1]:40250 --> [52.20.122.197]:53446, socket=13, pair=0x561966ecb180 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494267, controlling.
+(process:7029): libnice-DEBUG: 22:29:31.913: Agent 0x561966ea5000 : conn_check_send: set cand_use=1 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:31.913:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:31.913:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:31.913:   sent    : 0x24cde4d40ec5a810fd77b12ec984a34d30f29bd0
+(process:7029): libnice-stun-DEBUG: 22:29:31.913:  Message HMAC-SHA1 fingerprint: 0xc6ccb2b4
+(process:7029): libnice-DEBUG: 22:29:31.913: Agent 0x561966ea5000: conncheck created 92 - 0x561966ecdde0
+(process:7029): libnice-DEBUG: 22:29:31.913: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:31.918: Agent 0x561966ea5000: inbound STUN packet for 1/1 (stream/component) from [52.20.122.197]:53446 (88 octets) :
+(process:7029): libnice-stun-DEBUG: 22:29:31.918: STUN demux: OK!
+(process:7029): libnice-stun-DEBUG: 22:29:31.918: Comparing username/ufrag of len 9 and 4, equal=0
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:   username: 0x39786c623a57396c4a
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:   ufrag:    0x39786c62
+(process:7029): libnice-stun-DEBUG: 22:29:31.918: Found valid username, returning password: 'nOWfsmaWCTxqWczEydf/oz'
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:  Message HMAC-SHA1 fingerprint:
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:   key     : 0x6e4f5766736d61574354787157637a457964662f6f7a
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:   expected: 0x5672372d9c269b8075af87eebd280965f6d2d798
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:   received: 0x5672372d9c269b8075af87eebd280965f6d2d798
+(process:7029): libnice-stun-DEBUG: 22:29:31.918: STUN auth: OK!
+(process:7029): libnice-stun-DEBUG: 22:29:31.918: STUN unknown: 0 mandatory attribute(s)!
+(process:7029): libnice-stun-DEBUG: 22:29:31.918: STUN Reply (buffer size = 1300)...
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:   key     : 0x6e4f5766736d61574354787157637a457964662f6f7a
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:   sent    : 0x54e92fac9e70b65c452ac22fe74c0720f41423de
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:  Message HMAC-SHA1 fingerprint: 0x95e9ea52
+(process:7029): libnice-stun-DEBUG: 22:29:31.918:  All done (response size: 80)
+(process:7029): libnice-DEBUG: 22:29:31.918: Agent 0x561966ea5000 : STUN-CC RESP to '52.20.122.197:53446', socket=13, len=80, cand=0x561966ebd710 (c-id:1), use-cand=0.
+(process:7029): libnice-DEBUG: 22:29:31.918: Agent 0x561966ea5000 : Found a matching pair 0x561966ecb180 (4:7) (IN_PROGRESS) ...
+(process:7029): libnice-DEBUG: 22:29:31.918: Agent 0x561966ea5000 : pair 0x561966ecb180 added for a triggered check.
+(process:7029): libnice-DEBUG: 22:29:31.918: Agent 0x561966ea5000 : pair 0x561966ecb180 state IN_PROGRESS (priv_add_pair_to_triggered_check_queue)
+(process:7029): libnice-DEBUG: 22:29:31.918: agent_recv_message_unlocked: Valid STUN packet received.
+(process:7029): libnice-DEBUG: 22:29:31.933: Agent 0x561966ea5000 : STUN-CC REQ [172.17.0.1]:40250 --> [52.20.122.197]:53446, socket=13, pair=0x561966ecb180 (c-id:1), tie=17612629705327041683, username='W9lJ:9xlb' (9), password='cw+AruDwRr/kuvO1pXHTDb' (22), prio=1845494267, controlling.
+(process:7029): libnice-DEBUG: 22:29:31.933: Agent 0x561966ea5000 : conn_check_send: set cand_use=1 (aggressive nomination).
+(process:7029): libnice-stun-DEBUG: 22:29:31.933:  Message HMAC-SHA1 message integrity:
+(process:7029): libnice-stun-DEBUG: 22:29:31.933:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:31.933:   sent    : 0x691438e9995f53c21c07a24d9a02086758fe0861
+(process:7029): libnice-stun-DEBUG: 22:29:31.933:  Message HMAC-SHA1 fingerprint: 0x04ff5a8c
+(process:7029): libnice-DEBUG: 22:29:31.933: Agent 0x561966ea5000: conncheck created 92 - 0x561966ed32f0
+(process:7029): libnice-DEBUG: 22:29:31.933: Agent 0x561966ea5000 : timer set to 300ms, waiting+in_progress=15, nb_active=1
+(process:7029): libnice-DEBUG: 22:29:31.953: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb5a0 (timer=6/7 58/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.973: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb020 (timer=6/7 58/9600ms).
+(process:7029): libnice-DEBUG: 22:29:31.994: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x561966ecb0d0 (timer=6/7 58/9600ms).
+(process:7029): libnice-DEBUG: 22:29:32.014: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e650 (timer=6/7 58/9600ms).
+(process:7029): libnice-DEBUG: 22:29:32.034: Agent 0x561966ea5000 :STUN transaction retransmitted on pair 0x7fc88042e700 (timer=6/7 58/9600ms).
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000: inbound STUN packet for 1/1 (stream/component) from [52.20.122.197]:53446 (80 octets) :
+(process:7029): libnice-stun-DEBUG: 22:29:32.053: STUN demux: OK!
+(process:7029): libnice-stun-DEBUG: 22:29:32.053:  Message HMAC-SHA1 fingerprint:
+(process:7029): libnice-stun-DEBUG: 22:29:32.053:   key     : 0x63772b417275447752722f6b75764f31705848544462
+(process:7029): libnice-stun-DEBUG: 22:29:32.053:   expected: 0x664e98ee62a711567c89d74cc0205aaa0bc95de2
+(process:7029): libnice-stun-DEBUG: 22:29:32.053:   received: 0x664e98ee62a711567c89d74cc0205aaa0bc95de2
+(process:7029): libnice-stun-DEBUG: 22:29:32.053: STUN auth: OK!
+(process:7029): libnice-stun-DEBUG: 22:29:32.053: STUN unknown: 0 mandatory attribute(s)!
+(process:7029): libnice-stun-DEBUG: 22:29:32.053: Received 80-bytes STUN message
+(process:7029): libnice-stun-DEBUG: 22:29:32.053: Mapped address found!
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : stun_bind_process/conncheck for 0x561966ecb180: controlling,res=success,stun#=1.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb180 MATCHED.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : creating a new pair
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecc190 state DISCOVERED (priv_add_peer_reflexive_pair)
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : new pair 0x561966ecc190 : [85.65.236.95]:40250 --> [52.20.122.197]:53446
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : added a new peer-discovered pair with foundation '10:7'.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb180 state SUCCEEDED (priv_process_response_check_for_reflexive)
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : Updating nominated flag (UDP): ok_pair=0x561966ecc190 (0/0) p=0x561966ecb180 (0/0) (ucnc/mnora)
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : marking pair 0x561966ecc190 (10:7) as nominated (aggressive nomination, controlling).
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : changing SELECTED PAIR for component 1: 10:7 (prio:7214767701787411455).
+(process:7029): libnice-DEBUG: 22:29:32.053: setting SELECTED PAIR for component 1: 10:7 (prio:7214767701787411455).
+(process:7029): libnice-stun-DEBUG: 22:29:32.053:  Message HMAC-SHA1 fingerprint: 0x5824534c
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : stun_bind_keepalive for pair 0x561966ea95a0 res 28.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000: Local selected pair: 1:1 10 UDP 85.65.236.95:40250 SRV-RFLX
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000: Remote selected pair: 1:1 7 UDP 52.20.122.197:53446 SRV-RFLX
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : stream 1 component 1 STATE-CHANGE connecting -> connected.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000: Finding highest priority for component 1
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000: Pruning pending checks. Highest nominated priority is 7214767701787411455
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb440 kept IN_PROGRESS because priority 8646913483310367742 is higher than currently nominated pair 7214767701787411455
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecc030 kept IN_PROGRESS because priority 8646913479015399934 is higher than currently nominated pair 7214767701787411455
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecc0e0 kept IN_PROGRESS because priority 8646913474720432638 is higher than currently nominated pair 7214767701787411455
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb230 kept IN_PROGRESS because priority 7214767702290727931 is higher than currently nominated pair 7214767701787411455
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb390 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb650 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb700 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb2e0 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb4f0 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb5a0 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb020 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x561966ecb0d0 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x7fc88042e650 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : pair 0x7fc88042e700 will not be retransmitted.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : conn.check list status: 1 nominated, 1 valid, c-id 1.
+(process:7029): libnice-DEBUG: 22:29:32.053: agent_recv_message_unlocked: Valid STUN packet received.
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000: inbound STUN packet for 1/1 (stream/component) from [52.20.122.197]:53446 (28 octets) :
+(process:7029): libnice-stun-DEBUG: 22:29:32.053: STUN demux: OK!
+(process:7029): libnice-DEBUG: 22:29:32.053: Agent 0x561966ea5000 : Integrity check failed - bad request.
+(process:7029): libnice-DEBUG: 22:29:32.053: agent_recv_message_unlocked: Valid STUN packet received.
+** (process:7029): DEBUG: 22:29:32.053: SIGNAL: selected pair 10 7
+** (process:7029): DEBUG: 22:29:32.054: SIGNAL: state changed 1 1 connected[3]
+
+
+Negotiation complete: ([85.65.236.95]:40250, [52.20.122.197]:53446)
+
