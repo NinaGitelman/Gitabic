@@ -9,3 +9,4 @@ find my local ip (on wlo1) and then do ./PeerLion <my_local-ip>
 ./PeerLion 192.168.15.68
 file to download: /root/Gitabic/MetaDatas/DockerHelp.txt.gitabic
 /media/user/OS/LinuxExtraSpace/Gitabic/Dockers/image.png.gitabic
+a
