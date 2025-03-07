@@ -30,7 +30,6 @@
 #define TURN_ADDR "51.158.152.43"
 #define TURN_USERNAME "ef8X4GWHOIXIDE3M2R"
 #define TURN_PASSWORD "rpKpXiK0tpIWNzOB"
-
 #define TURN_PORT 3478
 
 /// STUN configs
