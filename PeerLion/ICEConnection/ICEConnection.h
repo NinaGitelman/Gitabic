@@ -34,8 +34,8 @@
 #define TURN_PORT 3478
 
 /// STUN configs
-#define STUN_PORT 3478
-#define STUN_ADDR "stun.stunprotocol.org" // TODO - make it a list and do many tries in case this does not work (out of service../)
+#define STUN_PORT 19302
+#define STUN_ADDR "stun3.l.google.com" // TODO - make it a list and do many tries in case this does not work (out of service../)
 
 
 
