@@ -26,8 +26,8 @@ ICEConnection::ICEConnection(const bool isControlling) {
         g_object_set(_agent, "stun-server-port", _stunPort, NULL);
         g_object_set(_agent, "controlling-mode", isControlling, NULL);
 
- //       g_object_set(_agent, "stun-max-retransmissions", 3, NULL);
- //       g_object_set(_agent, "stun-initial-timeout", 500, NULL);
+        g_object_set(_agent, "stun-max-retransmissions", 50, NULL);
+        g_object_set(_agent, "stun-initial-timeout", 5000, NULL);
         _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
         nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 10244, 65535);
 
