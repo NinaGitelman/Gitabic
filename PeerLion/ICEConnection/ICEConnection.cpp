@@ -34,11 +34,11 @@ ICEConnection::ICEConnection(const bool isControlling) {
 
         if (_streamId == 0) {
             throw std::runtime_error("Failed to add stream");
+            throw std::runtime_error("Failed to add stream");
         }
 
         // set the callback for receiveing messages
-        nice_agent_set_relay_info(_agent, _streamId, COMPONENT_ID_RTP, TURN_ADDR, TURN_PORT, turnUsername, turnPassword,
-                                  NICE_RELAY_TYPE_TURN_UDP);
+        nice_agent_set_relay_info(_agent, _streamId, COMPONENT_ID_RTP, TURN_ADDR, TURN_PORT, turnUsername, turnPassword,NICE_RELAY_TYPE_TURN_TCP);
 
         nice_agent_attach_recv(_agent, _streamId, COMPONENT_ID_RTP, _context, callbackReceive, this);
     }
