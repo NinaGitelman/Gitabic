@@ -478,7 +478,7 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent *_agent, guint strea
     ICEConnection *iceConnection = static_cast<ICEConnection *>(data);
 
     if (iceConnection) {
-        if (state == NICE_COMPONENT_STATE_CONNECTED) // does not enter here
+        if (state == NICE_COMPONENT_STATE_CONNECTED || state == NICE_COMPONENT_STATE_READY ) // does not enter here
         {
             NiceCandidate *local, *remote;
 
