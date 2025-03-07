@@ -200,7 +200,7 @@ public:
         while (_running) {
             ThreadSafeCout::print << "\nPress Enter to continue...";
             std::cin.get(); // Wait for Enter key
-            clearScreen();
+            //clearScreen();
             std::cout << "\n=== Main Menu ===\n"
                     << "1. List files\n"
                     << "2. Start all files\n"
