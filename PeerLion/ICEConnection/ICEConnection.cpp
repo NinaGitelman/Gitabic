@@ -9,7 +9,7 @@ ICEConnection::ICEConnection(const bool isControlling) {
 
     // for debugging:
     //g_setenv("G_MESSAGES_DEBUG", "libnice", TRUE);
-    // chang eto push
+
     // Create our own context for this handler
     //_context = g_main_context_new();
     _context = g_main_context_default(); // Get the default context
