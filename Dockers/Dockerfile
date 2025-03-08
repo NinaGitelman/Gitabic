@@ -12,7 +12,7 @@ COPY image.png /image.png
 COPY image.png.gitabic /image.png.gitabic
 COPY test.txt /test.txt
 COPY test.txt.gitabic /test.txt.gitabic
-COPY simple-example /simple-example
+COPY test19Kb.txt.gitabic /test19Kb.txt.gitabic
 
 # Set default command to bash
 CMD ["/bin/bash"]
