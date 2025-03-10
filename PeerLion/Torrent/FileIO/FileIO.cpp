@@ -94,15 +94,16 @@ FileIO::FileIO(const string &hash)
             break;
         }
     }
-    auto path = _dirPath + hash + "/" + _fileName;
+    const auto path = FileUtils::getExpandedPath("~/Gitabic/.filesFolders/." + hash + "/" + _fileName + ".gitabic");
     _downloadProgress =
-            DownloadProgress(FileUtils::readFileToVector(_dirPath + hash + "/." + _fileName + ".gitabic"));
+            DownloadProgress(FileUtils::readFileToVector(path));
     _pieceSize = FileSplitter::pieceSize(_downloadProgress.getFileSize());
 }
 
-FileIO::FileIO(const string &hash, uint8_t n) : _mode(FileMode::Default),
-                                                _n(n) {
-    string dir = FileUtils::getExpandedPath("~/Gitabic" + std::to_string(n) + "/.filesFolders/") + hash + '/';
+FileIO::FileIO(const string &hash, const uint8_t n) : _mode(FileMode::Default),
+                                                      _n(n) {
+    string dir = FileUtils::getExpandedPath("~/Gitabic" + (_n ? std::to_string(_n) : "") + "/.filesFolders/") + hash +
+                 '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
         string name = entry.path().filename().string();
         if (name.find(".gitabic") == string::npos) {
@@ -110,12 +111,10 @@ FileIO::FileIO(const string &hash, uint8_t n) : _mode(FileMode::Default),
             break;
         }
     }
-    auto path = _dirPath + hash + "/" + _fileName;
+    const auto path = FileUtils::getExpandedPath(
+        "~/Gitabic" + (_n ? std::to_string(_n) : "") + "/.filesFolders/" + hash + "/" + "." + _fileName + ".gitabic");
     _downloadProgress =
-            DownloadProgress(FileUtils::readFileToVector(
-                FileUtils::getExpandedPath("~/Gitabic" + std::to_string(n) + "/.filesFolders/") + hash + "/." +
-                _fileName
-                + ".gitabic"));
+            DownloadProgress(FileUtils::readFileToVector(path));
     _pieceSize = FileSplitter::pieceSize(_downloadProgress.getFileSize());
 }
 
@@ -173,11 +172,12 @@ vector<uint8_t> FileIO::loadBlock(const uint32_t pieceIndex, const uint32_t bloc
                                            Utils::FileSplitter::BLOCK_SIZE);
 }
 
-bool FileIO::verifyFile()  {
-    if (Utils::FileUtils::verifyPiece(getCurrentDirPath() + _fileName, 0, _downloadProgress.getFileSize(), _downloadProgress.getFileHash())) {
+bool FileIO::verifyFile() {
+    if (Utils::FileUtils::verifyPiece(getCurrentDirPath() + _fileName, 0, _downloadProgress.getFileSize(),
+                                      _downloadProgress.getFileHash())) {
         return true;
     }
-    for (const auto& pieceNumber : getDamagedPieces()) {
+    for (const auto &pieceNumber: getDamagedPieces()) {
         _downloadProgress.updatePieceStatus(pieceNumber, DownloadStatus::Empty);
     }
     return false;
@@ -234,7 +234,7 @@ vector<FileIO> FileIO::getAllFileIO(const uint8_t n) {
     vector<FileIO> handlers;
     for (const auto &dir: FileUtils::listDirectories(
              FileUtils::getExpandedPath("~/Gitabic" + (n ? std::to_string(n) : "") + "/.filesFolders/"))) {
-        FileIO handler(dir);
+        FileIO handler(dir, n);
         handlers.push_back(handler);
     }
     return handlers;

@@ -1,9 +1,9 @@
 #include "DownloadProgress.h"
 
 uint64_t DownloadProgress::getPieceOffsetInProgressFile(uint32_t pieceIndex) const {
-    constexpr size_t PIECES_OFFSET = 86;
+    constexpr size_t PIECES_OFFSET = 81;
     constexpr size_t PIECE_FIXED_DATA = 12;
-    const uint PIECE_SIZE = 61 + _pieces[0].blocks.size() * 8;
+    const uint PIECE_SIZE = 64 + _pieces[0].blocks.size() * 11;
 
     return PIECES_OFFSET + pieceIndex * PIECE_SIZE + PIECE_FIXED_DATA;
 }
@@ -313,11 +313,13 @@ uint16_t PieceProgress::downloadedBlock(const uint16_t block) {
     // Update last access time
     lastAccess = time(nullptr);
 
+    bool alreadyDownloaded = blocks[block].status == DownloadStatus::Downloaded || blocks[block].status == DownloadStatus::Verified;
+
     blocks[block].status = DownloadStatus::Downloaded;
     if (allBlocksDownloaded()) {
         status = DownloadStatus::Downloaded;
     }
-    return blocks[block].size;
+    return alreadyDownloaded ? 0 : blocks[block].size;
 }
 
 
@@ -423,9 +425,6 @@ vector<uint8_t> PieceProgress::serializeForFileUpdate() const {
                 reinterpret_cast<const uint8_t*>(&bytesDownloaded) + sizeof(bytesDownloaded));
 
     // Serialize offset
-    data.insert(data.end(),
-                reinterpret_cast<const uint8_t*>(&offset),
-                reinterpret_cast<const uint8_t*>(&offset) + sizeof(offset));
 
     // Serialize status
     data.insert(data.end(),
