@@ -22,13 +22,20 @@ ICEConnection::ICEConnection(const bool isControlling) {
     if (_agent == NULL) {
         throw std::runtime_error("Could not create agent");
     } else {
+        //
+        //        // Optionally configure PseudoTCP parameters
+        //        // For example, to set a larger receive buffer for handling larger messages:
+
         g_object_set(_agent, "stun-server", _stunAddr, NULL);
         g_object_set(_agent, "stun-server-port", _stunPort, NULL);
         g_object_set(_agent, "controlling-mode", isControlling, NULL);
         // new for test
         g_object_set(G_OBJECT(_agent), "ice-tcp", FALSE, NULL);
         g_object_set(_agent, "stun-max-retransmissions", 10, NULL);
+        // Enable PseudoTCP
         g_object_set(_agent, "stun-initial-timeout", 500, NULL);
+
+
         _streamId = nice_agent_add_stream(_agent, 1); // 1 is the number of components
         nice_agent_set_port_range(_agent, _streamId, COMPONENT_ID_RTP, 10244, 65535);
 
@@ -38,7 +45,8 @@ ICEConnection::ICEConnection(const bool isControlling) {
         }
 
         // set the callback for receiveing messages
-        nice_agent_set_relay_info(_agent, _streamId, COMPONENT_ID_RTP, TURN_ADDR, TURN_PORT, turnUsername, turnPassword,NICE_RELAY_TYPE_TURN_TCP);
+        nice_agent_set_relay_info(_agent, _streamId, COMPONENT_ID_RTP, TURN_ADDR, TURN_PORT, turnUsername, turnPassword,
+                                  NICE_RELAY_TYPE_TURN_TCP);
 
         nice_agent_attach_recv(_agent, _streamId, COMPONENT_ID_RTP, _context, callbackReceive, this);
     }
@@ -54,10 +62,10 @@ void ICEConnection::callbackAgentCloseDone(GObject *source_object, GAsyncResult 
     // Simply quit the main loop
     g_main_loop_quit(agentCloseLoop);
 }
+
 // sometimes it gets here if one tries to connect too fast to the other one but its okay as _isConnected is then as false
-void ICEConnection::disconnect()
-{
-   if (_isConnected) // in case called twice by accident...
+void ICEConnection::disconnect() {
+    if (_isConnected) // in case called twice by accident...
     {
         g_message("is connected");
 
@@ -479,7 +487,7 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent *_agent, guint strea
     ICEConnection *iceConnection = static_cast<ICEConnection *>(data);
 
     if (iceConnection) {
-        if (state == NICE_COMPONENT_STATE_CONNECTED || state == NICE_COMPONENT_STATE_READY ) // does not enter here
+        if (state == NICE_COMPONENT_STATE_CONNECTED || state == NICE_COMPONENT_STATE_READY) // does not enter here
         {
             NiceCandidate *local, *remote;
 
@@ -521,8 +529,7 @@ void ICEConnection::callbackComponentStateChanged(NiceAgent *_agent, guint strea
     }
 }
 
-void ICEConnection::sendMessage(const std::shared_ptr<MessageBaseToSend> &message) {
-    {
+void ICEConnection::sendMessage(const std::shared_ptr<MessageBaseToSend> &message) { {
         std::lock_guard<std::mutex> lock(_mutexMessagesToSend);
         _messagesToSend.push(message);
     }

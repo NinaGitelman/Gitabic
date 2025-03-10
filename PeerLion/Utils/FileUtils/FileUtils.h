@@ -85,7 +85,7 @@ namespace Utils {
     public:
         static constexpr uint64_t MIN_PIECE_SIZE = 256 * KB; ///< Minimum size of a file piece
         static constexpr uint64_t MAX_PIECE_SIZE = 4 * KB * KB; ///< Maximum size of a file piece
-        static constexpr uint16_t BLOCK_SIZE = 16 * KB; ///< Size of individual blocks
+        static constexpr uint16_t BLOCK_SIZE = 12 * KB; ///< Size of individual blocks
 
         /// @brief Calculates appropriate piece size for a file
         /// @param fileSize Size of the file
