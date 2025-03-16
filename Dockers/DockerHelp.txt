@@ -10,3 +10,16 @@ find my local ip (on wlo1) and then do ./PeerLion <my_local-ip>
 file to download: /root/Gitabic/MetaDatas/DockerHelp.txt.gitabic
 /media/user/OS/LinuxExtraSpace/Gitabic/Dockers/image.png.gitabic
 aqa
+
+
+what do I want? check the local ip on wlo1
+
+2 dockers:
+open the docker peer
+run: docker run --dns 8.8.8.8 -it --name peer peer /bin/bash
+input to terminal: ./PeerLion <wlo10-ip>
+input to terminal in the program opened: 4
+input to terminal in the opened program: testVideo.mp4.gitabic
+check for terminal output, if outputs "Finished downloading file!!!" print peer(numofcurrdocker) Finished downloading file testVideo.mp4
+
+192.168.221.9
