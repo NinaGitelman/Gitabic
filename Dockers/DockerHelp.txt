@@ -23,3 +23,9 @@ input to terminal in the opened program: testVideo.mp4.gitabic
 check for terminal output, if outputs "Finished downloading file!!!" print peer(numofcurrdocker) Finished downloading file testVideo.mp4
 
 192.168.221.9
+
+sudo /media/user/OS/LinuxExtraSpace/PythonInterpreter/.venv/bin/python3 /media/user/OS/LinuxExtraSpace/emek-yizrael-1701-gitabic/Dockers/dockerAutomation.py
+
+to setup with docker desktop:
+ docker context ls
+docker context use desktop-linux

@@ -2,12 +2,13 @@ import docker
 import time
 import subprocess
 import psutil
+import threading
 
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
-'''
-Function tp get local ip - used to be able to run the peerLion and use local host server
-'''
+METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
+
+
 def get_ip_address(interface):
     addrs = psutil.net_if_addrs()
     if interface in addrs:
@@ -16,72 +17,56 @@ def get_ip_address(interface):
                 return addr.address
     return None
 
-def run_server():
-    docker_command = "docker run --add-host=host.docker.internal:host-gateway -d -p 3125:3125 gitabic_poc_server_image"
-
-    # Execute the command
-    try:
-        result = subprocess.run(docker_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print(f"Command Output: {result.stdout.decode()}")
-    except subprocess.CalledProcessError as e:
-        print(f"Error: {e.stderr.decode()}")
 
 def main():
-
     time.sleep(3)
 
-    # Create a Docker client
-    client = docker.from_env()
-    # Example IP addresses
-    containers = []
+    client = docker.DockerClient(base_url='unix:///home/user/.docker/desktop/docker.sock')
+    print(client.images.list())
+
+    threads = []
     for i in range(2):
-        container = create_container(i, client)
+        print(f"Creating container {i}")
+        thread = threading.Thread(target=create_container, args=(i, client))
+        thread.start()
+        threads.append(thread)
 
-        if container:
-            containers.append(container)
-            time.sleep(5)
-
-    for container in containers:
-        print(container.id)
+    for thread in threads:
+        thread.join()
 
 
 def create_container(curr_container, client):
-
     try:
-        # Start a container with interactive settings
+        # Run the container
         container = client.containers.run(
             image=IMAGE_NAME,
             stdin_open=True,
             tty=True,
             detach=True,
-
         )
         time.sleep(1)
 
-        #Attach to the container's stdin
-        socket = container.attach_socket(params={'stdin': 1, 'stream': 1})
+        # Run the command inside the container
+        ip_address = get_ip_address(LOCAL_INTERFACE)
+        command = f"docker exec -i {container.id} ./PeerLion {ip_address}"
+        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
+        # Send input
+        process.stdin.write("\n4\n")  # option to download from Gitabic file
+        process.stdin.write(f"{METADATA_FILE_TO_DOWNLOAD_NAME}\n")
+        process.stdin.flush()
 
-        user_input = "nina\n"
-        socket.send(user_input.encode())
-
-        print("container: ", in_port)
-        # Optionally, capture the output from stdout
-        logs = container.logs(stdout=True, stderr=True).decode("utf-8")
-        print(f"Logs from container {in_port}:\n{logs}")
-
-        time.sleep(1)
-
-        logs = container.logs(stdout=True, stderr=True).decode("utf-8")
-        print(f"Logs from container {in_port}:\n{logs}")
+        # Read output in real-time
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(f"Logs from container {curr_container}: {output.strip()}")
 
     except Exception as e:
         print(f"Error creating container {curr_container}: {e}")
-        return None
-
-    return container
 
 
 if __name__ == '__main__':
-    print(get_ip_address(LOCAL_INTERFACE))
-    #main()
+    main()
