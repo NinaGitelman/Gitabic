@@ -15,5 +15,8 @@ COPY test.txt.gitabic /test.txt.gitabic
 COPY test19Kb.txt.gitabic /test19Kb.txt.gitabic
 COPY testVideo.mp4.gitabic /testVideo.mp4.gitabic
 
+# Make the PeerLion file executable
+RUN chmod +x /PeerLion
+
 # Set default command to bash
 CMD ["/bin/bash"]
