@@ -49,26 +49,42 @@ def create_container(curr_container, client):
 
         # Run the command inside the container
         ip_address = get_ip_address(LOCAL_INTERFACE)
-       # command = f"docker exec -i {container.id} ./PeerLion {ip_address}"
         command = f"docker exec -i {container.id} ./PeerLion"
-        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   text=True, bufsize=1)
 
         # Send input
         process.stdin.write("\n4\n")  # option to download from Gitabic file
         process.stdin.write(f"{METADATA_FILE_TO_DOWNLOAD_NAME}\n")
         process.stdin.flush()
 
-        # Read output in real-time
-        while True:
-            output = process.stdout.readline()
-            if output == '' and process.poll() is not None:
-                break
-            if output:
-                print(f"Logs from container {curr_container}: {output.strip()}")
+        # Use non-blocking reads with timeout
+        def read_output(stream, container_id):
+            while True:
+                line = stream.readline()
+                if not line and process.poll() is not None:
+                    break
+                if line:
+                    print(f"Logs from container {container_id}: {line.strip()}")
+
+        # Start threads to read stdout and stderr
+        out_thread = threading.Thread(target=read_output, args=(process.stdout, curr_container))
+        err_thread = threading.Thread(target=read_output, args=(process.stderr, curr_container))
+        out_thread.daemon = True
+        err_thread.daemon = True
+        out_thread.start()
+        err_thread.start()
+
+        # Wait for process to complete
+        exit_code = process.wait()
+        out_thread.join(timeout=1)
+        err_thread.join(timeout=1)
+
+        print(f"Container {curr_container} process exited with code {exit_code}")
 
     except Exception as e:
         print(f"Error creating container {curr_container}: {e}")
-
 
 if __name__ == '__main__':
     main()
