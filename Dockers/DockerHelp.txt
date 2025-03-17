@@ -33,5 +33,5 @@ docker context use desktop-linux
 source venv:
 source /home/ubuntu/emek-yizrael-1701-gitabic/Dockers/myenv/bin/activate
 
-remove dockers not in use:
+remove all dockers containers:
  docker rm -v -f $(docker ps -qa)
