@@ -46,53 +46,69 @@ def create_container(curr_container, client):
             tty=True,
             detach=True,
         )
-        print(f"Container {curr_container} started with ID: {container.id}")
+        container_id = container.id
+        print(f"Container {curr_container} started with ID: {container_id}")
         time.sleep(1)
 
-        # Prepare the command to execute in the container
-        exec_command = container.exec_run(
-            cmd="./PeerLion",
-            stdin=True,
-            tty=True,
-            stream=True
-        )
+        # Use docker CLI directly via subprocess, but with full output capture
+        command = f"docker exec -i {container_id} ./PeerLion"
+        print(f"Executing command for container {curr_container}: {command}")
 
-        # Store the exec ID for later reference
-        exec_id = exec_command.id
-        print(f"Started PeerLion in container {curr_container} with exec ID: {exec_id}")
+        # Run the process but capture full output using a different method
+        with subprocess.Popen(
+                command,
+                shell=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,  # Merge stderr into stdout
+                bufsize=0,  # Unbuffered
+                universal_newlines=True
+        ) as proc:
+            # Send input
+            proc.stdin.write("\n4\n")  # option to download from Gitabic file
+            proc.stdin.write(f"{METADATA_FILE_TO_DOWNLOAD_NAME}\n")
+            proc.stdin.flush()
 
-        # Send input to the container using docker API
-        client.api.exec_start(
-            exec_id=exec_id,
-            detach=False,
-            tty=True,
-            stdin=True,
-            socket=True
-        )
+            # Read output one character at a time with a timeout
+            import select
+            output_buffer = ""
 
-        # Directly attach to the container for logs
-        log_generator = container.logs(stream=True, follow=True)
+            while proc.poll() is None:
+                # Check if there's data to read within 0.1 seconds
+                if select.select([proc.stdout], [], [], 0.1)[0]:
+                    # Read up to 1024 characters at a time
+                    data = proc.stdout.read(1024)
+                    if data:
+                        output_buffer += data
+                        print(f"Container {curr_container}: {data}", end="", flush=True)
 
-        # Print all logs as they come in
-        print(f"Streaming logs for container {curr_container}")
-        for log_line in log_generator:
-            print(f"Container {curr_container}: {log_line.decode('utf-8').rstrip()}")
+            # Read any remaining output after the process exits
+            while True:
+                data = proc.stdout.read(1024)
+                if not data:
+                    break
+                output_buffer += data
+                print(f"Container {curr_container} (final output): {data}", end="", flush=True)
 
-        print(f"Log stream ended for container {curr_container}")
+            print(f"\nProcess for container {curr_container} completed.")
+            print(f"Output length: {len(output_buffer)} characters")
+            print(f"Exit code: {proc.returncode}")
 
-        # Check container status after logs end
-        container.reload()
-        print(f"Container {curr_container} final status: {container.status}")
-
-        # Get the exit code if container has stopped
-        if container.status == 'exited':
-            exit_info = client.api.inspect_container(container.id)['State']
-            print(f"Container {curr_container} exit code: {exit_info.get('ExitCode')}")
-            print(f"Container {curr_container} error: {exit_info.get('Error', 'None')}")
+        # Also get container logs to see if there's anything missed
+        try:
+            container.reload()
+            print(f"Container {curr_container} final status: {container.status}")
+            container_logs = container.logs().decode('utf-8')
+            if container_logs:
+                print(f"Additional container logs for {curr_container} (length: {len(container_logs)} chars):")
+                print(container_logs)
+        except Exception as e:
+            print(f"Failed to get container logs for {curr_container}: {e}")
 
     except Exception as e:
         import traceback
         print(f"Error with container {curr_container}: {e}")
         print(traceback.format_exc())
+
 if __name__ == '__main__':
     main()
