@@ -24,12 +24,12 @@ def get_ip_address(interface):
 def main():
     time.sleep(3)
 
-    # client = docker.DockerClient(base_url='unix:///home/user/.docker/desktop/docker.sock')
+    #client = docker.DockerClient(base_url='unix:///home/user/.docker/desktop/docker.sock')
     client = docker.DockerClient(base_url='unix:///var/run/docker.sock')
     print(client.images.list())
 
     threads = []
-    for i in range(4):
+    for i in range(1):
         print(f"Creating container {i}")
         thread = threading.Thread(target=create_container, args=(i, client))
         thread.start()
@@ -44,6 +44,7 @@ def create_container(curr_container, client):
         # Run the container
         container = client.containers.run(
             image=IMAGE_NAME,
+            name=f"peer_{curr_container}",
             stdin_open=True,
             tty=True,
             detach=True,
