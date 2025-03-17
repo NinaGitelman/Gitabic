@@ -46,74 +46,53 @@ def create_container(curr_container, client):
             tty=True,
             detach=True,
         )
+        print(f"Container {curr_container} started with ID: {container.id}")
         time.sleep(1)
 
-        # Run the command inside the container
-        command = f"docker exec -i {container.id} ./PeerLion"
-        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                   text=True)
+        # Prepare the command to execute in the container
+        exec_command = container.exec_run(
+            cmd="./PeerLion",
+            stdin=True,
+            tty=True,
+            stream=True
+        )
 
-        # Send input
-        process.stdin.write("\n4\n")  # option to download from Gitabic file
-        process.stdin.write(f"{METADATA_FILE_TO_DOWNLOAD_NAME}\n")
-        process.stdin.flush()
+        # Store the exec ID for later reference
+        exec_id = exec_command.id
+        print(f"Started PeerLion in container {curr_container} with exec ID: {exec_id}")
 
-        # Use select to read output without blocking
-        def read_all_output(proc, container_id):
-            import select
-            import sys
+        # Send input to the container using docker API
+        client.api.exec_start(
+            exec_id=exec_id,
+            detach=False,
+            tty=True,
+            stdin=True,
+            socket=True
+        )
 
-            # Set stdout and stderr to non-blocking mode
-            import fcntl
-            import os
-            for stream in [proc.stdout, proc.stderr]:
-                fd = stream.fileno()
-                fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-                fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+        # Directly attach to the container for logs
+        log_generator = container.logs(stream=True, follow=True)
 
-            stdout_data = ""
-            stderr_data = ""
+        # Print all logs as they come in
+        print(f"Streaming logs for container {curr_container}")
+        for log_line in log_generator:
+            print(f"Container {curr_container}: {log_line.decode('utf-8').rstrip()}")
 
-            while proc.poll() is None:
-                # Check if stdout or stderr has data to read
-                reads = [proc.stdout.fileno(), proc.stderr.fileno()]
-                readable, _, _ = select.select(reads, [], [], 0.1)
+        print(f"Log stream ended for container {curr_container}")
 
-                for fd in readable:
-                    if fd == proc.stdout.fileno():
-                        data = proc.stdout.read(1024)
-                        if data:
-                            stdout_data += data
-                            print(f"Logs from container {container_id}: {data}", end="")
-                            sys.stdout.flush()
-                    elif fd == proc.stderr.fileno():
-                        data = proc.stderr.read(1024)
-                        if data:
-                            stderr_data += data
-                            print(f"Errors from container {container_id}: {data}", end="")
-                            sys.stdout.flush()
+        # Check container status after logs end
+        container.reload()
+        print(f"Container {curr_container} final status: {container.status}")
 
-            # Read any remaining data after process exits
-            remaining_stdout = proc.stdout.read()
-            if remaining_stdout:
-                stdout_data += remaining_stdout
-                print(f"Final logs from container {container_id}: {remaining_stdout}", end="")
-
-            remaining_stderr = proc.stderr.read()
-            if remaining_stderr:
-                stderr_data += remaining_stderr
-                print(f"Final errors from container {container_id}: {remaining_stderr}", end="")
-
-            return stdout_data, stderr_data
-
-        stdout, stderr = read_all_output(process, curr_container)
-
-        print(f"Container {curr_container} process exited with code {process.returncode}")
-        print(f"Total output length: {len(stdout)} characters")
+        # Get the exit code if container has stopped
+        if container.status == 'exited':
+            exit_info = client.api.inspect_container(container.id)['State']
+            print(f"Container {curr_container} exit code: {exit_info.get('ExitCode')}")
+            print(f"Container {curr_container} error: {exit_info.get('Error', 'None')}")
 
     except Exception as e:
-        print(f"Error creating container {curr_container}: {e}")
-
+        import traceback
+        print(f"Error with container {curr_container}: {e}")
+        print(traceback.format_exc())
 if __name__ == '__main__':
     main()
