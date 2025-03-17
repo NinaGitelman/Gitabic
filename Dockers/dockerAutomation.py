@@ -48,7 +48,8 @@ def create_container(curr_container, client):
 
         # Run the command inside the container
         ip_address = get_ip_address(LOCAL_INTERFACE)
-        command = f"docker exec -i {container.id} ./PeerLion {ip_address}"
+       # command = f"docker exec -i {container.id} ./PeerLion {ip_address}"
+        command = f"docker exec -i {container.id} ./PeerLion"
         process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         # Send input
