@@ -50,60 +50,72 @@ def create_container(curr_container, client):
         print(f"Container {curr_container} started with ID: {container_id}")
         time.sleep(1)
 
-        # Use docker CLI directly via subprocess, but with full output capture
-        command = f"docker exec -i {container_id} ./PeerLion"
-        print(f"Executing command for container {curr_container}: {command}")
+        # First send the input using docker exec
+        input_cmd = f"docker exec -i {container_id} ./PeerLion"
+        input_proc = subprocess.Popen(
+            input_cmd,
+            shell=True,
+            stdin=subprocess.PIPE,
+            text=True
+        )
 
-        # Run the process but capture full output using a different method
-        with subprocess.Popen(
-                command,
-                shell=True,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,  # Merge stderr into stdout
-                bufsize=0,  # Unbuffered
-                universal_newlines=True
-        ) as proc:
-            # Send input
-            proc.stdin.write("\n4\n")  # option to download from Gitabic file
-            proc.stdin.write(f"{METADATA_FILE_TO_DOWNLOAD_NAME}\n")
-            proc.stdin.flush()
+        # Send input commands
+        input_proc.stdin.write("\n4\n")  # option to download from Gitabic file
+        input_proc.stdin.write(f"{METADATA_FILE_TO_DOWNLOAD_NAME}\n")
+        input_proc.stdin.flush()
 
-            # Read output one character at a time with a timeout
-            import select
-            output_buffer = ""
+        # Set up separate log monitoring thread that continues regardless of output
+        def monitor_logs():
+            last_timestamp = None
+            no_new_output_count = 0
+            max_no_output_counts = 12  # Wait for 60 seconds of no output before concluding
 
-            while proc.poll() is None:
-                # Check if there's data to read within 0.1 seconds
-                if select.select([proc.stdout], [], [], 0.1)[0]:
-                    # Read up to 1024 characters at a time
-                    data = proc.stdout.read(1024)
-                    if data:
-                        output_buffer += data
-                        print(f"Container {curr_container}: {data}", end="", flush=True)
-
-            # Read any remaining output after the process exits
             while True:
-                data = proc.stdout.read(1024)
-                if not data:
+                # Get all logs with timestamps
+                logs = client.api.logs(container_id, timestamps=True, tail='all').decode('utf-8')
+
+                # Extract the latest timestamp if available
+                if logs:
+                    log_lines = logs.strip().split('\n')
+                    if log_lines:
+                        # Timestamps are at the beginning of each line
+                        latest_line = log_lines[-1]
+                        if ' ' in latest_line:  # Format is typically "timestamp log_message"
+                            current_timestamp = latest_line.split(' ')[0]
+
+                            # If we have new output
+                            if current_timestamp != last_timestamp:
+                                print(f"Container {curr_container} logs ({len(log_lines)} lines):")
+                                for line in log_lines:
+                                    print(f"  {line}")
+                                last_timestamp = current_timestamp
+                                no_new_output_count = 0
+                            else:
+                                no_new_output_count += 1
+
+                # If no new output for a while, print the status and latest stats
+                if no_new_output_count >= max_no_output_counts:
+                    container.reload()
+                    print(f"Container {curr_container} status: {container.status}")
+                    print(f"No new output for 60 seconds. Container may be stalled.")
+                    print(f"Latest statistics: {client.api.stats(container_id, stream=False)}")
                     break
-                output_buffer += data
-                print(f"Container {curr_container} (final output): {data}", end="", flush=True)
 
-            print(f"\nProcess for container {curr_container} completed.")
-            print(f"Output length: {len(output_buffer)} characters")
-            print(f"Exit code: {proc.returncode}")
+                # Wait 5 seconds before checking again
+                time.sleep(5)
 
-        # Also get container logs to see if there's anything missed
-        try:
-            container.reload()
-            print(f"Container {curr_container} final status: {container.status}")
-            container_logs = container.logs().decode('utf-8')
-            if container_logs:
-                print(f"Additional container logs for {curr_container} (length: {len(container_logs)} chars):")
-                print(container_logs)
-        except Exception as e:
-            print(f"Failed to get container logs for {curr_container}: {e}")
+        # Start monitoring logs in a separate thread
+        log_thread = threading.Thread(target=monitor_logs)
+        log_thread.daemon = True
+        log_thread.start()
+
+        # Let the main process wait some time before continuing
+        input_proc.wait(timeout=30)  # Wait up to 30 seconds for the exec process
+
+        # Let the log monitoring continue for a while
+        time.sleep(90)  # Allow 90 seconds for the log thread to capture output
+
+        print(f"Container {curr_container} monitoring period ended")
 
     except Exception as e:
         import traceback
