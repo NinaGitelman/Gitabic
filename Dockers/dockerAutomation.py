@@ -21,7 +21,8 @@ def get_ip_address(interface):
 def main():
     time.sleep(3)
 
-    client = docker.DockerClient(base_url='unix:///home/user/.docker/desktop/docker.sock')
+   # local comp: client = docker.DockerClient(base_url='unix:///home/user/.docker/desktop/docker.sock')
+    client = docker.DockerClient(base_url='unix:///var/run/docker.sock')
     print(client.images.list())
 
     threads = []
