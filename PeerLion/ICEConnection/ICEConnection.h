@@ -12,9 +12,13 @@
 #include <string>
 #include <thread>
 #include <map>
+
+#include <condition_variable>
+#include <atomic>
 #include "../Utils/ThreadSafeCout.h"
 #include "../Utils/VectorUint8Utils.h"
 #include "../NetworkUnit/ServerComm/Messages.h"
+
 
 #define COMPONENT_ID_RTP 1
 
@@ -23,22 +27,26 @@
 // if needed to check, do nslookup for: relay1.expressturn.com
 // using free express turn....
 // todo later - put this in a configs file in a safer way....
-#define TURN_ADDR "23.26.133.136"
+#define TURN_ADDR "51.158.152.43"
 #define TURN_USERNAME "ef8X4GWHOIXIDE3M2R"
 #define TURN_PASSWORD "rpKpXiK0tpIWNzOB"
 #define TURN_PORT 3478
 
 /// STUN configs
-#define STUN_PORT 3478
-#define STUN_ADDR "stun.stunprotocol.org" // TODO - make it a list and do many tries in case this does not work (out of service../)
+#define STUN_PORT 19302
+#define STUN_ADDR "stun3.l.google.com" // TODO - make it a list and do many tries in case this does not work (out of service../)
+
+
 
 using std::map;
 using std::mutex;
 using std::queue;
 using std::vector;
+using std::atomic;
+using std::condition_variable;
 
-extern "C"
-{
+
+extern "C" {
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -52,8 +60,9 @@ extern "C"
 // OBS:
 // There is an isConnected function. this is how we can know if its still conected or not. maybe we will need to check it every few minutes or something...
 
-class ICEConnection
-{
+// OBS:
+// when disconnected pretty will send a disconnect message to the other peer and receiveMessage from the other peer will handle that message and know it disconnected
+class ICEConnection {
     // comment to change for commit
 private:
     // glib is thread safe so no need for mutex for everything used in threads
@@ -62,17 +71,23 @@ private:
     const gchar *_stunAddr = STUN_ADDR;
     const guint _stunPort = STUN_PORT;
 
-    gboolean _isControlling;          // if this conneciton is controllling or being controlled
-    GMainContext *_context;           // this connections context
-    GMainLoop *_gloop;                // a blocking loop only for this connection
-    guint _streamId;                  // Add this
+    gboolean _isControlling; // if this conneciton is controllling or being controlled
+    GMainContext *_context; // this connections context
+    GMainLoop *_gloop; // a blocking loop only for this connection
+    guint _streamId; // the nice stream id of this connection
+
     bool _candidatesGathered = false; // bool to track if candidates were already gathered
 
-    mutex _mutexReceivedMessages;                 // mutex to lock the received messages queue
+    atomic<bool> _isConnected{false}; // bool to track if is connected to the other peer
+
+    mutex _mutexReceivedMessages; // mutex to lock the received messages queue
     queue<MessageBaseReceived> _receivedMessages; // queue where all received messages will be
 
-    mutex _mutexIsConnectedBool; // mutex for the is connected bool
-    bool _isConnected;           // bool to set if its conencted and receiveing messages
+
+    mutex _mutexMessagesToSend; // mutex for the messages to send queue
+    queue<std::shared_ptr<MessageBaseToSend> > _messagesToSend; // queue for the messages to send
+    condition_variable _cvHasNewMessageToSend;
+    std::thread _messagesSenderThread;
 
     // turn constants
     const gchar *turnUsername = TURN_USERNAME;
@@ -81,8 +96,7 @@ private:
     /// @brief Helper function to get the candidate data and put it into the given buffer
     /// @param localDataBuffer The buffer in which the localData will be put (empty null buffer, malloc will be dealt on this function)
     /// @return If it gathered the data right
-    int
-    getCandidateData(char **localDataBuffer);
+    int getCandidateData(char **localDataBuffer);
 
     /// @brief Callbis ack to handle if the candidate gathering is done
     static void callbackCandidateGatheringDone(NiceAgent *agent, guint streamId, gpointer userData);
@@ -99,16 +113,31 @@ private:
 
     /// @brief Callback function to notify when a component state is changed -> only used for printing the state...
     //   has to have those inputs because libnice expects it  even if we only use one of them...
-    static void callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state, gpointer data);
+    static void callbackComponentStateChanged(NiceAgent *agent, guint streamId, guint componentId, guint state,
+                                              gpointer data);
 
     /// @brief Callback that will handle the received messages and out it into the messages queue of the IceConnection object passed in the data
     /// @param data The ice connection that calls it
-    static void callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf, gpointer data);
+    static void callbackReceive(NiceAgent *agent, guint _stream_id, guint component_id, guint len, gchar *buf,
+                                gpointer data);
 
     /// @brief Function to transform received data as a vector into a MessageBaseReceived object
-    /// @param messageData the message data
+    /// @param buf the message data
     /// @param len the message data length
     static MessageBaseReceived deserializeMessage(gchar *buf, guint len);
+
+
+    /// @brief funciton that will actually call nice_send and send the message
+    /// @param connection the connection to send from
+    /// @param message the message to send
+    static void systemSendMessage(ICEConnection *connection, std::shared_ptr<MessageBaseToSend> message);
+
+
+    /// @brief Callback for when the agent is closed (in disconnect())
+    /// Closes the loop that waits for the agent to close
+    /// @param userData the GMainLoop that is "locking" disconnect function in order for it to wait before unrefing the agent
+    /// The other params are only relevant to GLib - we dont send them
+    static void callbackAgentCloseDone(GObject *source_object, GAsyncResult *res, gpointer userData);
 
 public:
     // constexpr means constant expression
@@ -135,11 +164,24 @@ public:
     /// @return if it was successful or not
     /// it is a thread so it gotta be called as a thread (because of main gloop)
     /*
+     *
+     * How to call this function:
        std::thread peerThread([&handler1, &authIceReq]()
                              { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
       peerThread.detach();
     */
-    int connectToPeer(const vector<uint8_t> &remoteData);
+    /// @brief Fucntion to be called to connect to a peer
+    /// @remoteData the remote data received from the peer that wants to connect
+    /// show be called like this:
+    /*
+    *
+     *  std::thread peerThread([&handler1, &authIceReq]()
+                        { handler1.connectToPeer(authIceReq.iceCandidateInfo); });
+    *  peerThread.detach();
+    */
+    bool connectToPeer(const vector<uint8_t> remoteDataVec);
+
+    int connectToPeerThread(vector<uint8_t> remoteDataVec);
 
     /// @brief Thread safe function to check if the ice connection is still valid
     /// @return if the connection is still valid
@@ -152,4 +194,17 @@ public:
     /// @brief Function gets the amount of messages in the received messages queue
     /// @return amount of received messages
     int receivedMessagesCount();
+
+
+    /// @brief Function to send a message to the connected peer
+    /// @message the message to send
+    /// in practice, this function will just add to the messages queue and its the sendMessagesThread that will manage the messages sending...
+    void sendMessage(const std::shared_ptr<MessageBaseToSend> &message);
+
+    /// @brief Function that will be send the messages
+    /// @param connection the ICE connection object that it will send from
+    /// In practice, it keeps checking if there are new messages on the send messages queue and send them if so
+    void messageSendingThread(ICEConnection *connection);
+
+    void disconnect();
 };

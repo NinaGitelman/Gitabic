@@ -1,5 +1,11 @@
+
 # Prerequisites
 *.d
+
+
+# But track the PeerLion file
+!PeerLion/cmake-build-debug/PeerLion
+!ServerLion/cmake-build-debug/ServerLion
 
 # Compiled Object files
 *.slo
@@ -37,3 +43,5 @@ cmake-build-*/  # CLion's build output folders
 *.ipr
 *.iws
 */cmake-build-debug/*
+
+*/build/*

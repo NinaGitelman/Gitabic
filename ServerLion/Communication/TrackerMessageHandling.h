@@ -19,8 +19,8 @@ public:
     // Access the single instance
     static TrackerMessageHandling &getInstance();
 
-    ResultMessage handle(const ClientRequestUserList &request);
-    ResultMessage handle(const ClientRequestStore &request);
+    ResultMessage handle(const ClientRequestUserList &request) const;
+    ResultMessage handle(const ClientRequestStore &request) const;
 
 private:
     // Constructor and Destructor are private

@@ -34,6 +34,8 @@ public:
     void saveData(const ID &key, const ID &value);
     vector<ID> getRegisteredData(const ID &fileId, const ID &yourID = ID());
 
+    void removePeerData(const ID &peerID);
+
 private:
     // Private constructor for Singleton pattern
     TrackerDataStorage();

@@ -12,16 +12,14 @@ TrackerMessageHandling &TrackerMessageHandling::getInstance()
     return *instance;
 }
 
-ResultMessage TrackerMessageHandling::handle(const ClientRequestUserList &request)
-{
+ResultMessage TrackerMessageHandling::handle(const ClientRequestUserList &request) const {
     ResultMessage res;
     res.id = request.from;
-    res.msg = std::make_shared<ServerResponseUserList>(trackerDataStorage.getRegisteredData(request.fileId, request.from));
+    res.msg = std::make_shared<ServerResponseUserList>(request.fileId, trackerDataStorage.getRegisteredData(request.fileId, request.from));
     return res;
 }
 
-ResultMessage TrackerMessageHandling::handle(const ClientRequestStore &request)
-{
+ResultMessage TrackerMessageHandling::handle(const ClientRequestStore &request) const {
     ResultMessage res;
     res.id = request.from;
     trackerDataStorage.saveData(request.fileId, request.myId);

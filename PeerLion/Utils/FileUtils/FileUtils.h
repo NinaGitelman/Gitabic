@@ -1,14 +1,17 @@
 
 #pragma once
-#include <string>
-#include <fstream>
-#include <vector>
 #include <cstdint>
-#include <stdexcept>
 #include <filesystem>
-#include "../../Encryptions/SHA256/sha256.h"
-#include "../../Encryptions/AES/AESHandler.h"
+#include <fstream>
+#include <mutex>
 #include <random>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include "../../Encryptions/AES/AESHandler.h"
+#include "../../Encryptions/SHA256/sha256.h"
+#include <memory_resource>
 
 #define KB 1024UL
 
@@ -62,11 +65,19 @@ namespace Utils {
 
         static bool dirExists(const std::string &filePath);
 
-        static std::filesystem::path createDownloadFolder(const std::string &fileHash, const std::string &friendlyName);
+        static std::filesystem::path createDownloadFolder(const std::string &fileHash, const std::string &friendlyName,
+                                                          uint8_t n = 0);
 
         static vector<std::string> listDirectories(const std::string &path);
 
         static std::string getExpandedPath(const std::string &path);
+
+
+        static std::mutex &getFileMutex(const std::string &filePath);
+
+        static void createDirectory(const std::string &path);
+
+        static std::pmr::unordered_map<std::string, std::mutex> fileMutexes;
     };
 
     /// @brief Class handling file splitting logic
@@ -74,12 +85,12 @@ namespace Utils {
     public:
         static constexpr uint64_t MIN_PIECE_SIZE = 256 * KB; ///< Minimum size of a file piece
         static constexpr uint64_t MAX_PIECE_SIZE = 4 * KB * KB; ///< Maximum size of a file piece
-        static constexpr uint16_t BLOCK_SIZE = 16 * KB; ///< Size of individual blocks
+        static constexpr uint16_t BLOCK_SIZE = 12 * KB; ///< Size of individual blocks
 
         /// @brief Calculates appropriate piece size for a file
         /// @param fileSize Size of the file
         /// @return Appropriate piece size in bytes
-        static uint pieceSize(const uint64_t fileSize);
+        static uint pieceSize(uint64_t fileSize);
     };
 
     /// @brief Class providing data conversion utilities

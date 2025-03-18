@@ -6,7 +6,7 @@
 #include <array>
 
 using std::vector;
-
+#include <cstdint>
 class SerializeDeserializeUtils
 {
 public:
@@ -29,4 +29,10 @@ public:
    {
       to.insert(to.end(), from.begin(), from.end());
    }
+   template<typename T>
+static void copyToEnd(vector<uint8_t> to, T from) {
+      to.resize(to.size() + sizeof(T));
+      memcpy(to.data() + to.size() - sizeof(T), &from, sizeof(T));
+   }
+
 };

@@ -8,6 +8,7 @@
 
 #include "Messages.h"
 #include "../../Encryptions/AES/AESHandler.h"
+#include <memory>
 
 /**
  * @enum BitTorrentRequestCodes
@@ -33,7 +34,7 @@ enum BitTorrentResponseCodes {
  keepAliveRes = 102,
  bitField = 112,
  missingFile = 113,
- dataResponse = 123,
+ blockResponse = 123,
  missingDataResponse = 124
 };
 
@@ -41,7 +42,7 @@ enum BitTorrentResponseCodes {
  * @struct TorrentMessageBase
  * @brief Base structure for BitTorrent messages.
  */
-struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
+struct TorrentMessageBase : MessageBaseToSend, GeneralReceive {
  ID fileId{}; ///< File ID.
  HashResult hash{}; ///< Hash result.
  AESKey initVector{}; ///< AES initialization vector.
@@ -54,9 +55,21 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   * @param code The message code.
   */
  TorrentMessageBase(const ID &fileId, const AESKey &initVector, const uint8_t code) : MessageBaseToSend(
-                                                                                       code), GeneralRecieve(),
+                                                                                       code), GeneralReceive(),
                                                                                       fileId(fileId),
                                                                                       initVector(initVector) {
+ } /**
+  * @brief Constructor with file ID and initialization vector.
+  * @param fileId The file ID.
+  * @param initVector The AES initialization vector.
+  * @param code The message code.
+  * @param to The peer ID to send the message to.
+  */
+ TorrentMessageBase(const ID &fileId, const AESKey &initVector, const uint8_t code,
+                    const ID &to) : MessageBaseToSend(
+                                     code), GeneralReceive(to),
+                                    fileId(fileId),
+                                    initVector(initVector) {
  }
 
  /**
@@ -65,9 +78,9 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   * @param code The message code.
   * @param isDeserialized Flag indicating if the message is deserialized.
   */
- TorrentMessageBase(const MessageBaseReceived &msg, const uint8_t code,
-                    const bool isDeserialized = false) : GeneralRecieve(
-  msg.from) {
+ TorrentMessageBase(const MessageBaseReceived &msg,
+                    const bool isDeserialized = false) : MessageBaseToSend(msg.code), GeneralReceive(
+                                                          msg.from) {
   if (!isDeserialized) {
    TorrentMessageBase::deserialize(msg.data);
   }
@@ -93,10 +106,32 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   * @return The size of the deserialized data.
   */
  virtual uint deserialize(const vector<uint8_t> &data) {
+  size_t expectedSize = SHA256_SIZE + SHA256_SIZE + initVector.size();
+
+  if (data.size() < expectedSize) {
+   throw std::runtime_error("Insufficient data size for deserialization");
+  }
+
+  // Check and deserialize fileId
+  if (data.size() < SHA256_SIZE) {
+   throw std::runtime_error("Insufficient data size for fileId");
+  }
   memcpy(fileId.data(), data.data(), SHA256_SIZE);
+
+  // Check and deserialize hash
+  if (data.size() < SHA256_SIZE * 2) {
+   throw std::runtime_error("Insufficient data size for hash");
+  }
   memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
-  memcpy(initVector.data(), data.data() + SIZE - initVector.size(), initVector.size());
-  return SIZE;
+
+  // Check and deserialize initVector
+  size_t initVectorOffset = expectedSize - initVector.size();
+  if (data.size() < initVectorOffset + initVector.size()) {
+   throw std::runtime_error("Insufficient data size for initVector");
+  }
+  memcpy(initVector.data(), data.data() + initVectorOffset, initVector.size());
+
+  return expectedSize;
  }
 
  /**
@@ -120,6 +155,11 @@ struct TorrentMessageBase : MessageBaseToSend, GeneralRecieve {
   memcpy(hash.data(), data.data() + SHA256_SIZE, SHA256_SIZE);
   return hash == computedhash;
  }
+};
+
+struct ResultMessages {
+ ID to;
+ vector<std::shared_ptr<TorrentMessageBase> > messages;
 };
 
 //////////////////////////////////////////////
@@ -254,18 +294,18 @@ struct CancelDataRequest : TorrentMessageBase {
 
 
 /**
- * @struct PieceOwnershopUpdate
+ * @struct PieceOwnershipUpdate
  * @brief Structure for BitTorrent has piece update, missing requested piece and lost piece update messages.
  */
-struct PieceOwnershopUpdate : TorrentMessageBase {
+struct PieceOwnershipUpdate : TorrentMessageBase {
  uint32_t pieceIndex{}; ///< Piece index.
 
  /**
   * @brief Constructor with received message.
   * @param msg The received message.
   */
- explicit PieceOwnershopUpdate(const MessageBaseReceived &msg) : TorrentMessageBase(msg, true) {
-  PieceOwnershopUpdate::deserialize(msg.data);
+ explicit PieceOwnershipUpdate(const MessageBaseReceived &msg) : TorrentMessageBase(msg, true) {
+  PieceOwnershipUpdate::deserialize(msg.data);
  }
 
  /**
@@ -275,12 +315,12 @@ struct PieceOwnershopUpdate : TorrentMessageBase {
   * @param pieceIndex The piece index.
   * @param code The message code.
   */
- PieceOwnershopUpdate(const ID &fileId, const AESKey &initVector, const uint32_t pieceIndex,
+ PieceOwnershipUpdate(const ID &fileId, const AESKey &initVector, const uint32_t pieceIndex,
                       const uint8_t code = BitTorrentRequestCodes::hasPieceUpdate) : TorrentMessageBase(
   fileId,
   initVector,
   code) {
-  PieceOwnershopUpdate::pieceIndex = pieceIndex;
+  PieceOwnershipUpdate::pieceIndex = pieceIndex;
  }
 
  /**
@@ -340,7 +380,7 @@ struct BlockResponse : TorrentMessageBase {
   */
  BlockResponse(const ID &fileId, const AESKey &initVector, const uint32_t pieceIndex, const uint16_t blockIndex,
                const vector<uint8_t> &block) : TorrentMessageBase(fileId, initVector,
-                                                                  BitTorrentResponseCodes::dataResponse) {
+                                                                  BitTorrentResponseCodes::blockResponse) {
   BlockResponse::pieceIndex = pieceIndex;
   BlockResponse::blockIndex = blockIndex;
   BlockResponse::block = block;
@@ -353,10 +393,9 @@ struct BlockResponse : TorrentMessageBase {
   */
  [[nodiscard]] vector<uint8_t> serialize(const uint32_t PreviousSize = 0) const override {
   auto baseSerialized = TorrentMessageBase::serialize(
-   PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + sizeof(uint) + block.size());
+   PreviousSize + sizeof(pieceIndex) + sizeof(blockIndex) + block.size());
   SerializeDeserializeUtils::copyToEnd(baseSerialized, pieceIndex);
   SerializeDeserializeUtils::copyToEnd(baseSerialized, blockIndex);
-  SerializeDeserializeUtils::copyToEnd(baseSerialized, static_cast<uint>(block.size()));
   SerializeDeserializeUtils::addToEnd(baseSerialized, block);
 
   return baseSerialized;
@@ -371,11 +410,8 @@ struct BlockResponse : TorrentMessageBase {
   const auto offset = TorrentMessageBase::deserialize(data);
   memcpy(&pieceIndex, data.data() + offset, sizeof(pieceIndex));
   memcpy(&blockIndex, data.data() + offset + sizeof(pieceIndex), sizeof(blockIndex));
-  uint32_t blockSize;
-  memcpy(&blockSize, data.data() + offset + sizeof(pieceIndex) + sizeof(blockIndex), sizeof(blockSize));
-  block = vector<uint8_t>(data.begin() + offset + sizeof(pieceIndex) + sizeof(blockIndex),
-                          data.begin() + offset + sizeof(pieceIndex) + sizeof(blockIndex) + blockSize);
-  return offset + sizeof(pieceIndex) + sizeof(blockIndex) + blockSize;
+  block = vector<uint8_t>(data.begin() + offset + sizeof(pieceIndex) + sizeof(blockIndex), data.end());
+  return offset + sizeof(pieceIndex) + sizeof(blockIndex) + block.size();
  }
 };
 
@@ -400,9 +436,28 @@ struct FileBitField : TorrentMessageBase {
   return baseSerialized;
  }
 
- uint deserialize(const vector<uint8_t> &data) override {
+ uint deserialize(const std::vector<uint8_t> &data) override {
+  // Validate that data is not empty
+  if (data.empty()) {
+   throw std::runtime_error("Input data is empty");
+  }
+
+  // Call base class deserialize and get the offset
   const auto offset = TorrentMessageBase::deserialize(data);
+
+  // Validate that offset is within bounds
+  if (offset >= data.size()) {
+   throw std::runtime_error("Invalid offset returned by TorrentMessageBase::deserialize");
+  }
+
+  // Resize field to accommodate data
+  field.resize(data.size() - offset);
+
+  // Safely populate field
   for (size_t i = 0; i < field.size(); ++i) {
+   if (offset + i >= data.size()) {
+    throw std::runtime_error("Index out of bounds while deserializing");
+   }
    field[i] = std::bitset<8>(data[offset + i]);
   }
 
@@ -411,3 +466,4 @@ struct FileBitField : TorrentMessageBase {
 };
 
 #endif //BITTORRENTMESSAGES_H
+

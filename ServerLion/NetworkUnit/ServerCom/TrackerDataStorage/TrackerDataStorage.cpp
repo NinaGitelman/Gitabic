@@ -1,5 +1,8 @@
 #include "TrackerDataStorage.h"
 
+#include <ranges>
+#include <bits/ranges_algo.h>
+
 // Define the static members
 std::unique_ptr<TrackerDataStorage> TrackerDataStorage::instance = nullptr;
 std::mutex TrackerDataStorage::instanceMutex;
@@ -34,20 +37,28 @@ void TrackerDataStorage::saveData(const ID &key, const ID &value)
 {
     std::lock_guard<std::mutex> guard(mut);
     savedData[time(nullptr) + TEN_MINUTES] = std::make_pair(key, value);
+    std::cout << "Peer saved data" << std::endl;
 }
 
 vector<ID> TrackerDataStorage::getRegisteredData(const ID &fileId, const ID &yourID)
 {
     std::lock_guard<std::mutex> guard(mut);
     vector<ID> ids;
-    for (auto &&it : savedData)
+    for (auto &[first, second] : savedData | std::views::values)
     {
-        if (it.second.first == fileId && it.second.second != yourID)
+        if (first == fileId && second != yourID)
         {
-            ids.push_back(it.second.second);
+            ids.push_back(second);
         }
     }
+    std::cout << "Peer requested data and got " << ids.size() << "peers" << std::endl;
     return ids;
+}
+
+void TrackerDataStorage::removePeerData(const ID &peerID) {
+    std::erase_if(savedData, [&peerID](const auto& item) {
+    return item.second.second == peerID;
+    });
 }
 
 void TrackerDataStorage::removeOldData()

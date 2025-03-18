@@ -60,7 +60,7 @@ void main1()
   // working example with server for 2 diferent peers
 
   int connect = 1;
-  Address serverAdd = Address("54.221.186.81", 4789);
+  Address serverAdd = Address("3.90.184.187", 4787);
   TCPSocket socket = TCPSocket(serverAdd);
 
   ServerResponseNewId newId(socket.receive([](uint8_t code)
