@@ -14,6 +14,7 @@ COPY test.txt /test.txt
 COPY test.txt.gitabic /test.txt.gitabic
 COPY test19Kb.txt.gitabic /test19Kb.txt.gitabic
 COPY testVideo.mp4.gitabic /testVideo.mp4.gitabic
+COPY docker-desktop-amd64.deb.gitabic /docker-desktop-amd64.deb.gitabic
 
 # Make the PeerLion file executable
 RUN chmod +x /PeerLion

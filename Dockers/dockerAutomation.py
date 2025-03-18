@@ -29,7 +29,7 @@ def main():
     print(client.images.list())
 
     threads = []
-    for i in range(1):
+    for i in range(4):
         print(f"Creating container {i}")
         thread = threading.Thread(target=create_container, args=(i, client))
         thread.start()
