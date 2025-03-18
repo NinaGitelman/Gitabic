@@ -553,6 +553,9 @@ void ICEConnection::systemSendMessage(ICEConnection *connection, std::shared_ptr
     if (result < 0) {
         g_critical("Failed to send message via nice_agent_send");
     }
+    else {
+        g_message("Sent message via nice_agent_send");
+    }
 }
 
 void ICEConnection::messageSendingThread(ICEConnection *connection) {
