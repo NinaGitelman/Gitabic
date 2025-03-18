@@ -52,7 +52,7 @@ size_t FileHandler::getOffset(const uint32_t pieceIndex, const uint16_t blockInd
 }
 
 string FileHandler::getCurrentDirPath() const {
-    return dirPath + SHA256::hashToString(downloadProgress.get_file_hash()) + '/';
+    return dirPath + SHA256::hashToString(downloadProgress.getFileHash()) + '/';
 }
 
 
@@ -79,7 +79,7 @@ void FileHandler::initNew(const MetaDataFile &metaData) {
 
 FileHandler::FileHandler(const string &hash)
     : mode(FileMode::Default),
-      pieceSize(FileSplitter::pieceSize(downloadProgress.get_file_size())) {
+      pieceSize(FileSplitter::pieceSize(downloadProgress.getFileSize())) {
     string dir = dirPath + hash + '/';
     for (const auto &entry: std::filesystem::directory_iterator(dir)) {
         fileName = entry.path().filename().string();
@@ -92,8 +92,8 @@ FileHandler::FileHandler(const string &hash)
 FileHandler::FileHandler(const MetaDataFile &metaData) {
     initNew(metaData);
     this->mode = FileMode::Default;
-    fileName = downloadProgress.get_file_name();
-    pieceSize = FileSplitter::pieceSize(downloadProgress.get_file_size());
+    fileName = downloadProgress.getFileName();
+    pieceSize = FileSplitter::pieceSize(downloadProgress.getFileSize());
 }
 
 void FileHandler::savePiece(const uint32_t pieceIndex, const vector<uint8_t> &pieceData) {
