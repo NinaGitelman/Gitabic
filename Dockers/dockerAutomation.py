@@ -9,7 +9,7 @@ import fcntl
 
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
-METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
+METADATA_FILE_TO_DOWNLOAD_NAME = "docker-desktop-amd64.deb.gitabic"
 
 
 def get_ip_address(interface):
