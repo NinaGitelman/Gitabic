@@ -5,7 +5,7 @@ uint64_t DownloadProgress::getPieceOffsetInProgressFile(uint32_t pieceIndex) con
     constexpr size_t PIECE_FIXED_DATA = 12;
     const uint PIECE_SIZE = 64 + _pieces[0].blocks.size() * 11;
 
-    return PIECES_OFFSET + pieceIndex * PIECE_SIZE + PIECE_FIXED_DATA;
+    return PIECES_OFFSET + pieceIndex * PIECE_SIZE + PIECE_FIXED_DATA + _fileName.size();
 }
 
 DownloadProgress::DownloadProgress(const MetaDataFile &metaData) {
