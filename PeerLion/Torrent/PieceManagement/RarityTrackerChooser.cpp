@@ -4,7 +4,7 @@
 #include "RarityTrackerChooser.h"
 
 #include <bits/ranges_algo.h>
-
+#include <bits/stdc++.h>
 void RarityTrackerChooser::addPeerRarity(const vector<std::bitset<8> > &vec) {
 	for (int i = 0; i < _pieceCount; ++i) {
 		_rarity[i] += vec[i / 8].test(i % 8) ? 1 : 0;
@@ -154,12 +154,36 @@ vector<ResultMessages> RarityTrackerChooser::ChooseBlocks(std::vector<PeerID> pe
 					});
 
 	//if enough peers, start downloading empty pieces, prioritize by rarity
-	std::ranges::sort(emptyPieces.begin(), emptyPieces.end(),
-					[this](const auto &lhs, const auto &rhs) {
-						return getRarity(_downloadProgress.getPieceIndex(lhs.offset)) >
-								getRarity(_downloadProgress.getPieceIndex(rhs.offset));
-					});
+	// std::ranges::sort(emptyPieces.begin(), emptyPieces.end(),
+	// 				[this](const auto &lhs, const auto &rhs) {
+	// 					const int l = getRarity(_downloadProgress.getPieceIndex(lhs.offset));
+	// 					const int r = getRarity(_downloadProgress.getPieceIndex(rhs.offset));
+	// 					return l != r ? l > r : std::rand() % 2 == 1;
+	// 				});
+	// std::ranges::sort(emptyPieces.begin(), emptyPieces.end(),
+	// 				[this](const auto &lhs, const auto &rhs) {
+	// 					return getRarity(_downloadProgress.getPieceIndex(lhs.offset)) >
+	// 					getRarity(_downloadProgress.getPieceIndex(rhs.offset));
+	// 				});
+	// Option 1: Add a random component to each piece before sorting
+	std::vector<std::pair<PieceProgress, int>> randomizedPieces;
+	randomizedPieces.reserve(emptyPieces.size());
+	for (const auto& piece : emptyPieces) {
+		randomizedPieces.emplace_back(piece, std::rand());
+	}
 
+	std::ranges::sort(randomizedPieces.begin(), randomizedPieces.end(),
+		[this](const auto& lhs, const auto& rhs) {
+			const int l_rarity = getRarity(_downloadProgress.getPieceIndex(lhs.first.offset));
+			const int r_rarity = getRarity(_downloadProgress.getPieceIndex(rhs.first.offset));
+			return l_rarity != r_rarity ? l_rarity > r_rarity : lhs.second < rhs.second;
+		});
+
+	// Extract just the pieces back
+	emptyPieces.clear();
+	for (const auto &piece: randomizedPieces | std::views::keys) {
+		emptyPieces.push_back(piece);
+	}
 	// Process all pieces
 	for (const PeerID &peer: peers) {
 		ResultMessages res;
