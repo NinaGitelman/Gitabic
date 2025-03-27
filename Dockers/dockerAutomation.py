@@ -6,14 +6,16 @@ import threading
 import os
 import select
 import fcntl
+import re
 
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
 PERIODIC_INPUT_INTERVAL = 10  # Interval in seconds
 IN_AWS = False
-NUM_PEERS = 3
+NUM_PEERS = 2
 INTERNET_SERVER = False
+
 
 def get_ip_address(interface):
     addrs = psutil.net_if_addrs()
@@ -26,6 +28,11 @@ def get_ip_address(interface):
 
 def read_output(process, container_id, stop_event):
     stdout_open, stderr_open = True, True
+    progress_printed = False
+
+    # Regex pattern to match progress lines with optional progress bar and percentage
+    progress_pattern = re.compile(r'Progress:\s*(?:\[.*\])?\s*\d+\.?\d*%')
+    finished_pattern = re.compile(r'Finished downloading file!!!')
 
     while not stop_event.is_set() and (stdout_open or stderr_open):
         readable = []
@@ -49,7 +56,24 @@ def read_output(process, container_id, stop_event):
                         stderr_open = False
                     continue
 
-                print(f"Container {container_id}: {line.strip()}")
+                # Debug print for ALL lines
+                # print(f"Container {container_id} RAW LINE: {line.strip()}")
+
+                # Check for progress line
+                progress_match = progress_pattern.search(line)
+                finished_match = finished_pattern.search(line)
+
+                # Debug print for match statuses
+                # print(f"Container {container_id} Progress Match: {bool(progress_match)}, Printed: {progress_printed}")
+
+                # Only print progress line after input of "\n1\n"
+                if progress_match:
+                    print(f"Container {container_id} PROGRESS: {line.strip()}")
+
+                # Print finished message
+                if finished_match:
+                    print(f"Container {container_id} FINISHED: {line.strip()}")
+
 
         except (ValueError, OSError):
             # Stream closed or other error
@@ -62,6 +86,7 @@ def periodic_input(process, container_id, stop_event):
     while not stop_event.is_set():
         try:
             process.stdin.write("\n1\n")
+            process.stdin.write("1\n")
             process.stdin.flush()
         except Exception as e:
             print(f"Container {container_id}: Error sending input - {e}")
@@ -150,7 +175,7 @@ def main():
     print(client.images.list())
 
     threads = []
-    for i in range(1):
+    for i in range(NUM_PEERS):
         print(f"Creating container {i}")
         thread = threading.Thread(target=create_container, args=(i, client))
         thread.start()
