@@ -34,4 +34,4 @@ source venv:
 source /home/ubuntu/emek-yizrael-1701-gitabic/Dockers/myenv/bin/activate
 
 remove all dockers containers:
- docker rm -v -f $(docker ps -qa)
+docker rm -v -f $(docker ps -qa)
