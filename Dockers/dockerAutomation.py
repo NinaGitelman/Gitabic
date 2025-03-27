@@ -124,7 +124,7 @@ class DockerContainerMonitor:
     def periodic_input(self, process, container_id, stop_event):
         while not stop_event.is_set():
             try:
-                process.stdin.write("1\n")
+                process.stdin.write("\n1\n")
                 process.stdin.flush()
                 # Update text area in the main thread
                 self.root.after(0, self.update_text_area,
