@@ -158,8 +158,7 @@ private:
             catch (std::exception &e) {
 
                 const std::string error =  "Input error: " + string( e.what());
-                ThreadSafeCout::cout(error
-                    );
+                ThreadSafeCout::cout(error);
             }
 
 
