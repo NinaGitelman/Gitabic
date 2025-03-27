@@ -35,3 +35,6 @@ source /home/ubuntu/emek-yizrael-1701-gitabic/Dockers/myenv/bin/activate
 
 remove all dockers containers:
 docker rm -v -f $(docker ps -qa)
+
+make server work with X11:
+ ssh -C -i "GitabicServerKey.pem"     -o Compression=yes     -o CompressionLevel=7     -o ForwardX11=yes     -o ForwardX11Trusted=yes     ubuntu@ec2-52-90-228-245.compute-1.amazonaws.com
