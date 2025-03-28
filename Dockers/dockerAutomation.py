@@ -11,7 +11,7 @@ import re
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
-PERIODIC_INPUT_INTERVAL = 10  # Interval in seconds
+PERIODIC_INPUT_INTERVAL = 30  # Interval in seconds
 IN_AWS = True
 NUM_PEERS = 8
 INTERNET_SERVER = True
@@ -34,6 +34,7 @@ def read_output(process, container_id, stop_event):
     progress_pattern = re.compile(r'Progress:\s*(?:\[.*\])?\s*\d+\.?\d*%')
     finished_pattern = re.compile(r'Finished downloading file!!!')
 
+    completed_download = False
     while not stop_event.is_set() and (stdout_open or stderr_open):
         readable = []
         if stdout_open:
@@ -67,11 +68,12 @@ def read_output(process, container_id, stop_event):
                 # print(f"Container {container_id} Progress Match: {bool(progress_match)}, Printed: {progress_printed}")
 
                 # Only print progress line after input of "\n1\n"
-                if progress_match:
+                if progress_match and not completed_download:
                     print(f"Container {container_id} PROGRESS: {line.strip()}")
 
                 # Print finished message
                 if finished_match:
+                    completed_download = True
                     print(f"Container {container_id} FINISHED: {line.strip()}")
 
 
