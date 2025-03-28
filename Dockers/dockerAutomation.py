@@ -12,9 +12,9 @@ IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
 PERIODIC_INPUT_INTERVAL = 10  # Interval in seconds
-IN_AWS = False
-NUM_PEERS = 2
-INTERNET_SERVER = False
+IN_AWS = True
+NUM_PEERS = 8
+INTERNET_SERVER = True
 
 
 def get_ip_address(interface):

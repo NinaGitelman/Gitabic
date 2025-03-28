@@ -217,16 +217,15 @@ public:
             std::cin.get(); // Wait for Enter key
             //clearScreen();
             std::cout << "\n=== Main Menu ===\n"
-                    << "1. List files\n"
-                    << "2. Start all files\n"
-                    << "3. Stop all files\n"
-                    << "4. Add file to download\n"
-                    << "5. Add file to seed\n"
-                    << "6. Stop file\n"
-                    << "7. Start file\n"
+                    << "1. List local files\n"
+                    << "2. Start downloading/seeding local files\n"
+                    << "3. Stop downloading/seeding all local files\n"
+                    << "4. Download file from metadata file\n"
+                    << "5. Add local file to seed\n"
+                    << "6. Stop downloading/seeding file\n"
+                    << "7. Start download/seeding file\n"
                     << "8. Exit\n"
                     << "Choice: ";
-
             std::string choice;
             std::getline(std::cin, choice);
 
