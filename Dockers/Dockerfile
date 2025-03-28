@@ -1,5 +1,5 @@
 # Use the latest Ubuntu image
-FROM ubuntu:latest
+FROM ubuntu:jammy-20240530
 
 # Update package lists and install required packages in one layer
 RUN apt-get update && \

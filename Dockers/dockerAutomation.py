@@ -7,13 +7,13 @@ import os
 import select
 import fcntl
 import re
-
+#TODO check this error: error exit with code 139. when does that, print the error
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
 PERIODIC_INPUT_INTERVAL = 20  # Interval in seconds
-IN_AWS = True
-NUM_PEERS = 22
+IN_AWS = False
+NUM_PEERS = 2
 INTERNET_SERVER = True
 
 
@@ -58,7 +58,7 @@ def read_output(process, container_id, stop_event):
                     continue
 
                 # Debug print for ALL lines
-                # print(f"Container {container_id} RAW LINE: {line.strip()}")
+                #print(f"Container {container_id} RAW LINE: {line.strip()}")
 
                 # Check for progress line
                 progress_match = progress_pattern.search(line)
