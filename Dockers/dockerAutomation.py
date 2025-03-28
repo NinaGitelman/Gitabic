@@ -11,9 +11,9 @@ import re
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
-PERIODIC_INPUT_INTERVAL = 30  # Interval in seconds
+PERIODIC_INPUT_INTERVAL = 20  # Interval in seconds
 IN_AWS = True
-NUM_PEERS = 8
+NUM_PEERS = 30
 INTERNET_SERVER = True
 
 
