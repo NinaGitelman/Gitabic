@@ -13,7 +13,7 @@ LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
 PERIODIC_INPUT_INTERVAL = 20  # Interval in seconds
 IN_AWS = True
-NUM_PEERS = 30
+NUM_PEERS = 22
 INTERNET_SERVER = True
 
 
