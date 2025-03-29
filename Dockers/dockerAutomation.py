@@ -10,7 +10,7 @@ import re
 #TODO check this error: error exit with code 139. when does that, print the error
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
-METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
+METADATA_FILE_TO_DOWNLOAD_NAME = "image.png.gitabic"
 PERIODIC_INPUT_INTERVAL = 20  # Interval in seconds
 IN_AWS = False
 NUM_PEERS = 2
