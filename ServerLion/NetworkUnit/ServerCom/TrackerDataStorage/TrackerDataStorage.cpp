@@ -92,8 +92,12 @@ void TrackerDataStorage::removeOldData()
                     closest = entry.first;
                 }
             }
+
+            // Calculate time difference and ensure it's positive
+            time_t sleepTime = std::max(1L, closest - current);
+
             lock.unlock();
-            std::this_thread::sleep_for(std::chrono::seconds(closest - current));
+            std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
         }
     }
 }
