@@ -34,7 +34,7 @@ void signalHandler(int signal) {
   // Perform cleanup here or ensure objects are destroyed properly
   exit(signal);
 }
-
+//a
 /// @brief  Heper function to pritn the DATA
 void printDataAsASCII(vector<uint8_t> data) {
   for (const auto &byte: data) {
