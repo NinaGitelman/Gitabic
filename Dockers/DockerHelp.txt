@@ -1,6 +1,8 @@
 docker build . -t peer -f Dockerfile
 
 qqS
+docker run -it --name peer peer /bin/bash
+
 docker run --network=host -it --name peer peer /bin/bash
 docker run --dns 8.8.8.8 -it --name peer peer /bin/bash
 find my local ip (on wlo1) and then do ./PeerLion <my_local-ip>
