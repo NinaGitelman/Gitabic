@@ -23,20 +23,21 @@ void TCPClientSocket::send(const MessageBaseToSend &msg)
         throw std::runtime_error("Failed to send message data");
     }
 }
+
 MessageBaseReceived TCPClientSocket::receive()
 {
-    uint8_t code = 0;  // Default code value
-    uint32_t size = 0; // Default size value
+    uint8_t code = 0;
+    uint32_t size = 0;
     std::lock_guard<mutex> guard(socketMut);
 
-    // Use MSG_PEEK with a timeout mechanism to check for available data
+    // Use a reasonable timeout for select
     fd_set read_fds;
     FD_ZERO(&read_fds);
     FD_SET(sockfd, &read_fds);
 
     struct timeval timeout;
-    timeout.tv_sec = 0;  // No wait time
-    timeout.tv_usec = 0; // Immediate return
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 100000; // 100 ms timeout
 
     int select_result = select(sockfd + 1, &read_fds, nullptr, nullptr, &timeout);
 

@@ -134,6 +134,7 @@ void MultiThreadedServer::handleClient(std::shared_ptr<TCPClientSocket> clientSo
             auto msg = clientSocket->receive();
             if (msg.code == 0)
             {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 continue;
             }
             msg.from = id;
