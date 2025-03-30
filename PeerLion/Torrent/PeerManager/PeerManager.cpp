@@ -55,7 +55,7 @@ void PeerManager::updateConnectedPeers() {
 				_disconnectedPeers.push_back(it.first);
 			}
 		}
-		std::this_thread::sleep_for(std::chrono::seconds(5));
+		std::this_thread::sleep_for(std::chrono::seconds(30));
 	}
 	std::cout << "thread ending";
 }

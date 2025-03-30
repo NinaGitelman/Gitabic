@@ -7,14 +7,25 @@ import os
 import select
 import fcntl
 import re
-#TODO check this error: error exit with code 139. when does that, print the error
+import signal
+
+# Configuration variables
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
 PERIODIC_INPUT_INTERVAL = 20  # Interval in seconds
-IN_AWS = False
-NUM_PEERS = 2
+IN_AWS = True
+NUM_PEERS = 18  # Increased to 25 containers
 INTERNET_SERVER = True
+
+# Aggressive resource limits for containers
+CPU_LIMIT = "0.3"  # Reduced to 15% of one CPU core (t3.xlarge has 4 cores = 16 containers at 25%)
+MEMORY_LIMIT = "1g"  # Reduced to 512MB per container (t3.xlarge has 16GB = ~32 containers at 512MB)
+CONTAINER_STARTUP_DELAY = 5  # Seconds between container starts
+
+# Global container tracking
+active_containers = {}
+container_lock = threading.Lock()
 
 
 def get_ip_address(interface):
@@ -28,11 +39,11 @@ def get_ip_address(interface):
 
 def read_output(process, container_id, stop_event):
     stdout_open, stderr_open = True, True
-    progress_printed = False
 
-    # Regex pattern to match progress lines with optional progress bar and percentage
+    # Regex patterns
     progress_pattern = re.compile(r'Progress:\s*(?:\[.*\])?\s*\d+\.?\d*%')
     finished_pattern = re.compile(r'Finished downloading file!!!')
+    error_pattern = re.compile(r'error|exception|failed', re.IGNORECASE)
 
     completed_download = False
     while not stop_event.is_set() and (stdout_open or stderr_open):
@@ -57,65 +68,96 @@ def read_output(process, container_id, stop_event):
                         stderr_open = False
                     continue
 
-                # Debug print for ALL lines
-                #print(f"Container {container_id} RAW LINE: {line.strip()}")
-
-                # Check for progress line
-                progress_match = progress_pattern.search(line)
-                finished_match = finished_pattern.search(line)
-
-                # Debug print for match statuses
-                # print(f"Container {container_id} Progress Match: {bool(progress_match)}, Printed: {progress_printed}")
-
-                # Only print progress line after input of "\n1\n"
-                if progress_match and not completed_download:
-                    print(f"Container {container_id} PROGRESS: {line.strip()}")
-
-                # Print finished message
-                if finished_match:
+                # Process output selectively to reduce logging overhead
+                if progress_pattern.search(line) and not completed_download:
+                    if "100%" in line:
+                        print(f"Container {container_id} PROGRESS: {line.strip()}")
+                    # Only print occasional progress updates
+                    elif re.search(r'(?:25|50|75)%', line):
+                        print(f"Container {container_id} PROGRESS: {line.strip()}")
+                elif finished_pattern.search(line):
                     completed_download = True
                     print(f"Container {container_id} FINISHED: {line.strip()}")
-
+                elif error_pattern.search(line):
+                    print(f"Container {container_id} ERROR: {line.strip()}")
 
         except (ValueError, OSError):
-            # Stream closed or other error
             break
 
-        time.sleep(0.01)  # Small sleep to prevent CPU spinning
+        # Reduced CPU usage
+        time.sleep(0.1)
 
 
 def periodic_input(process, container_id, stop_event):
+    time.sleep(5)  # Initial delay
+
     while not stop_event.is_set():
         try:
             process.stdin.write("\n1\n")
-            process.stdin.write("1\n")
             process.stdin.flush()
         except Exception as e:
-            print(f"Container {container_id}: Error sending input - {e}")
+            print(f"Container {container_id}: Input error - {e}")
+            break
 
         time.sleep(PERIODIC_INPUT_INTERVAL)
 
 
-def create_container(curr_container, client):
+def cleanup_container(container, container_id):
     try:
-        # Run the container
+        print(f"Cleaning up container {container_id}")
+        container.stop(timeout=5)
+        container.remove()
+
+        with container_lock:
+            if container_id in active_containers:
+                del active_containers[container_id]
+    except Exception as e:
+        print(f"Error cleaning up container {container_id}: {e}")
+
+
+def create_container(curr_container, client, result_event):
+    try:
+        # Run container with strict resource limits
+        container_name = f"peer_{curr_container}"
+
+        # Check if container already exists and remove it
+        try:
+            old_container = client.containers.get(container_name)
+            old_container.stop()
+            old_container.remove()
+            print(f"Removed existing container {container_name}")
+        except docker.errors.NotFound:
+            pass
+
+        # Create new container with optimized settings
         container = client.containers.run(
             image=IMAGE_NAME,
-            name=f"peer_{curr_container}",
+            name=container_name,
             stdin_open=True,
             tty=True,
             detach=True,
+            cpu_quota=int(float(CPU_LIMIT) * 100000),
+            mem_limit=MEMORY_LIMIT,
+            restart_policy={"Name": "on-failure", "MaximumRetryCount": 2},
+            # Additional optimizations
+            oom_kill_disable=False,  # Let the kernel manage OOM
+            pids_limit=100,  # Limit number of processes
+            ulimits=[docker.types.Ulimit(name='nofile', soft=1024, hard=2048)]
         )
-        time.sleep(1)
 
-        # Run the command inside the container with unbuffered output
+        with container_lock:
+            active_containers[curr_container] = container
+
+        print(f"Container {curr_container} created with ID: {container.id[:12]}")
+        time.sleep(2)
+
+        # Prepare exec command
         ip_address = get_ip_address(LOCAL_INTERFACE)
         if INTERNET_SERVER:
             command = f"docker exec -i {container.id} ./PeerLion"
         else:
             command = f"docker exec -i {container.id} ./PeerLion {ip_address}"
 
-        # Set environment variable to disable Python output buffering
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
 
@@ -126,66 +168,128 @@ def create_container(curr_container, client):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            bufsize=0,  # Set to unbuffered
+            bufsize=0,
             env=env
         )
 
-        # Set non-blocking mode for stdout and stderr
+        # Set non-blocking mode
         for stream in [process.stdout, process.stderr]:
             fd = stream.fileno()
             fl = fcntl.fcntl(fd, fcntl.F_GETFL)
             fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
-        # Create stop event for threads
         stop_event = threading.Event()
 
-        # Send initial input to download from Gitabic file
-        process.stdin.write("\n4\n")  # option to download from Gitabic file
-        process.stdin.write(f"{METADATA_FILE_TO_DOWNLOAD_NAME}\n")
-        process.stdin.flush()
-
-        # Create threads for reading output and periodic input
-        output_thread = threading.Thread(target=read_output, args=(process, curr_container, stop_event))
+        # Start monitoring threads with reduced priority
+        output_thread = threading.Thread(
+            target=read_output,
+            args=(process, curr_container, stop_event),
+            name=f"output_{curr_container}"
+        )
         output_thread.daemon = True
         output_thread.start()
 
-        periodic_input_thread = threading.Thread(target=periodic_input, args=(process, curr_container, stop_event))
-        periodic_input_thread.daemon = True
-        periodic_input_thread.start()
+        input_thread = threading.Thread(
+            target=periodic_input,
+            args=(process, curr_container, stop_event),
+            name=f"input_{curr_container}"
+        )
+        input_thread.daemon = True
+        input_thread.start()
 
-        # Wait for process to complete
+        # Send initial input
+        time.sleep(1)
+        process.stdin.write("\n4\n")
+        process.stdin.write(f"{METADATA_FILE_TO_DOWNLOAD_NAME}\n")
+        process.stdin.flush()
+
+        # Wait for process
         exit_code = process.wait()
-
-        # Stop threads
         stop_event.set()
-        output_thread.join(timeout=2)
-        periodic_input_thread.join(timeout=2)
 
-        print(f"Container {curr_container} process exited with code {exit_code}")
+        if exit_code != 0:
+            print(f"Container {curr_container} exited with code {exit_code}")
+            if exit_code in [134, 139]:
+                print(f"Container {curr_container} likely crashed due to memory limits")
+        else:
+            print(f"Container {curr_container} completed successfully")
+
+        # Signal completion
+        result_event.set()
+
+        # Clean up
+        output_thread.join(timeout=1)
+        input_thread.join(timeout=1)
+        cleanup_container(container, curr_container)
 
     except Exception as e:
-        print(f"Error creating container {curr_container}: {e}")
+        print(f"Error with container {curr_container}: {e}")
+        result_event.set()  # Signal completion even on error
+
+
+def sigterm_handler(signum, frame):
+    print("Received termination signal, cleaning up containers...")
+    for container_id, container in list(active_containers.items()):
+        cleanup_container(container, container_id)
+    os._exit(0)
 
 
 def main():
-    time.sleep(3)
+    print("Starting Docker container management for 25 containers...")
 
-    if IN_AWS:
-        client = docker.DockerClient(base_url='unix:///var/run/docker.sock')
-    else:
-        client = docker.DockerClient(base_url='unix:///home/user/.docker/desktop/docker.sock')
-    print(client.images.list())
+    # Setup signal handler for graceful shutdown
+    signal.signal(signal.SIGTERM, sigterm_handler)
+    signal.signal(signal.SIGINT, sigterm_handler)
 
-    threads = []
-    for i in range(NUM_PEERS):
-        print(f"Creating container {i}")
-        thread = threading.Thread(target=create_container, args=(i, client))
-        thread.start()
-        threads.append(thread)
+    try:
+        if IN_AWS:
+            client = docker.DockerClient(base_url='unix:///var/run/docker.sock')
+        else:
+            client = docker.DockerClient(base_url='unix:///home/user/.docker/desktop/docker.sock')
 
-    # Keep main thread alive
-    for thread in threads:
-        thread.join()
+        print(f"Connected to Docker daemon, verifying image: {IMAGE_NAME}")
+        try:
+            client.images.get(IMAGE_NAME)
+        except docker.errors.ImageNotFound:
+            print(f"Error: Image '{IMAGE_NAME}' not found. Please build or pull the image first.")
+            return
+
+    except Exception as e:
+        print(f"Failed to connect to Docker daemon: {e}")
+        return
+
+    # Add a new approach - batch processing
+    # Only run a maximum number of containers simultaneously
+    MAX_CONCURRENT = 12  # Start with current max and increase gradually
+
+    for batch_start in range(0, NUM_PEERS, MAX_CONCURRENT):
+        batch_end = min(NUM_PEERS, batch_start + MAX_CONCURRENT)
+        print(f"Starting batch {batch_start // MAX_CONCURRENT + 1}: containers {batch_start} to {batch_end - 1}")
+
+        threads = []
+        result_events = []
+
+        # Start batch of containers
+        for i in range(batch_start, batch_end):
+            result_event = threading.Event()
+            result_events.append(result_event)
+
+            thread = threading.Thread(
+                target=create_container,
+                args=(i, client, result_event),
+                name=f"container_{i}"
+            )
+            thread.start()
+            threads.append(thread)
+            time.sleep(CONTAINER_STARTUP_DELAY)  # Longer delay between starts
+
+        # Wait for all containers in this batch to complete
+        for event in result_events:
+            event.wait()
+
+        print(f"Completed batch {batch_start // MAX_CONCURRENT + 1}")
+
+    print("All container batches have completed")
 
 
 if __name__ == '__main__':

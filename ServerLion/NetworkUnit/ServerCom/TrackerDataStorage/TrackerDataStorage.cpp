@@ -51,7 +51,7 @@ vector<ID> TrackerDataStorage::getRegisteredData(const ID &fileId, const ID &you
             ids.push_back(second);
         }
     }
-    std::cout << "Peer requested data and got " << ids.size() << "peers" << std::endl;
+    std::cout << "Peer requested data and got " << ids.size() << " peers" << std::endl;
     return ids;
 }
 
