@@ -12,11 +12,11 @@ import re
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
-PERIODIC_INPUT_INTERVAL = 5  # Interval in seconds
+WAIT_BETWEEN_CONTAINERS = 7
+PERIODIC_INPUT_INTERVAL = 3  # Interval in seconds
 IN_AWS = False  # Changed to True since you're using AWS
-NUM_PEERS = 8 # Number of containers to run (adjust as needed)
+NUM_PEERS = 4  # Number of containers to run (adjust as needed)
 INTERNET_SERVER = True
-
 
 # Resource limits for containers
 CPU_LIMIT = "0.3"  # Limit each container to 30% of one CPU core
@@ -68,26 +68,15 @@ def read_output(process, container_id, stop_event, progress_dict, progress_lock)
                     match = progress_pattern.search(line)
                     percent = float(match.group(1))
                     with progress_lock:
-                        progress_dict[container_id] = {
-                            'percent': percent,
-                            'finished': False,
-                            'error': None
-                        }
+                        progress_dict[container_id]['percent'] = percent
                 elif finished_pattern.search(line):
                     with progress_lock:
-                        progress_dict[container_id] = {
-                            'percent': 100.0,
-                            'finished': True,
-                            'error': None
-                        }
+                        progress_dict[container_id]['percent'] = 100.0
+                        progress_dict[container_id]['finished'] = True
                     completed_download = True
                 elif error_pattern.search(line):
                     with progress_lock:
-                        progress_dict[container_id] = {
-                            'percent': progress_dict.get(container_id, {}).get('percent', 0.0),
-                            'finished': False,
-                            'error': line.strip()
-                        }
+                        progress_dict[container_id]['error'] = line.strip()
 
         except (ValueError, OSError):
             break
@@ -96,7 +85,7 @@ def read_output(process, container_id, stop_event, progress_dict, progress_lock)
 
 
 def periodic_input(process, container_id, stop_event, progress_lock, progress_dict):
-    time.sleep(5)
+    time.sleep(PERIODIC_INPUT_INTERVAL)
 
     while not stop_event.is_set():
         try:
@@ -104,11 +93,7 @@ def periodic_input(process, container_id, stop_event, progress_lock, progress_di
             process.stdin.flush()
         except Exception as e:
             with progress_lock:
-                progress_dict[container_id] = {
-                    'percent': progress_dict.get(container_id, {}).get('percent', 0.0),
-                    'finished': False,
-                    'error': f"Input error: {str(e)}"
-                }
+                progress_dict[container_id]['error'] = f"Input error: {str(e)}"
             break
 
         time.sleep(PERIODIC_INPUT_INTERVAL)
@@ -116,6 +101,16 @@ def periodic_input(process, container_id, stop_event, progress_lock, progress_di
 
 def create_container(curr_container, client, progress_dict, progress_lock):
     try:
+        # Initialize container status as not started
+        with progress_lock:
+            progress_dict[curr_container] = {
+                'started': False,
+                'percent': 0.0,
+                'finished': False,
+                'error': None,
+                'start_time': None
+            }
+
         container = client.containers.run(
             image=IMAGE_NAME,
             name=f"peer_{curr_container}",
@@ -127,6 +122,11 @@ def create_container(curr_container, client, progress_dict, progress_lock):
             restart_policy={"Name": "on-failure", "MaximumRetryCount": 3}
         )
         time.sleep(2)
+
+        # Mark container as started and record start time
+        with progress_lock:
+            progress_dict[curr_container]['started'] = True
+            progress_dict[curr_container]['start_time'] = time.strftime("%H:%M:%S")
 
         ip_address = get_ip_address(LOCAL_INTERFACE)
         if INTERNET_SERVER:
@@ -181,11 +181,7 @@ def create_container(curr_container, client, progress_dict, progress_lock):
 
         if exit_code != 0:
             with progress_lock:
-                progress_dict[curr_container] = {
-                    'percent': progress_dict.get(curr_container, {}).get('percent', 0.0),
-                    'finished': False,
-                    'error': f"Exited with code {exit_code}"
-                }
+                progress_dict[curr_container]['error'] = f"Exited with code {exit_code}"
 
         try:
             container.stop(timeout=5)
@@ -195,11 +191,7 @@ def create_container(curr_container, client, progress_dict, progress_lock):
 
     except Exception as e:
         with progress_lock:
-            progress_dict[curr_container] = {
-                'percent': 0.0,
-                'finished': False,
-                'error': str(e)
-            }
+            progress_dict[curr_container]['error'] = str(e)
 
 
 def display_progress(progress_dict, progress_lock, stop_event, num_peers):
@@ -210,16 +202,36 @@ def display_progress(progress_dict, progress_lock, stop_event, num_peers):
 
         os.system('clear')
         print("Container Progress (Updated every 5 seconds):")
+        print("--------------------------------------------")
+        
+        # Display containers that have started and their status
+        started_count = sum(1 for v in current_progress.values() if v.get('started', False))
+        finished_count = sum(1 for v in current_progress.values() if v.get('finished', False))
+        error_count = sum(1 for v in current_progress.values() if v.get('error') is not None)
+        
+        print(f"Summary: {started_count}/{num_peers} started, {finished_count} finished, {error_count} with errors")
+        print("--------------------------------------------")
+        
         for i in range(num_peers):
             status = current_progress.get(i, {})
-            error = status.get('error')
-            if error:
-                print(f"Container {i}: ERROR - {error}")
-            elif status.get('finished', False):
-                print(f"Container {i}: FINISHED (100%)")
+            
+            # Only show containers that have been started
+            if status.get('started', False):
+                start_time = status.get('start_time', 'Unknown')
+                error = status.get('error')
+                
+                if error:
+                    print(f"Container {i}: Started at {start_time} - ERROR - {error}")
+                elif status.get('finished', False):
+                    print(f"Container {i}: Started at {start_time} - FINISHED (100%)")
+                else:
+                    print(f"Container {i}: Started at {start_time} - " + 
+                          get_progress_bar(status.get('percent', 0.0)))
             else:
-                print(
-                    f"Container {i}: " + get_progress_bar(status.get('percent', 0.0)))
+                # For containers not yet started, show simple waiting message
+                if i in current_progress:
+                    print(f"Container {i}: Waiting to start...")
+                
         print("--------------------------------------------")
 
 
@@ -262,7 +274,7 @@ def main():
         )
         thread.start()
         threads.append(thread)
-        time.sleep(3)
+        time.sleep(WAIT_BETWEEN_CONTAINERS)
 
     for thread in threads:
         thread.join()
