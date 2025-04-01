@@ -13,13 +13,13 @@ IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
 PERIODIC_INPUT_INTERVAL = 3  # Interval in seconds
-IN_AWS = False  # Changed to True since you're using AWS
-NUM_PEERS = 4  # Number of containers to run (adjust as needed)
-INTERNET_SERVER = False
+IN_AWS = True  # Changed to True since you're using AWS
+NUM_PEERS = 18 # Number of containers to run (adjust as needed)
+INTERNET_SERVER = True
 
 
 # Resource limits for containers
-CPU_LIMIT = "0.3"  # Limit each container to 30% of one CPU core
+CPU_LIMIT = "0.4"  # Limit each container to 30% of one CPU core
 MEMORY_LIMIT = "1g"  # Limit each container to 1GB memory
 
 
@@ -38,7 +38,7 @@ def read_output(process, container_id, stop_event, progress_dict, progress_lock)
     # Regex patterns
     progress_pattern = re.compile(r'Progress:\s*(?:\[.*?\])?\s*(\d+\.?\d*)%')
     finished_pattern = re.compile(r'Finished downloading file!!!')
-    error_pattern = re.compile(r'error|exception|failed', re.IGNORECASE)
+    error_pattern = re.compile(r'exception|failed', re.IGNORECASE)
 
     completed_download = False
     while not stop_event.is_set() and (stdout_open or stderr_open):
