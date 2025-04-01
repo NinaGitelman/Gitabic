@@ -14,8 +14,9 @@ LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
 PERIODIC_INPUT_INTERVAL = 3  # Interval in seconds
 IN_AWS = False  # Changed to True since you're using AWS
-NUM_PEERS = 5  # Number of containers to run (adjust as needed)
+NUM_PEERS = 4  # Number of containers to run (adjust as needed)
 INTERNET_SERVER = False
+
 
 # Resource limits for containers
 CPU_LIMIT = "0.3"  # Limit each container to 30% of one CPU core

@@ -194,6 +194,8 @@ void TorrentFileHandler::handleRequests() {
 				_cvMessagesToSend.notify_one();
 			}
 		}
+		guard.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 }
 
@@ -250,6 +252,8 @@ void TorrentFileHandler::handleResponses() {
 			// ThreadSafeCout::cout(
 			// 	"Handled " + std::to_string(response.code) + " response From " + SHA256::hashToString(response.from));
 		}
+		guard.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 }
 

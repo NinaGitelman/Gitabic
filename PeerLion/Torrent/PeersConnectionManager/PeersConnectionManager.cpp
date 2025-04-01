@@ -247,11 +247,14 @@ void PeersConnectionManager::routePackets() {
                 handleMessage(msg);
             }
         }
+        peersConnectionsLock.unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
 void PeersConnectionManager::shareIceData() {
     while (_isRunning->load()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         MessageBaseReceived req; {
             // Scoped lock for server socket receive
             //  std::lock_guard<std::mutex> serverLock(_mutexServerSocket);

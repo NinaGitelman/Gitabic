@@ -9,6 +9,7 @@ find my local ip (on wlo1) and then do ./PeerLion <my_local-ip>
 ./PeerLion 10.100.102.33
 ./PeerLion 192.168.192.172
 ./PeerLion 192.168.15.68
+192.168.127.9
 file to download: /root/Gitabic/MetaDatas/DockerHelp.txt.gitabic
 /media/user/OS/LinuxExtraSpace/Gitabic/Dockers/image.png.gitabic
 aqa
@@ -40,3 +41,5 @@ docker rm -v -f $(docker ps -qa)
 
 make server work with X11:
  ssh -C -i "GitabicServerKey.pem"     -o Compression=yes     -o CompressionLevel=7     -o ForwardX11=yes     -o ForwardX11Trusted=yes     ubuntu@ec2-52-90-228-245.compute-1.amazonaws.com
+ sudo perf record /media/user/OS/LinuxExtraSpace/emek-yizrael-1701-gitabic/PeerLion/cmake-build-debug/PeerLion
+/media/user/OS/LinuxExtraSpace/emek-yizrael-1701-gitabic/Dockers/testVideo.mp4.gitabic
