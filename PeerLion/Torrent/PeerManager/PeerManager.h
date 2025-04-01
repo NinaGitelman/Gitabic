@@ -10,7 +10,7 @@
 #include <vector>
 #include "../PeersConnectionManager/PeersConnectionManager.h"
 
-#define MAX_PEERS 12
+#define MAX_PEERS 10
 
 struct PeerState {
 	bool amChoking, amInterested, peerChoking, peerInterested;
