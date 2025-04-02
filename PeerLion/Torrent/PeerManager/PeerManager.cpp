@@ -110,6 +110,7 @@ void PeerManager::addPeer(const PeerID &peer) {
 	} else if (!_peerStates.contains(peer)) {
 		bool addFileForPeer = false;
 		try {
+
 			addFileForPeer = _peersConnectionManager.addFileForPeer(_fileId, peer);
 		} catch (const std::exception &e) {
 			std::cout << "add peer:" << e.what() << std::endl;
