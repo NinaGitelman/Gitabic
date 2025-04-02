@@ -12,10 +12,10 @@ import re
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
 METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
-WAIT_BETWEEN_CONTAINERS = 7
+WAIT_BETWEEN_CONTAINERS = 15
 PERIODIC_INPUT_INTERVAL = 3  # Interval in seconds
 IN_AWS = False  # Changed to True since you're using AWS
-NUM_PEERS = 4  # Number of containers to run (adjust as needed)
+NUM_PEERS = 6  # Number of containers to run (adjust as needed)
 INTERNET_SERVER = True
 
 # Resource limits for containers

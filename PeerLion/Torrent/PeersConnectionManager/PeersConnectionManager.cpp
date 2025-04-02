@@ -63,7 +63,7 @@ static void printDataAsASCII(vector<uint8_t> data) {
     std::cout << std::endl;
 }
 
-
+//a
 // TODO divide this into smaller functions maybe...
 // TODO - this gotta be a thread because it can block the whole program
 bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &peer) {
