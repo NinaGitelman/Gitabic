@@ -23,7 +23,7 @@
 #include <iostream>
 #include "Utils/TorrentCLI.hpp"
 
-#define SERVER_ADDRESS "16.170.226.237"
+#define SERVER_ADDRESS "13.53.174.196"
 // #define SERVER_ADDRESS "0.0.0.0"
 #define SERVER_PORT 4787
 
