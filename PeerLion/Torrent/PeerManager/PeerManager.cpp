@@ -29,8 +29,6 @@ void PeerManager::updateConnectedPeers() {
 				_blackList.erase(peer);
 			}
 		}
-		// TODO for some reason after some point PeerLion args stop coming here
-		// ThreadSafeCout::cout("\nPeerManager: Updating connected peers\n");
 		for (auto peers = requestForNewPeerList(); const auto peer: peers) {
 			if (_blackList.contains(peer)) continue;
 
@@ -110,7 +108,7 @@ void PeerManager::addPeer(const PeerID &peer) {
 	} else if (!_peerStates.contains(peer)) {
 		bool addFileForPeer = false;
 		try {
-
+			// TODO - here this gotta call it as a thread
 			addFileForPeer = _peersConnectionManager.addFileForPeer(_fileId, peer);
 		} catch (const std::exception &e) {
 			std::cout << "add peer:" << e.what() << std::endl;

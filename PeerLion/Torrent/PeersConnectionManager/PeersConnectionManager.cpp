@@ -63,7 +63,7 @@ static void printDataAsASCII(vector<uint8_t> data) {
     std::cout << std::endl;
 }
 
-//a
+
 // TODO divide this into smaller functions maybe...
 // TODO - this gotta be a thread because it can block the whole program
 bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &peer) {
@@ -92,8 +92,6 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
         };
 
         // send request to server to connect to the other peer and for its ice data
-
-
         // std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
         MessageBaseReceived response = _serverSocket->receive(isRelevant);
         //     serverSocketLock.unlock();
@@ -102,7 +100,6 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
             return false;
         }
         if (response.code == ServerResponseCodes::UserAlreadyConnected) {
-            // TODO URI CHECK - someone gotta catch this error and not just throw it
             throw std::runtime_error("Tried to connect to an already connected peer");
         }
         if (response.code == ServerResponseCodes::UserFullCapacity) {
