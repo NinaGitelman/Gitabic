@@ -1,7 +1,7 @@
 #include "TrackerDataStorage.h"
 
+#include <algorithm>
 #include <ranges>
-#include <bits/ranges_algo.h>
 
 // Define the static members
 std::unique_ptr<TrackerDataStorage> TrackerDataStorage::instance = nullptr;

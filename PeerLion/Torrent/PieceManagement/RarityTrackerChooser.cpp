@@ -2,9 +2,9 @@
 // Created by uri-tabic on 1/3/25.
 //
 #include "RarityTrackerChooser.h"
+#include <algorithm>
+#include <ranges>
 
-#include <bits/ranges_algo.h>
-#include <bits/stdc++.h>
 void RarityTrackerChooser::addPeerRarity(const vector<std::bitset<8> > &vec) {
 	for (int i = 0; i < _pieceCount; ++i) {
 		_rarity[i] += vec[i / 8].test(i % 8) ? 1 : 0;

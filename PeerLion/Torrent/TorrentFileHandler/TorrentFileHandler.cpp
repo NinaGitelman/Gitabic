@@ -169,19 +169,27 @@ void TorrentFileHandler::handleRequests() {
 				case BitTorrentRequestCodes::fileInterested:
 				case BitTorrentRequestCodes::fileNotInterested:
 				case BitTorrentRequestCodes::unchoke:
-				case BitTorrentRequestCodes::choke:
-					resultMessages = handle(TorrentMessageBase(request));
+				case BitTorrentRequestCodes::choke: {
+					TorrentMessageBase msg(request);
+					resultMessages = (this->*static_cast<ResultMessages(TorrentFileHandler::*)(const TorrentMessageBase&)>(&TorrentFileHandler::handle))(msg);
 					break;
+				}
 				case BitTorrentRequestCodes::hasPieceUpdate:
-				case BitTorrentRequestCodes::lostPieceUpdate:
-					resultMessages = handle(PieceOwnershipUpdate(request));
+				case BitTorrentRequestCodes::lostPieceUpdate: {
+					PieceOwnershipUpdate update(request);
+					resultMessages = (this->*static_cast<ResultMessages(TorrentFileHandler::*)(const PieceOwnershipUpdate&)>(&TorrentFileHandler::handle))(update);
 					break;
-				case BitTorrentRequestCodes::cancelDataRequest:
-					resultMessages = handle(CancelDataRequest(request));
+				}
+				case BitTorrentRequestCodes::cancelDataRequest: {
+					CancelDataRequest cancelReq(request);
+					resultMessages = (this->*static_cast<ResultMessages(TorrentFileHandler::*)(const CancelDataRequest&)>(&TorrentFileHandler::handle))(cancelReq);
 					break;
-				case BitTorrentRequestCodes::dataRequest:
-					resultMessages = handle(DataRequest(request));
+				}
+				case BitTorrentRequestCodes::dataRequest: {
+					DataRequest dataReq(request);
+					resultMessages = (this->*static_cast<ResultMessages(TorrentFileHandler::*)(const DataRequest&) const>(&TorrentFileHandler::handle))(dataReq);
 					break;
+				}
 				default:
 					throw std::runtime_error("Unknown message code");
 			}

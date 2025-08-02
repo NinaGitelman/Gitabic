@@ -95,7 +95,7 @@ void SocketHandler::recv()
                      (struct sockaddr *)&clientaddr, &addrLen);
     if (n > 0)
     {
-        buffer.erase(buffer.begin(), buffer.begin() + sizeof(iphdr) + sizeof(udphdr));
+        buffer.erase(buffer.begin(), buffer.begin() + sizeof(struct ip) + sizeof(udphdr));
         buffer.shrink_to_fit(); // TODO - verify it known it got written.
 
         Address from = Address(clientaddr);
@@ -114,10 +114,21 @@ void SocketHandler::recv()
 void SocketHandler::sendTo(const Address &to, vector<uint8_t> data)
 {
     udphdr udpHeader;
-    udpHeader.source = htons(myAddress.port);            // Source port
-    udpHeader.dest = htons(to.port);                     // Destination port
-    udpHeader.len = htons(sizeof(udphdr) + data.size()); // Length of the UDP header + data
-    udpHeader.check = 0;
+    #if defined(__linux__)
+        std::cout << "Using Linux UDP header\n";
+
+        udpHeader.source = htons(myAddress.port);            // Source port
+        udpHeader.dest = htons(to.port);                     // Destination port
+        udpHeader.len = htons(sizeof(udphdr) + data.size()); // Length of the UDP header + data
+        udpHeader.check = 0;
+    #elif defined(__APPLE__)
+        std::cout << "Using Linux UDP header\n";
+
+        udpHeader.uh_sport = htons(myAddress.port);            // Source port
+        udpHeader.uh_dport = htons(to.port);                     // Destination port
+        udpHeader.uh_ulen = htons(sizeof(udphdr) + data.size()); // Length of the UDP header + data
+        udpHeader.uh_sum = 0;
+    #endif
 
     // Create a vector for the UDP header
     std::vector<uint8_t> udpHeaderVec(sizeof(udphdr));
@@ -126,7 +137,11 @@ void SocketHandler::sendTo(const Address &to, vector<uint8_t> data)
     // Prepend the UDP header to the data vector
     data.insert(data.end(), udpHeaderVec.begin(), udpHeaderVec.end());
 
-    ((udphdr *)data.data())->check = calculateUDPChecksum(data, this->myAddress.ipUint(), to.ipUint());
+    #if defined(__linux__)
+        ((udphdr *)data.data())->check = calculateUDPChecksum(data, this->myAddress.ipUint(), to.ipUint());
+    #elif defined(__APPLE__)
+        ((udphdr *)data.data())->uh_sum = calculateUDPChecksum(data, this->myAddress.ipUint(), to.ipUint());
+    #endif
 
     auto clientaddr = to.toSockAddr();
 
