@@ -77,7 +77,6 @@ Both projects were developed in Clion so it is possible to open them directly in
 
 This directory contains the necessary files to build and run the `PeerLion` application in Docker containers.
 
-## 
 ## Protocol
 
 The communication between the server and clients follows a custom protocol defined in `ServerLion/NetworkUnit/ServerCom/Messages.h`. The messages are serialized into a byte stream before being sent over the network.
@@ -98,3 +97,7 @@ If you are interested in contributing or developing this project further, feel w
 ## License
 
 This project is licensed under the MIT License.
+
+---
+
+✨ This project was created as the **Magshimim final year project** by [Uri Tabic](https://github.com/UriTabic) and [Nina Gitelman](https://github.com/NinaGitelman).
