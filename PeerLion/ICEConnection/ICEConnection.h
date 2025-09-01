@@ -26,10 +26,9 @@
 // the ip should not change - the last two times i checked it didnt change...
 // if needed to check, do nslookup for: relay1.expressturn.com
 // using free express turn....
-// todo later - put this in a configs file in a safer way....
 #define TURN_ADDR "51.158.152.43"
-#define TURN_USERNAME "000000002069504077"
-#define TURN_PASSWORD "xuRtJcv4v+r4G/2Kjq/zpbiAg1I="
+#define TURN_USERNAME "TURN_USERNAME"
+#define TURN_PASSWORD "TURN_PASSWORD"
 #define TURN_PORT 3480
 
 /// STUN configs

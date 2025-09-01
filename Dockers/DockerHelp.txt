@@ -1,6 +1,6 @@
-docker build . -t peer -f Dockerfile
+to build docker: docker build . -t peer -f Dockerfile
 
-qqS
+run docker:
 docker run --network=host -it --name peer peer /bin/bash
 docker run --dns 8.8.8.8 -it --name peer peer /bin/bash
 find my local ip (on wlo1) and then do ./PeerLion <my_local-ip>
@@ -12,26 +12,12 @@ file to download: /root/Gitabic/MetaDatas/DockerHelp.txt.gitabic
 aqa
 
 
-what do I want? check the local ip on wlo1
-
-2 dockers:
-open the docker peer
-run: docker run --dns 8.8.8.8 -it --name peer peer /bin/bash
-input to terminal: ./PeerLion <wlo10-ip>
-input to terminal in the program opened: 4
-input to terminal in the opened program: testVideo.mp4.gitabic
-check for terminal output, if outputs "Finished downloading file!!!" print peer(numofcurrdocker) Finished downloading file testVideo.mp4
-
-192.168.221.9
-
-sudo /media/user/OS/LinuxExtraSpace/PythonInterpreter/.venv/bin/python3 /media/user/OS/LinuxExtraSpace/emek-yizrael-1701-gitabic/Dockers/dockerAutomation.py
-
 to setup with docker desktop:
- docker context ls
+docker context ls
 docker context use desktop-linux
 
 source venv:
-source /home/ubuntu/emek-yizrael-1701-gitabic/Dockers/myenv/bin/activate
+source /activate
 
 remove all dockers containers:
  docker rm -v -f $(docker ps -qa)
