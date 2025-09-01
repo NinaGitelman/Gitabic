@@ -6,10 +6,21 @@ import threading
 import os
 import select
 import fcntl
+import re
 
+# Configuration variables
 IMAGE_NAME = "peer"
 LOCAL_INTERFACE = "wlo1"
-METADATA_FILE_TO_DOWNLOAD_NAME = "docker-desktop-amd64.deb.gitabic"
+METADATA_FILE_TO_DOWNLOAD_NAME = "testVideo.mp4.gitabic"
+WAIT_BETWEEN_CONTAINERS = 15
+PERIODIC_INPUT_INTERVAL = 3  # Interval in seconds
+IN_AWS = False  # Changed to True since you're using AWS
+NUM_PEERS = 6  # Number of containers to run (adjust as needed)
+INTERNET_SERVER = True
+
+# Resource limits for containers
+CPU_LIMIT = "0.3"  # Limit each container to 30% of one CPU core
+MEMORY_LIMIT = "1g"  # Limit each container to 1GB memory
 
 
 def get_ip_address(interface):
@@ -21,42 +32,108 @@ def get_ip_address(interface):
     return None
 
 
-def main():
-    time.sleep(3)
+def read_output(process, container_id, stop_event, progress_dict, progress_lock):
+    stdout_open, stderr_open = True, True
 
-    #client = docker.DockerClient(base_url='unix:///home/user/.docker/desktop/docker.sock')
-    client = docker.DockerClient(base_url='unix:///var/run/docker.sock')
-    print(client.images.list())
+    # Regex patterns
+    progress_pattern = re.compile(r'Progress:\s*(?:\[.*?\])?\s*(\d+\.?\d*)%')
+    finished_pattern = re.compile(r'Finished downloading file!!!')
+    error_pattern = re.compile(r'exception|failed', re.IGNORECASE)
 
-    threads = []
-    for i in range(4):
-        print(f"Creating container {i}")
-        thread = threading.Thread(target=create_container, args=(i, client))
-        thread.start()
-        threads.append(thread)
+    completed_download = False
+    while not stop_event.is_set() and (stdout_open or stderr_open):
+        readable = []
+        if stdout_open:
+            readable.append(process.stdout)
+        if stderr_open:
+            readable.append(process.stderr)
 
-    for thread in threads:
-        thread.join()
+        if not readable:
+            break
+
+        try:
+            ready, _, _ = select.select(readable, [], [], 0.1)
+
+            for stream in ready:
+                line = stream.readline()
+                if not line:
+                    if stream is process.stdout:
+                        stdout_open = False
+                    else:
+                        stderr_open = False
+                    continue
+
+                # Process the output line
+                if progress_pattern.search(line) and not completed_download:
+                    match = progress_pattern.search(line)
+                    percent = float(match.group(1))
+                    with progress_lock:
+                        progress_dict[container_id]['percent'] = percent
+                elif finished_pattern.search(line):
+                    with progress_lock:
+                        progress_dict[container_id]['percent'] = 100.0
+                        progress_dict[container_id]['finished'] = True
+                    completed_download = True
+                elif error_pattern.search(line):
+                    with progress_lock:
+                        progress_dict[container_id]['error'] = line.strip()
+
+        except (ValueError, OSError):
+            break
+
+        time.sleep(0.05)
 
 
-def create_container(curr_container, client):
+def periodic_input(process, container_id, stop_event, progress_lock, progress_dict):
+    time.sleep(PERIODIC_INPUT_INTERVAL)
+
+    while not stop_event.is_set():
+        try:
+            process.stdin.write("\n1\n")
+            process.stdin.flush()
+        except Exception as e:
+            with progress_lock:
+                progress_dict[container_id]['error'] = f"Input error: {str(e)}"
+            break
+
+        time.sleep(PERIODIC_INPUT_INTERVAL)
+
+
+def create_container(curr_container, client, progress_dict, progress_lock):
     try:
-        # Run the container
+        # Initialize container status as not started
+        with progress_lock:
+            progress_dict[curr_container] = {
+                'started': False,
+                'percent': 0.0,
+                'finished': False,
+                'error': None,
+                'start_time': None
+            }
+
         container = client.containers.run(
             image=IMAGE_NAME,
             name=f"peer_{curr_container}",
             stdin_open=True,
             tty=True,
             detach=True,
+            cpu_quota=int(float(CPU_LIMIT) * 100000),
+            mem_limit=MEMORY_LIMIT,
+            restart_policy={"Name": "on-failure", "MaximumRetryCount": 3}
         )
-        time.sleep(1)
+        time.sleep(2)
 
-        # Run the command inside the container with unbuffered output
+        # Mark container as started and record start time
+        with progress_lock:
+            progress_dict[curr_container]['started'] = True
+            progress_dict[curr_container]['start_time'] = time.strftime("%H:%M:%S")
+
         ip_address = get_ip_address(LOCAL_INTERFACE)
-        # Add the -u flag to docker exec for unbuffered output
-        command = f"docker exec -i {container.id} ./PeerLion"
+        if INTERNET_SERVER:
+            command = f"docker exec -i {container.id} ./PeerLion"
+        else:
+            command = f"docker exec -i {container.id} ./PeerLion {ip_address}"
 
-        # Set environment variable to disable Python output buffering
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
 
@@ -67,72 +144,144 @@ def create_container(curr_container, client):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            bufsize=0,  # Set to unbuffered
+            bufsize=0,
             env=env
         )
 
-        # Set non-blocking mode for stdout and stderr
         for stream in [process.stdout, process.stderr]:
             fd = stream.fileno()
             fl = fcntl.fcntl(fd, fcntl.F_GETFL)
             fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
-        # Send input
-        process.stdin.write("\n4\n")  # option to download from Gitabic file
+        stop_event = threading.Event()
+
+        time.sleep(1)
+        process.stdin.write("\n4\n")
         process.stdin.write(f"{METADATA_FILE_TO_DOWNLOAD_NAME}\n")
         process.stdin.flush()
 
-        # Read output using select for non-blocking I/O
-        def read_output(process, container_id):
-            stdout_open, stderr_open = True, True
-
-            while stdout_open or stderr_open:
-                readable = []
-                if stdout_open:
-                    readable.append(process.stdout)
-                if stderr_open:
-                    readable.append(process.stderr)
-
-                if not readable:
-                    break
-
-                try:
-                    ready, _, _ = select.select(readable, [], [], 0.1)
-
-                    for stream in ready:
-                        line = stream.readline()
-                        if not line:
-                            if stream is process.stdout:
-                                stdout_open = False
-                            else:
-                                stderr_open = False
-                            continue
-
-                        print(f"Container {container_id}: {line.strip()}")
-
-                except (ValueError, OSError):
-                    # Stream closed or other error
-                    break
-
-                # Check if process has exited
-                if process.poll() is not None and not ready:
-                    break
-
-                time.sleep(0.01)  # Small sleep to prevent CPU spinning
-
-        # Use a single thread for both stdout and stderr
-        output_thread = threading.Thread(target=read_output, args=(process, curr_container))
+        output_thread = threading.Thread(
+            target=read_output,
+            args=(process, curr_container, stop_event, progress_dict, progress_lock),
+            name=f"output_{curr_container}"
+        )
         output_thread.daemon = True
         output_thread.start()
 
-        # Wait for process to complete
-        exit_code = process.wait()
-        output_thread.join(timeout=2)
+        input_thread = threading.Thread(
+            target=periodic_input,
+            args=(process, curr_container, stop_event, progress_lock, progress_dict),
+            name=f"input_{curr_container}"
+        )
+        input_thread.daemon = True
+        input_thread.start()
 
-        print(f"Container {curr_container} process exited with code {exit_code}")
+        exit_code = process.wait()
+        stop_event.set()
+
+        if exit_code != 0:
+            with progress_lock:
+                progress_dict[curr_container]['error'] = f"Exited with code {exit_code}"
+
+        try:
+            container.stop(timeout=5)
+            container.remove()
+        except Exception as e:
+            pass
 
     except Exception as e:
-        print(f"Error creating container {curr_container}: {e}")
+        with progress_lock:
+            progress_dict[curr_container]['error'] = str(e)
+
+
+def display_progress(progress_dict, progress_lock, stop_event, num_peers):
+    while not stop_event.is_set():
+        time.sleep(5)
+        with progress_lock:
+            current_progress = {k: v.copy() for k, v in progress_dict.items()}
+
+        os.system('clear')
+        print("Container Progress (Updated every 5 seconds):")
+        print("--------------------------------------------")
+        
+        # Display containers that have started and their status
+        started_count = sum(1 for v in current_progress.values() if v.get('started', False))
+        finished_count = sum(1 for v in current_progress.values() if v.get('finished', False))
+        error_count = sum(1 for v in current_progress.values() if v.get('error') is not None)
+        
+        print(f"Summary: {started_count}/{num_peers} started, {finished_count} finished, {error_count} with errors")
+        print("--------------------------------------------")
+        
+        for i in range(num_peers):
+            status = current_progress.get(i, {})
+            
+            # Only show containers that have been started
+            if status.get('started', False):
+                start_time = status.get('start_time', 'Unknown')
+                error = status.get('error')
+                
+                if error:
+                    print(f"Container {i}: Started at {start_time} - ERROR - {error}")
+                elif status.get('finished', False):
+                    print(f"Container {i}: Started at {start_time} - FINISHED (100%)")
+                else:
+                    print(f"Container {i}: Started at {start_time} - " + 
+                          get_progress_bar(status.get('percent', 0.0)))
+            else:
+                # For containers not yet started, show simple waiting message
+                if i in current_progress:
+                    print(f"Container {i}: Waiting to start...")
+                
+        print("--------------------------------------------")
+
+
+def get_progress_bar(percentage, bar_length=50):
+    percentage = max(0.0, min(100.0, percentage))
+    filled_length = int(round(bar_length * percentage / 100))
+    return f"[{'=' * filled_length}>{' ' * (bar_length - filled_length)}] {percentage:.1f}%"
+
+
+def main():
+    print("Starting Docker container management...")
+
+    progress_dict = {}
+    progress_lock = threading.Lock()
+    display_stop_event = threading.Event()
+
+    display_thread = threading.Thread(
+        target=display_progress,
+        args=(progress_dict, progress_lock, display_stop_event, NUM_PEERS),
+        name="display_thread"
+    )
+    display_thread.daemon = True
+    display_thread.start()
+
+    try:
+        if IN_AWS:
+            client = docker.DockerClient(base_url='unix:///var/run/docker.sock')
+        else:
+            client = docker.DockerClient(base_url='unix:///home/user/.docker/desktop/docker.sock')
+    except Exception as e:
+        print(f"Failed to connect to Docker: {e}")
+        return
+
+    threads = []
+    for i in range(NUM_PEERS):
+        thread = threading.Thread(
+            target=create_container,
+            args=(i, client, progress_dict, progress_lock),
+            name=f"container_{i}"
+        )
+        thread.start()
+        threads.append(thread)
+        time.sleep(WAIT_BETWEEN_CONTAINERS)
+
+    for thread in threads:
+        thread.join()
+
+    display_stop_event.set()
+    display_thread.join(timeout=5)
+    print("All containers have completed execution")
 
 
 if __name__ == '__main__':

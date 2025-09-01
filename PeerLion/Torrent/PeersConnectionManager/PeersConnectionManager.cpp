@@ -92,8 +92,6 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
         };
 
         // send request to server to connect to the other peer and for its ice data
-
-
         // std::unique_lock<std::mutex> serverSocketLock(_mutexServerSocket);
         MessageBaseReceived response = _serverSocket->receive(isRelevant);
         //     serverSocketLock.unlock();
@@ -102,7 +100,6 @@ bool PeersConnectionManager::addFileForPeer(const FileID &fileID, const PeerID &
             return false;
         }
         if (response.code == ServerResponseCodes::UserAlreadyConnected) {
-            // TODO URI CHECK - someone gotta catch this error and not just throw it
             throw std::runtime_error("Tried to connect to an already connected peer");
         }
         if (response.code == ServerResponseCodes::UserFullCapacity) {
@@ -247,11 +244,14 @@ void PeersConnectionManager::routePackets() {
                 handleMessage(msg);
             }
         }
+        peersConnectionsLock.unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
 void PeersConnectionManager::shareIceData() {
     while (_isRunning->load()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         MessageBaseReceived req; {
             // Scoped lock for server socket receive
             //  std::lock_guard<std::mutex> serverLock(_mutexServerSocket);

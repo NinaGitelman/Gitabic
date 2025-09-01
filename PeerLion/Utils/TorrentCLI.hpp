@@ -121,34 +121,49 @@ private:
     }
 
     void addFileToSeed() const {
-        std::string path, creator, password;
-        std::cout << "Enter the path to the file: ";
-        std::getline(std::cin, path);
 
-        std::cout << "Enter the creator: ";
-        std::getline(std::cin, creator);
+            std::string path, creator, password;
+            std::cout << "Enter the path to the file: ";
+            std::getline(std::cin, path);
 
-        std::cout << "Enter the password (empty for public file): ";
-        std::getline(std::cin, password);
+            std::cout << "Enter the creator: ";
+            std::getline(std::cin, creator);
 
-        std::cout << "Enter the signaling IP: ";
-        std::string signalingIP;
-        std::string signalingPort;
-        std::getline(std::cin, signalingIP);
-        std::cout << "Enter the signaling port: ";
-        std::getline(std::cin, signalingPort);
-        const auto signalingAddress = Address(signalingIP, std::stoi(signalingPort));
+            std::cout << "Enter the password (empty for public file): ";
+            std::getline(std::cin, password);
+
+            std::cout << "Enter the signaling IP: ";
+            std::string signalingIP;
+            std::string signalingPort;
+            std::getline(std::cin, signalingIP);
 
 
-        MetaDataFile metadata = MetaDataFile::createMetaData(path, password, signalingAddress, creator);
+            std::cout << "Enter the signaling port: ";
+            std::getline(std::cin, signalingPort);
 
-        FileIO fileIO(metadata, _n, true);
-        Utils::FileUtils::writeVectorToFile(Utils::FileUtils::readFileToVector(path),
-                                            Utils::FileUtils::getExpandedPath(
-                                                "~/Gitabic" + (_n ? std::to_string(_n) : "") + "/.filesFolders/" +
-                                                SHA256::hashToString(metadata.getFileHash()) + "/" +
-                                                metadata.getFileName()));
-        _manager.addNewFileHandler(fileIO);
+            try {
+                int signalingPortNum = std::stoi(signalingPort);
+
+                const auto signalingAddress = Address(signalingIP, signalingPortNum);
+                MetaDataFile metadata = MetaDataFile::createMetaData(path, password, signalingAddress, creator);
+
+                FileIO fileIO(metadata, _n, true);
+                Utils::FileUtils::writeVectorToFile(Utils::FileUtils::readFileToVector(path),
+                                                    Utils::FileUtils::getExpandedPath(
+                                                        "~/Gitabic" + (_n ? std::to_string(_n) : "") + "/.filesFolders/" +
+                                                        SHA256::hashToString(metadata.getFileHash()) + "/" +
+                                                        metadata.getFileName()));
+                _manager.addNewFileHandler(fileIO);
+            }
+            catch (std::exception &e) {
+
+                const std::string error =  "Input error: " + string( e.what());
+                ThreadSafeCout::cout(error);
+            }
+
+
+
+
     }
 
     void handlestopFile() {
@@ -202,16 +217,15 @@ public:
             std::cin.get(); // Wait for Enter key
             //clearScreen();
             std::cout << "\n=== Main Menu ===\n"
-                    << "1. List files\n"
-                    << "2. Start all files\n"
-                    << "3. Stop all files\n"
-                    << "4. Add file to download\n"
-                    << "5. Add file to seed\n"
-                    << "6. Stop file\n"
-                    << "7. Start file\n"
+                    << "1. List local files\n"
+                    << "2. Start downloading/seeding local files\n"
+                    << "3. Stop downloading/seeding all local files\n"
+                    << "4. Download file from metadata file\n"
+                    << "5. Add local file to seed\n"
+                    << "6. Stop downloading/seeding file\n"
+                    << "7. Start download/seeding file\n"
                     << "8. Exit\n"
                     << "Choice: ";
-
             std::string choice;
             std::getline(std::cin, choice);
 

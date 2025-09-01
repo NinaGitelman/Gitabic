@@ -202,6 +202,8 @@ void TorrentFileHandler::handleRequests() {
 				_cvMessagesToSend.notify_one();
 			}
 		}
+		guard.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 }
 
@@ -258,6 +260,8 @@ void TorrentFileHandler::handleResponses() {
 			// ThreadSafeCout::cout(
 			// 	"Handled " + std::to_string(response.code) + " response From " + SHA256::hashToString(response.from));
 		}
+		guard.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 }
 
@@ -269,8 +273,10 @@ void TorrentFileHandler::handleResponse(const BlockResponse &blockResponse) {
 		std::unique_lock pieceChooserLock(_mutexPieceChooser);
 		_pieceChooser->updateBlockReceived(blockResponse.other, blockResponse.pieceIndex, blockResponse.blockIndex);
 	}
-	ThreadSafeCout::cout("Saved block " + std::to_string(blockResponse.blockIndex) + " of piece " +
-	                     std::to_string(blockResponse.pieceIndex));
+
+	// DEBUG:
+	// ThreadSafeCout::cout("Saved block " + std::to_string(blockResponse.blockIndex) + " of piece " +
+	//                      std::to_string(blockResponse.pieceIndex));
 
 	// update all interested peers that i got this pice
 	if (pieceFinished) {
@@ -324,7 +330,8 @@ void TorrentFileHandler::downloadFile() {
 					_cvMessagesToSend.notify_one();
 				}
 			}
-			ThreadSafeCout::cout("Amount of requestable peers: " + std::to_string(requestablePeers.size()) + "\n");
+			// DEBUG
+			//ThreadSafeCout::cout("Amount of requestable peers: " + std::to_string(requestablePeers.size()) + "\n");
 		}
 		std::this_thread::sleep_for(WAITING_TIME - (std::chrono::steady_clock::now() - start));
 	}
