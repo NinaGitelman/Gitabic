@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy the script, file and metadata file to the container's working directory
-COPY PeerLion /PeerLion
+COPY Peer /Peer
 COPY image.png /image.png
 COPY image.png.gitabic /image.png.gitabic
 COPY test.txt /test.txt
