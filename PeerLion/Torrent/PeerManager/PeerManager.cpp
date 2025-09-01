@@ -55,7 +55,6 @@ void PeerManager::updateConnectedPeers() {
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(10));
 	}
-	std::cout << "thread ending";
 }
 
 vector<ID> PeerManager::requestForNewPeerList() const {

@@ -91,20 +91,20 @@ sockaddr_in toSockAddr() const
     std::memset(&sockaddr, 0, sizeof(sockaddr));
     sockaddr.sin_family = AF_INET;
     
-    // Debug prints
-    std::cout << "Port: " << port << std::endl;
-    std::cout << "IP: " 
-              << static_cast<int>(ip[0]) << "." 
-              << static_cast<int>(ip[1]) << "." 
-              << static_cast<int>(ip[2]) << "." 
-              << static_cast<int>(ip[3]) << std::endl;
+    // // Debug prints
+    // std::cout << "Port: " << port << std::endl;
+    // std::cout << "IP: "
+    //           << static_cast<int>(ip[0]) << "."
+    //           << static_cast<int>(ip[1]) << "."
+    //           << static_cast<int>(ip[2]) << "."
+    //           << static_cast<int>(ip[3]) << std::endl;
 
     sockaddr.sin_port = htons(port);
 
     uint32_t ipAddress = (ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3];
     
     // Additional debug
-    std::cout << "Converted IP Address: " << std::hex << ipAddress << std::dec << std::endl;
+    // std::cout << "Converted IP Address: " << std::hex << ipAddress << std::dec << std::endl;
 
     sockaddr.sin_addr.s_addr = htonl(ipAddress);
 

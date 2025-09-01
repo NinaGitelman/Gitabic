@@ -107,8 +107,8 @@ bool TCPSocket::isDataToReceive() const {
 
 void TCPSocket::connectToServer(sockaddr_in &serverAddress) {
     // this doesnt even print even if debugger tells me it gets here
-    std::cout << "In connect to server...";
-    std::cout << inet_ntoa(serverAddress.sin_addr);
+    // std::cout << "In connect to server...";
+    // std::cout << inet_ntoa(serverAddress.sin_addr);
     std::unique_lock<mutex> guard(socketMut);
     if (connect(sockfd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == -1) {
         std::cerr << "Connection failed. Error: " << strerror(errno) << std::endl;

@@ -210,7 +210,7 @@ public:
     }
 
     void run() {
-        std::cout << "Welcome to BitTorrent CLI\n";
+        std::cout << "\nWelcome to BitTorrent CLI\n";
 
         while (_running) {
             ThreadSafeCout::print << "\nPress Enter to continue...";
