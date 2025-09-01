@@ -94,7 +94,7 @@ bool TCPSocket::isDataToReceive() const {
     int activity = select(sockfd + 1, &read_fds, nullptr, nullptr, &timeout);
 
     if (activity < 0) {
-        std::cerr << "select() error" << std::endl;
+        // std::cerr << "select() error" << std::endl;/**/
         return false;
     } else if (activity == 0) {
         return false;
